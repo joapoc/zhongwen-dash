@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zhongwen Dash</title>
+  <meta name="description" content="Modernized Express and Node app shell for the Zhongwen study dashboard.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Inter', 'system-ui', 'sans-serif']
+          },
+          colors: {
+            ink: '#08111f',
+            ember: '#ef4444',
+            sand: '#f59e0b',
+            mist: '#dbe7f2'
+          },
+          boxShadow: {
+            panel: '0 24px 80px rgba(8, 17, 31, 0.28)'
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/legacy.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <main class="pb-10">
+      <div class="topbar">
+  <div class="logo"><span style="font-size:1.5rem;">🀄</span>汉语 <span class="cn" style="font-weight:400;font-size:0.9rem;color:var(--accent2);">Study</span></div>
+  <div class="topbar-right">
+    <span class="xp-badge">⚡ 3,840 XP</span>
+    <span class="streak-badge">🔥 23 days</span>
+    <span class="wordlist-badge" onclick="toggleWordlist()" title="My Word List">📖 Words <span class="wl-count" id="wlBadgeCount">0</span></span>
+    <button class="theme-btn" onclick="toggleNotifs()" title="Notifications">🔔</button>
+    <div class="avatar cn">李</div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview',this)">📊 Overview</button>
+  <button class="tab-btn" onclick="switchTab('tools',this)">🔧 Tools</button>
+  <button class="tab-btn" onclick="switchTab('study',this)">📚 Study</button>
+  <button class="tab-btn" onclick="switchTab('reference',this)">📖 Reference</button>
+  <button class="tab-btn" onclick="switchTab('practice',this)">✍️ Practice</button>
+  <button class="tab-btn" onclick="switchTab('games',this)">🎮 Games</button>
+  <button class="tab-btn" onclick="switchTab('immerse',this)">🌏 Immerse</button>
+  <button class="tab-btn" onclick="switchTab('cybersec',this)">🛡️ Cybersec</button>
+  <button class="tab-btn" onclick="switchTab('political',this)">🏛️ Political</button>
+  <button class="tab-btn" onclick="switchTab('genz',this)">📱 Gen Z</button>
+  <button class="tab-btn" onclick="switchTab('academia',this)">🎓 Academia</button>
+  <button class="tab-btn" onclick="switchTab('tourist',this)">🧭 Tourist</button>
+  <button class="tab-btn" onclick="switchTab('gossip',this)">🗣️ Gossip</button>
+  <button class="tab-btn" onclick="switchTab('makeup',this)">💄 Makeup</button>
+  <button class="tab-btn" onclick="switchTab('food',this)">🍜 Food</button>
+  <button class="tab-btn" onclick="switchTab('dropshipping',this)">📦 Dropshipping</button>
+</div>
+
+<div class="search-bar"><input class="search-input" type="text" placeholder="🔍  Search characters, pinyin, grammar, radicals..." id="globalSearch" oninput="filterWidgets(this.value)"></div>
+
+<div class="dashboard">
+  <!-- Deferred for later development:
+  <div class="greeting"><h1 id="greetingText">你好, Alex 👋</h1><p>You've learned 21 new characters this week · HSK 3 Progress: 68% · 加油！</p></div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Characters</div><div class="stat-value" style="color:var(--accent);">342</div><div class="stat-change stat-up">↑ 21 this week</div></div>
+    <div class="stat-card"><div class="stat-label">Quiz Accuracy</div><div class="stat-value" style="color:var(--green);">82%</div><div class="stat-change stat-up">↑ 4%</div></div>
+    <div class="stat-card"><div class="stat-label">Study Hours</div><div class="stat-value" style="color:var(--orange);">45.2h</div><div class="stat-change stat-up">↑ 6.8h</div></div>
+    <div class="stat-card"><div class="stat-label">Cards Due</div><div class="stat-value" style="color:var(--purple);">38</div><div class="stat-change" style="color:var(--muted);">Review today</div></div>
+    <div class="stat-card"><div class="stat-label">HSK Level</div><div class="stat-value" style="color:var(--accent2);">HSK 3</div><div class="stat-change stat-up">320 XP to HSK 4</div></div>
+    <div class="stat-card"><div class="stat-label">Saved Words</div><div class="stat-value" style="color:var(--cyan);" id="statSavedWords">0</div><div class="stat-change" style="color:var(--cyan);" id="statSavedSub">from RSS articles</div></div>
+  </div>
+  -->
+
+  <!-- OVERVIEW -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="grid">
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">📊</div>Study Progress</div><span class="tag" style="background:rgba(230,57,70,0.13);color:var(--accent);">This Week</span></div><div class="progress-ring-container"><div class="progress-ring"><svg width="95" height="95" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--surface)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="url(#pg)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="72" stroke-linecap="round"/><defs><linearGradient id="pg"><stop offset="0%" stop-color="#e63946"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient></defs></svg><div class="pct">73%</div></div><div class="progress-topics"><div class="progress-topic"><span>Characters</span><div class="mini-bar"><div class="mini-bar-fill" style="width:80%;background:var(--accent);"></div></div></div><div class="progress-topic"><span>Tones</span><div class="mini-bar"><div class="mini-bar-fill" style="width:65%;background:var(--accent2);"></div></div></div><div class="progress-topic"><span>Grammar</span><div class="mini-bar"><div class="mini-bar-fill" style="width:55%;background:var(--green);"></div></div></div><div class="progress-topic"><span>Reading</span><div class="mini-bar"><div class="mini-bar-fill" style="width:70%;background:var(--blue);"></div></div></div><div class="progress-topic"><span>Immersion</span><div class="mini-bar"><div class="mini-bar-fill" style="width:45%;background:var(--cyan);"></div></div></div></div></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">⏱️</div>Study Timer</div></div><div class="pomo-display"><div class="pomo-time" id="pomoTime">25:00</div><div class="pomo-label" id="pomoLabel">专注学习 · Focus</div></div><div class="pomo-btns"><button class="btn-secondary btn-small" onclick="pomoAction('start')">▶ Start</button><button class="btn-secondary btn-small" onclick="pomoAction('pause')">⏸ Pause</button><button class="btn-secondary btn-small" onclick="pomoAction('reset')">↻ Reset</button></div><div class="pomo-sessions" id="pomoSessions"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🈷️</div>Character of the Day</div></div><div class="char-display"><div class="char-main cn" id="codChar">学</div><div class="char-pinyin" id="codPinyin">xué</div><div class="char-meaning" id="codMeaning">to study</div><div class="char-details"><div class="char-detail-item"><div class="dl">Radical</div><div class="dv cn" id="codRadical">子</div></div><div class="char-detail-item"><div class="dl">Strokes</div><div class="dv" id="codStrokes">8</div></div><div class="char-detail-item"><div class="dl">HSK</div><div class="dv" id="codHsk">HSK 1</div></div></div></div><button class="btn-secondary btn-small" onclick="newCOD()" style="width:100%;margin-top:8px;">🔄 New Character</button></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">📅</div>Study Heatmap</div></div><div class="heatmap" id="heatmap"></div><div class="heatmap-legend"><span>Less</span><div class="hcell" style="background:var(--surface);"></div><div class="hcell" style="background:#3a1520;"></div><div class="hcell" style="background:#7a2030;"></div><div class="hcell" style="background:#c93040;"></div><div class="hcell" style="background:#e63946;"></div><span>More</span></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">📈</div>Weekly Activity</div></div><canvas class="weekly-chart" id="weeklyChart"></canvas></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🏆</div>Achievements</div></div><div class="badges"><div class="badge"><div class="badge-icon">🔥</div><div class="badge-name">7-Day</div></div><div class="badge"><div class="badge-icon">📝</div><div class="badge-name">100 Ch</div></div><div class="badge"><div class="badge-icon">🎯</div><div class="badge-name">Tones</div></div><div class="badge"><div class="badge-icon">🧠</div><div class="badge-name">Quiz</div></div><div class="badge"><div class="badge-icon">📖</div><div class="badge-name">HSK2</div></div><div class="badge"><div class="badge-icon">⚡</div><div class="badge-name">300 Ch</div></div><div class="badge locked"><div class="badge-icon">🌏</div><div class="badge-name">Immerse</div></div><div class="badge locked"><div class="badge-icon">📰</div><div class="badge-name">Reader</div></div></div></div>
+      <div class="widget span-2"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🌳</div>Component Tree</div></div><div class="topo-canvas"><canvas id="topoCanvas"></canvas></div><div class="topo-controls"><button class="btn-secondary btn-small" onclick="setTree('好')">好</button><button class="btn-secondary btn-small" onclick="setTree('明')">明</button><button class="btn-secondary btn-small" onclick="setTree('想')">想</button><button class="btn-secondary btn-small" onclick="setTree('谢')">谢</button><button class="btn-secondary btn-small" onclick="setTree('语')">语</button><button class="btn-secondary btn-small" onclick="setTree('休')">休</button></div></div>
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="tab-content" id="tab-tools">
+    <div class="grid">
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">🔤</div>Pinyin Converter</div></div><div style="display:flex;flex-direction:column;gap:8px;"><input class="text-input" type="text" id="pinyinInput" placeholder="ni3 hao3" value="ni3 hao3, wo3 hen3 gao1 xing4!" oninput="convertPinyin()"><div class="conv-row" style="padding:14px;"><span class="conv-value cn" id="pinyinOutput" style="font-size:1.1rem;color:var(--accent2);"></span></div><div style="font-size:0.65rem;color:var(--muted);">1=ā 2=á 3=ǎ 4=à 5=neutral</div></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🔍</div>Character Lookup</div></div><div style="display:flex;flex-direction:column;gap:8px;"><input class="text-input cn" type="text" id="charLookupInput" placeholder="Enter char (e.g. 爱)" maxlength="1" oninput="lookupChar()"><div class="result-grid"><div class="result-item"><label>Character</label><span id="clChar" class="cn" style="font-size:1.4rem;">—</span></div><div class="result-item"><label>Pinyin</label><span id="clPinyin">—</span></div><div class="result-item"><label>Meaning</label><span id="clMeaning">—</span></div><div class="result-item"><label>Radical</label><span id="clRadical" class="cn">—</span></div><div class="result-item"><label>Strokes</label><span id="clStrokes">—</span></div><div class="result-item"><label>HSK</label><span id="clHsk">—</span></div></div></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">🔢</div>Number Converter</div></div><div style="display:flex;flex-direction:column;gap:8px;"><input class="text-input" type="number" id="numInput" placeholder="12345" value="12345" oninput="convertNumber()"><div class="conv-row"><span class="conv-label">Chinese</span><span class="conv-value cn" id="numChinese"></span></div><div class="conv-row"><span class="conv-label">Formal</span><span class="conv-value cn" id="numFormal"></span></div><div class="conv-row"><span class="conv-label">Pinyin</span><span class="conv-value" id="numPinyin" style="color:var(--accent2);"></span></div></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🕐</div>Date & Time</div></div><div id="dateTimeDisplay" style="text-align:center;"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🎵</div>Tone Trainer</div></div><div class="tone-chart"><div class="tone-card" onclick="selectTone(1)"><div class="tone-num">1st</div><div class="tone-sample cn">mā</div><div class="tone-mark">¯</div><div class="tone-desc">妈</div></div><div class="tone-card" onclick="selectTone(2)"><div class="tone-num">2nd</div><div class="tone-sample cn">má</div><div class="tone-mark">´</div><div class="tone-desc">麻</div></div><div class="tone-card" onclick="selectTone(3)"><div class="tone-num">3rd</div><div class="tone-sample cn">mǎ</div><div class="tone-mark">ˇ</div><div class="tone-desc">马</div></div><div class="tone-card" onclick="selectTone(4)"><div class="tone-num">4th</div><div class="tone-sample cn">mà</div><div class="tone-mark">`</div><div class="tone-desc">骂</div></div></div><canvas id="toneCanvas" width="300" height="70" style="width:100%;border-radius:8px;background:var(--surface);"></canvas></div>
+      <div class="widget span-2"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">📐</div>Sentence Visualizer</div><div style="display:flex;gap:4px;flex-wrap:wrap;"><button class="btn-secondary btn-small" onclick="showSentence(0)" id="sBtn0" style="border-color:var(--accent);color:var(--accent);">SVO</button><button class="btn-secondary btn-small" onclick="showSentence(1)" id="sBtn1">Time</button><button class="btn-secondary btn-small" onclick="showSentence(2)" id="sBtn2">把</button><button class="btn-secondary btn-small" onclick="showSentence(3)" id="sBtn3">比</button></div></div><div id="sentenceViz"></div><div style="font-size:0.68rem;color:var(--muted);margin-top:8px;text-align:center;" id="sentenceInfo"></div></div>
+    </div>
+  </div>
+
+  <!-- STUDY -->
+  <div class="tab-content" id="tab-study">
+    <div class="grid">
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">🧠</div>Quick Quiz</div></div><div class="quiz-cat-btns" id="quizCats"></div><div id="quizArea"><div class="quiz-question cn" id="qText"></div><div class="quiz-options" id="qOpts"></div><div class="quiz-footer"><span class="quiz-score" id="qScore">Score: 0 / 0</span><button class="btn-secondary btn-small" onclick="nextQuestion()">Next →</button></div></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🃏</div>Flashcards</div><div style="display:flex;gap:4px;align-items:center;"><span class="tag" id="fcSourceTag" style="background:rgba(167,139,250,0.13);color:var(--purple);"></span><select id="fcDeckSelect" onchange="switchFCDeck(this.value)" style="font-size:0.68rem;padding:3px 8px;"><option value="default">Default Deck</option><option value="saved">📖 Saved Words</option><option value="all">All Combined</option></select></div></div><div class="flashcard-area" onclick="flipCard()"><div class="flashcard-inner" id="flashInner"><div class="flashcard-face flashcard-front cn" id="fcFront"></div><div class="flashcard-face flashcard-back" id="fcBack"></div></div></div><div class="flashcard-nav"><button class="btn-secondary btn-small" onclick="prevCard()">← Prev</button><span class="fc-counter" id="fcCounter"></span><button class="btn-secondary btn-small" onclick="nextCard()">Next →</button></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">✏️</div>Fill in the Blank</div></div><div id="fibArea"></div><div style="margin-top:10px;"><button class="btn-secondary btn-small" onclick="nextFIB()">Next →</button></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">✅</div>Study Checklist</div><span class="tag" id="checkProgress" style="background:rgba(52,211,153,0.13);color:var(--green);">0%</span></div><div class="checklist" id="checklist"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">💡</div>Tip of the Day</div></div><div class="tip-box"><div class="tip-text cn" id="tipText"></div><button class="btn-secondary btn-small" onclick="newTip()" style="margin-top:10px;">🔄 New Tip</button></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">⌨️</div>Pinyin Typing</div><button class="btn-secondary btn-small" onclick="resetTyping()">↻ Reset</button></div><div class="typing-display" id="typingDisplay"></div><input class="text-input" id="typingInput" placeholder="Type the pinyin..." oninput="handleTyping()" autocomplete="off"><div class="typing-stats"><div class="typing-stat"><div class="ts-label">Speed</div><div class="ts-val" id="typSpeed">0</div></div><div class="typing-stat"><div class="ts-label">Accuracy</div><div class="ts-val" id="typAccuracy">100%</div></div><div class="typing-stat"><div class="ts-label">Progress</div><div class="ts-val" id="typProgress">0%</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="tab-content" id="tab-reference">
+    <div class="grid">
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🧱</div>Common Radicals</div></div><div class="radical-grid" id="radicalGrid"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">📘</div>HSK Vocabulary</div><div style="display:flex;gap:4px;"><button class="btn-secondary btn-small hsk-btn" onclick="showHSK(1,this)" style="border-color:var(--accent);color:var(--accent);">HSK1</button><button class="btn-secondary btn-small hsk-btn" onclick="showHSK(2,this)">HSK2</button><button class="btn-secondary btn-small hsk-btn" onclick="showHSK(3,this)">HSK3</button></div></div><div class="phrase-grid" id="hskList"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">📐</div>Grammar Patterns</div></div><div class="grammar-list" id="grammarList"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🀄</div>Idioms 成语</div></div><div class="idiom-list" id="idiomList"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">💬</div>Common Phrases</div></div><div class="phrase-grid" id="phraseList"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🏮</div>Cultural Notes</div></div><div id="cultureList" style="max-height:280px;overflow-y:auto;scrollbar-width:thin;"></div></div>
+    </div>
+  </div>
+
+  <!-- PRACTICE -->
+  <div class="tab-content" id="tab-practice">
+    <div class="grid">
+      <div class="widget span-2"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">💻</div>Chinese Console</div></div><div class="terminal"><div class="terminal-bar"><div class="terminal-dot" style="background:#f87171;"></div><div class="terminal-dot" style="background:#f0a040;"></div><div class="terminal-dot" style="background:#34d399;"></div><span style="margin-left:8px;font-size:0.7rem;color:#555;font-family:'JetBrains Mono',monospace;">汉语@console ~</span></div><div class="terminal-body" id="termOutput" style="min-height:280px;max-height:360px;"><div class="terminal-line info">Welcome to Chinese Console v3.0 🈷️</div><div class="terminal-line info">Type 'help' for commands.</div></div><div class="terminal-input-row" style="padding:0 12px 10px;"><span>></span><input class="terminal-input" id="termInput" type="text" placeholder="Enter command..." autocomplete="off"></div></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">✍️</div>Handwriting</div></div><div class="writing-canvas-container"><canvas id="writingCanvas" class="writing-canvas" width="260" height="260"></canvas></div><div class="writing-guide cn">Practice: <strong id="writingChar">你</strong></div><div class="writing-controls"><button class="btn-secondary btn-small" onclick="prevWriteChar()">←</button><button class="btn-secondary btn-small" onclick="clearWriting()">🗑</button><button class="btn-secondary btn-small" onclick="nextWriteChar()">→</button></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">🗣️</div>Dialogue</div></div><div id="dialogueArea"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;" id="dialogueScene"></div><div id="dialogueMessages" style="max-height:140px;overflow-y:auto;scrollbar-width:thin;display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div><div id="dialogueChoices" style="display:flex;flex-direction:column;gap:4px;"></div><button class="btn-secondary btn-small" onclick="nextDialogue()" style="margin-top:8px;width:100%;">🔄 New</button></div></div>
+    </div>
+  </div>
+
+  <!-- GAMES -->
+  <div class="tab-content" id="tab-games">
+    <div class="grid">
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🎴</div>Memory Match</div><div style="display:flex;gap:4px;align-items:center;"><span class="tag" id="memScore" style="background:rgba(244,114,182,0.13);color:var(--pink);">Moves: 0</span><button class="btn-secondary btn-small" onclick="initMemory()">↻</button></div></div><div class="mem-grid" id="memGrid"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(248,113,113,0.13);color:var(--red);">📊</div>Char Frequency</div></div><div class="traffic-bars" id="charFreqBars"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🎵</div>Tone Guess</div><span class="tag" id="toneGameScore" style="background:rgba(167,139,250,0.13);color:var(--purple);">Score: 0</span></div><div id="toneGameArea" style="text-align:center;"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🔀</div>Word Scramble</div><span class="tag" id="scrambleScore" style="background:rgba(240,160,64,0.13);color:var(--orange);">Score: 0</span></div><div id="scrambleArea"></div></div>
+    </div>
+  </div>
+
+  <!-- IMMERSE -->
+  <div class="tab-content" id="tab-immerse">
+    <!-- Deferred for later development:
+    <div class="immerse-hero">
+      <h2>🌏 Language Immersion Hub</h2>
+      <p>Real Chinese content — watch, read, listen, and absorb</p>
+      <div class="immerse-stats">
+        <div class="immerse-stat"><div class="is-val" style="color:var(--cyan);">42</div><div class="is-label">Resources</div></div>
+        <div class="immerse-stat"><div class="is-val" style="color:var(--accent);">7</div><div class="is-label">Categories</div></div>
+        <div class="immerse-stat"><div class="is-val" style="color:var(--green);" id="immerseWordCount">0</div><div class="is-label">Saved Words</div></div>
+        <div class="immerse-stat"><div class="is-val" style="color:var(--accent2);">🔥 5</div><div class="is-label">Day Streak</div></div>
+      </div>
+    </div>
+    -->
+    <span id="immerseWordCount" hidden>0</span>
+    <div class="rss-section">
+      <div class="rss-container">
+        <div class="rss-header">
+          <div class="rss-header-left"><div class="rss-icon">📡</div><div><h3>Chinese Daily News · RSS Reader</h3><div class="rss-sub">Vocab words are <span style="color:var(--accent2);font-weight:600;">highlighted in article text</span> — hover to see details, click ➕ to save</div></div></div>
+          <div class="rss-controls" id="rssFeedBtns"></div>
+        </div>
+        <div class="rss-body">
+          <div class="rss-list" id="rssList"><div class="rss-loading" id="rssLoading"><span class="spinner"></span> Loading feeds…</div></div>
+          <div class="rss-detail" id="rssDetail"><div class="rss-detail-empty"><div class="rde-icon">📰</div><div class="rde-text">Select an article to read<br><span style="font-size:0.7rem;color:#444;">Click any headline on the left</span></div></div></div>
+        </div>
+        <div class="rss-status-bar"><span><span class="rss-live-dot"></span> Auto-refresh · <span id="rssLastUpdate">—</span></span><span id="rssArticleCount">0 articles</span></div>
+      </div>
+    </div>
+    <div class="daily-challenge" style="margin-bottom:18px;">
+      <div class="dc-title">📋 Daily Immersion Challenge</div>
+      <div class="dc-task">Today: Watch a clip (5 min) → Read a <span class="cn">人民日报</span> headline → Save 5 new words from articles → Review flashcards</div>
+      <div class="dc-progress" id="dcProgress"></div>
+    </div>
+    <div class="immerse-cat-bar" id="immerseCatBar"></div>
+    <div class="resource-grid" id="resourceGrid"></div>
+  </div>
+
+  <!-- CYBERSEC -->
+  <div class="tab-content" id="tab-cybersec">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>🛡️ Cybersecurity Professional Vocabulary</h2>
+        <p>This tab is reserved for security terminology, SOC workflow language, incident response phrases, threat intel terms, and workplace Chinese for cyber roles.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- POLITICAL -->
+  <div class="tab-content" id="tab-political">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>🏛️ Political</h2>
+        <p>This tab is reserved for political vocabulary, policy language, government terms, debate phrases, media framing, and current-events reading support.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEN Z -->
+  <div class="tab-content" id="tab-genz">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>📱 Gen Z</h2>
+        <p>This tab is reserved for internet slang, memes, texting language, social media expressions, and casual youth vocabulary.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACADEMIA -->
+  <div class="tab-content" id="tab-academia">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>🎓 University Academia</h2>
+        <p>This tab is reserved for classroom language, office hours, research vocabulary, academic writing phrases, and campus life Chinese.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOURIST -->
+  <div class="tab-content" id="tab-tourist">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>🧭 Tourist Survival</h2>
+        <p>This tab is reserved for travel essentials like directions, booking, ordering, transportation, emergencies, and everyday visitor survival phrases.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOSSIP -->
+  <div class="tab-content" id="tab-gossip">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>🗣️ Gossip</h2>
+        <p>This tab is reserved for conversational gossip vocabulary, reactions, rumors, opinions, drama language, and informal spoken expressions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAKEUP -->
+  <div class="tab-content" id="tab-makeup">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>💄 Makeup</h2>
+        <p>This tab is reserved for beauty vocabulary, product names, skincare and makeup routines, tutorials, shopping language, and review phrases.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOD -->
+  <div class="tab-content" id="tab-food">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>🍜 Food</h2>
+        <p>This tab is reserved for ingredients, cooking terms, restaurant language, ordering phrases, regional dishes, and food culture vocabulary.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DROPSHIPPING -->
+  <div class="tab-content" id="tab-dropshipping">
+    <div class="topic-shell">
+      <div class="topic-card">
+        <h2>📦 Dropshipping</h2>
+        <p>This tab is reserved for e-commerce and supplier language, product sourcing, negotiation vocabulary, logistics, fulfillment, and sales terms.</p>
+      </div>
+    </div>
+  </div>
+  </div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- WORDLIST MODAL -->
+<div class="modal-overlay" id="wordlistModal">
+  <div class="modal" style="max-width:620px;">
+    <button class="modal-close" onclick="toggleWordlist()">✕</button>
+    <div class="wl-header-row">
+      <h2>📖 My Word List</h2>
+      <div class="wl-stats"><span id="wlTotalStat">0 words</span><span id="wlSourceStat">0 from RSS</span></div>
+    </div>
+    <div class="wl-filter-row" id="wlFilterRow"></div>
+    <div id="wlContent"></div>
+    <div class="wl-export-row">
+      <button class="btn-secondary btn-small" onclick="exportWordlist()">📋 Copy as Text</button>
+      <button class="btn-secondary btn-small" onclick="clearWordlist()">🗑 Clear All</button>
+      <button class="btn-primary btn-small" onclick="addAllToFlashcards()" style="margin-left:auto;">🃏 Sync All → Flashcards</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notifModal">
+  <div class="modal">
+    <button class="modal-close" onclick="toggleNotifs()">✕</button>
+    <h2>🔔 Notifications</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="padding:10px;background:var(--surface);border-radius:8px;font-size:0.8rem;">✅ Completed HSK 2 review!</div>
+      <div style="padding:10px;background:var(--surface);border-radius:8px;font-size:0.8rem;">🔥 23 day streak! 太棒了！</div>
+      <div style="padding:10px;background:var(--surface);border-radius:8px;font-size:0.8rem;">📡 RSS Reader: vocab now highlighted in text!</div>
+    </div>
+  </div>
+</div>
+    </main>
+  </div>
+
+  <script defer src="/js/app.js"></script>
+  <script defer src="/js/dashboard.js"></script>
+</body>
+</html>

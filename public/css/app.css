@@ -1,0 +1,43 @@
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 34%),
+    linear-gradient(180deg, #08111f 0%, #0f172a 42%, #0b1220 100%);
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.dashboard {
+  margin-top: 1.5rem;
+}
+
+.topic-shell {
+  padding: 0.5rem 0 1.5rem;
+}
+
+.topic-card {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 1.25rem;
+  background: rgba(15, 23, 42, 0.62);
+  padding: 1.25rem 1.25rem 1.1rem;
+}
+
+.topic-card h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.topic-card p {
+  margin: 0.75rem 0 0;
+  max-width: 60rem;
+  color: #94a3b8;
+  line-height: 1.7;
+}

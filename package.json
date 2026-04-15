@@ -30,6 +30,9 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "hanzi-writer": "^3.7.3",
+    "hanzi-writer-data": "^2.0.1",
+    "jieba-wasm": "^2.4.0",
     "mongoose": "^9.4.1"
   },
   "devDependencies": {

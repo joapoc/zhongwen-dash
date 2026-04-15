@@ -232,6 +232,20 @@ select{background:var(--surface);border:1px solid var(--border);border-radius:9p
 .immerse-cat-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
 .immerse-cat-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:14px;font-size:0.72rem;cursor:pointer;transition:0.2s;font-family:'Inter',sans-serif;font-weight:500;}
 .immerse-cat-btn.active,.immerse-cat-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,0.08);}
+.youtube-news-widget{margin-bottom:18px;padding:0;overflow:hidden;}
+.youtube-news-shell{display:flex;flex-direction:column;gap:14px;padding:18px;}
+.youtube-news-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.youtube-news-copy{display:flex;flex-direction:column;gap:4px;}
+.youtube-news-kicker{font-size:0.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.youtube-news-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.youtube-news-title-row strong{font-size:1rem;color:#fff;}
+.youtube-news-live-tag{font-size:0.62rem;padding:4px 8px;border-radius:999px;background:rgba(230,57,70,0.13);color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;}
+.youtube-news-sub{font-size:0.74rem;color:var(--muted);}
+.youtube-news-player{position:relative;border-radius:14px;overflow:hidden;background:#050608;border:1px solid var(--border);aspect-ratio:16/9;box-shadow:0 14px 36px rgba(0,0,0,0.32);}
+.youtube-news-player iframe{width:100%;height:100%;border:0;display:block;}
+.youtube-news-channel-row{display:flex;gap:8px;flex-wrap:wrap;}
+.youtube-news-channel-btn{background:var(--surface);border:1px solid var(--border);color:#bbb;padding:8px 12px;border-radius:999px;font-size:0.72rem;cursor:pointer;transition:0.2s;font-family:'Inter',sans-serif;font-weight:600;}
+.youtube-news-channel-btn:hover,.youtube-news-channel-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(230,57,70,0.1);}
 .resource-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:0.3s;cursor:pointer;}
 .resource-card:hover{border-color:var(--cyan);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
 .resource-thumb{height:100px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;overflow:hidden;}
@@ -514,6 +528,9 @@ select{background:var(--surface);border:1px solid var(--border);border-radius:9p
       <div class="dc-title">📋 Daily Immersion Challenge</div>
       <div class="dc-task">Today: Watch a clip (5 min) → Read a <span class="cn">人民日报</span> headline → Save 5 new words from articles → Review flashcards</div>
       <div class="dc-progress" id="dcProgress"></div>
+    </div>
+    <div class="widget youtube-news-widget" data-keywords="youtube news live video tv stream immersive">
+      <div class="youtube-news-shell" id="youtubeNewsWidget"></div>
     </div>
     <div class="immerse-cat-bar" id="immerseCatBar"></div>
     <div class="resource-grid" id="resourceGrid"></div>
@@ -889,7 +906,43 @@ function loadAllFeeds(){if(rssLoaded)return;allRssArticles=[];feedsLoaded=0;feed
 // ===== IMMERSE RESOURCES =====
 var immerseResources=[{name:'哔哩哔哩 Bilibili',cat:'video',icon:'📱',color:'#38bdf8',desc:'China\'s biggest video community.',tags:['video','social'],level:'easy',url:'https://www.bilibili.com/',tip:'Search 学中文 for learner content.'},{name:'CCTV 中文国际',cat:'tv',icon:'📺',color:'#e63946',desc:'China\'s main state broadcaster.',tags:['live','video'],level:'hard',url:'https://tv.cctv.com/live/cctv4/',tip:'Watch 新闻联播 for standardized Mandarin.'},{name:'微博 Weibo',cat:'social',icon:'💬',color:'#f472b6',desc:'China\'s Twitter — real opinions.',tags:['social','text'],level:'med',url:'https://weibo.com/',tip:'Follow @人民日报 and check 热搜.'},{name:'知乎 Zhihu',cat:'social',icon:'❓',color:'#38bdf8',desc:'China\'s Quora. Great for reading.',tags:['text','community'],level:'hard',url:'https://www.zhihu.com/',tip:'Search topics you know well.'},{name:'喜马拉雅 Ximalaya',cat:'audio',icon:'🎧',color:'#a78bfa',desc:'Biggest podcast platform.',tags:['audio','podcast'],level:'med',url:'https://www.ximalaya.com/',tip:'Start with 儿童故事.'},{name:'Mandarin Corner',cat:'learning',icon:'🎓',color:'#34d399',desc:'YouTube street interviews and lessons.',tags:['video','learning'],level:'easy',url:'https://www.youtube.com/@MandarinCorner',tip:'Street interviews are amazing.'}];
 var immerseCats=[{id:'all',label:'🌏 All'},{id:'tv',label:'📺 TV'},{id:'video',label:'▶️ Video'},{id:'social',label:'💬 Social'},{id:'audio',label:'🎧 Audio'},{id:'learning',label:'🎓 Learning'}];var activeImmerseCat='all';
-function renderImmerse(){renderImmerseCats();renderResources();renderDCProgress();}
+var YOUTUBE_NEWS_STORAGE_KEY='hanzi-dash:immerse-youtube-news-channel';
+var youtubeNewsChannels=[
+  {id:'feed-1',label:'Feed 1',name:'Live News Feed 1',videoId:'BOy2xDU1LC8',url:'https://www.youtube.com/watch?v=BOy2xDU1LC8'},
+  {id:'feed-2',label:'Feed 2',name:'Live News Feed 2',videoId:'TsccmbyNk6g',url:'https://www.youtube.com/watch?v=TsccmbyNk6g'},
+  {id:'feed-3',label:'Feed 3',name:'Live News Feed 3',videoId:'fN9uYWCjQaw',url:'https://www.youtube.com/watch?v=fN9uYWCjQaw'},
+  {id:'feed-4',label:'Feed 4',name:'Live News Feed 4',videoId:'6IquAgfvYmc',url:'https://www.youtube.com/watch?v=6IquAgfvYmc'}
+];
+var activeYoutubeNewsChannelId=loadYoutubeNewsChannel();
+function loadYoutubeNewsChannel(){
+  try{
+    var savedId=localStorage.getItem(YOUTUBE_NEWS_STORAGE_KEY);
+    var match=youtubeNewsChannels.find(function(channel){return channel.id===savedId;});
+    return match?match.id:youtubeNewsChannels[0].id;
+  }catch(err){
+    return youtubeNewsChannels[0].id;
+  }
+}
+function saveYoutubeNewsChannel(channelId){
+  try{
+    localStorage.setItem(YOUTUBE_NEWS_STORAGE_KEY,channelId);
+  }catch(err){}
+}
+function getActiveYoutubeNewsChannel(){
+  return youtubeNewsChannels.find(function(channel){return channel.id===activeYoutubeNewsChannelId;})||youtubeNewsChannels[0];
+}
+function setYoutubeNewsChannel(channelId){
+  activeYoutubeNewsChannelId=channelId;
+  saveYoutubeNewsChannel(channelId);
+  renderYoutubeNewsWidget();
+}
+function renderYoutubeNewsWidget(){
+  var mount=document.getElementById('youtubeNewsWidget');
+  if(!mount)return;
+  var activeChannel=getActiveYoutubeNewsChannel();
+  mount.innerHTML='<div class="youtube-news-head"><div class="youtube-news-copy"><div class="youtube-news-kicker">Persistent Live News</div><div class="youtube-news-title-row"><strong>'+activeChannel.name+'</strong><span class="youtube-news-live-tag">Live</span></div><div class="youtube-news-sub">Your selected channel stays active after reload.</div></div><a class="btn-secondary btn-small" href="'+activeChannel.url+'" target="_blank" rel="noopener noreferrer">Open on YouTube</a></div><div class="youtube-news-player"><iframe src="https://www.youtube.com/embed/'+activeChannel.videoId+'?autoplay=0&mute=1&playsinline=1&rel=0&modestbranding=1" title="'+activeChannel.name+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><div class="youtube-news-channel-row">'+youtubeNewsChannels.map(function(channel){return '<button class="youtube-news-channel-btn'+(channel.id===activeChannel.id?' active':'')+'" onclick="setYoutubeNewsChannel(\''+channel.id+'\')">'+channel.label+'</button>';}).join('')+'</div>';
+}
+function renderImmerse(){renderImmerseCats();renderYoutubeNewsWidget();renderResources();renderDCProgress();}
 function renderImmerseCats(){var bar=document.getElementById('immerseCatBar');bar.innerHTML='';immerseCats.forEach(function(cat){var btn=document.createElement('button');btn.className='immerse-cat-btn'+(activeImmerseCat===cat.id?' active':'');btn.textContent=cat.label;btn.onclick=function(){activeImmerseCat=cat.id;renderImmerseCats();renderResources();};bar.appendChild(btn);});}
 function renderResources(){var grid=document.getElementById('resourceGrid');grid.innerHTML='';var filtered=activeImmerseCat==='all'?immerseResources:immerseResources.filter(function(r){return r.cat===activeImmerseCat;});filtered.forEach(function(res){var lc=res.level==='easy'?'level-easy':res.level==='med'?'level-med':'level-hard';var ll=res.level==='easy'?'Beginner':res.level==='med'?'Intermediate':'Advanced';var tags=res.tags.map(function(t){var tc=t==='video'?'type-video':t==='text'?'type-text':t==='audio'?'type-audio':t==='social'?'type-social':t==='live'?'type-live':'';return'<span class="resource-tag '+tc+'">'+t+'</span>';}).join('')+'<span class="resource-tag '+lc+'">'+ll+'</span>';var card=document.createElement('div');card.className='resource-card';card.innerHTML='<div class="resource-thumb" style="background:'+res.color+'11;"><span style="position:relative;">'+res.icon+'</span></div><div class="resource-body"><div class="resource-name">'+res.icon+' '+res.name+'</div><div class="resource-desc">'+res.desc+'</div><div class="resource-tags">'+tags+'</div><div style="background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:0.68rem;color:var(--accent2);line-height:1.5;">💡 '+res.tip+'</div><a class="resource-link" href="'+res.url+'" target="_blank" rel="noopener noreferrer">🔗 Open →</a></div>';grid.appendChild(card);});}
 function renderDCProgress(){var c=document.getElementById('dcProgress');if(!c)return;c.innerHTML='';var tasks=['📺 Watch','📰 Read','💾 Save 5','🃏 Review'];if(!window._dcDone)window._dcDone=[false,false,false,false];tasks.forEach(function(t,i){var dot=document.createElement('div');dot.className='dc-dot'+(window._dcDone[i]?' done':'');dot.textContent=window._dcDone[i]?'✓':'';dot.title=t;dot.onclick=function(){window._dcDone[i]=!window._dcDone[i];renderDCProgress();};c.appendChild(dot);if(i<tasks.length-1){var label=document.createElement('span');label.style.cssText='font-size:0.6rem;color:var(--muted);';label.textContent=t;c.appendChild(label);}});}

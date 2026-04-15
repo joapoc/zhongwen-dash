@@ -53,6 +53,7 @@
   <button class="tab-btn" onclick="switchTab('study',this)">📚 Study</button>
   <button class="tab-btn" onclick="switchTab('reference',this)">📖 Reference</button>
   <button class="tab-btn" onclick="switchTab('practice',this)">✍️ Practice</button>
+  <button class="tab-btn" onclick="switchTab('handwriting',this)">🖌️ Handwriting</button>
   <button class="tab-btn" onclick="switchTab('games',this)">🎮 Games</button>
   <button class="tab-btn" onclick="switchTab('immerse',this)">🌏 Immerse</button>
   <button class="tab-btn" onclick="switchTab('cybersec',this)">🛡️ Cybersec</button>
@@ -140,6 +141,17 @@
   </div>
 
   <!-- GAMES -->
+  <div class="tab-content" id="tab-handwriting">
+    <div class="topic-shell">
+      <div class="topic-hero">
+        <h2>🖌️ Handwriting Lab</h2>
+        <p>Practice full characters on a rice grid, review stroke order, browse radicals, and score each rep as you work through HSK sets.</p>
+      </div>
+      <div class="grid" id="widgets-handwriting"></div>
+    </div>
+  </div>
+
+  <!-- GAMES -->
   <div class="tab-content" id="tab-games">
     <div class="grid">
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🎴</div>Memory Match</div><div style="display:flex;gap:4px;align-items:center;"><span class="tag" id="memScore" style="background:rgba(244,114,182,0.13);color:var(--pink);">Moves: 0</span><button class="btn-secondary btn-small" onclick="initMemory()">↻</button></div></div><div class="mem-grid" id="memGrid"></div></div>
@@ -182,6 +194,9 @@
       <div class="dc-task">Today: Watch a clip (5 min) → Read a <span class="cn">人民日报</span> headline → Save 5 new words from articles → Review flashcards</div>
       <div class="dc-progress" id="dcProgress"></div>
     </div>
+    <div class="widget youtube-news-widget" data-keywords="youtube news live video tv stream immersive">
+      <div class="youtube-news-shell" id="youtubeNewsWidget"></div>
+    </div>
     <div class="immerse-cat-bar" id="immerseCatBar"></div>
     <div class="resource-grid" id="resourceGrid"></div>
   </div>
@@ -189,90 +204,99 @@
   <!-- CYBERSEC -->
   <div class="tab-content" id="tab-cybersec">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>🛡️ Cybersecurity Professional Vocabulary</h2>
-        <p>This tab is reserved for security terminology, SOC workflow language, incident response phrases, threat intel terms, and workplace Chinese for cyber roles.</p>
+        <p>Network security, threat intel, fraud, disinfo, and monitoring language for real-world Chinese cyber content.</p>
       </div>
+      <div class="grid" data-topic-widgets="cyber"></div>
     </div>
   </div>
 
   <!-- POLITICAL -->
   <div class="tab-content" id="tab-political">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>🏛️ Political</h2>
-        <p>This tab is reserved for political vocabulary, policy language, government terms, debate phrases, media framing, and current-events reading support.</p>
+        <p>Political vocabulary, public-opinion language, foreign-policy phrases, and internet-era political slang.</p>
       </div>
+      <div class="grid" data-topic-widgets="political"></div>
     </div>
   </div>
 
   <!-- GEN Z -->
   <div class="tab-content" id="tab-genz">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>📱 Gen Z</h2>
-        <p>This tab is reserved for internet slang, memes, texting language, social media expressions, and casual youth vocabulary.</p>
+        <p>Slang, burnout vocabulary, social media reactions, and youth discourse around work, pressure, money, and coping.</p>
       </div>
+      <div class="grid" data-topic-widgets="genz"></div>
     </div>
   </div>
 
   <!-- ACADEMIA -->
   <div class="tab-content" id="tab-academia">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>🎓 University Academia</h2>
-        <p>This tab is reserved for classroom language, office hours, research vocabulary, academic writing phrases, and campus life Chinese.</p>
+        <p>University exchange, scholarships, applications, research communication, and campus survival vocabulary.</p>
       </div>
+      <div class="grid" data-topic-widgets="academia"></div>
     </div>
   </div>
 
   <!-- TOURIST -->
   <div class="tab-content" id="tab-tourist">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>🧭 Tourist Survival</h2>
-        <p>This tab is reserved for travel essentials like directions, booking, ordering, transportation, emergencies, and everyday visitor survival phrases.</p>
+        <p>Travel survival phrases, emergency numbers, app setup, and practical on-the-ground Chinese for getting around China.</p>
       </div>
+      <div class="grid" data-topic-widgets="tourist"></div>
     </div>
   </div>
 
   <!-- GOSSIP -->
   <div class="tab-content" id="tab-gossip">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>🗣️ Gossip</h2>
-        <p>This tab is reserved for conversational gossip vocabulary, reactions, rumors, opinions, drama language, and informal spoken expressions.</p>
+        <p>Internet drama vocabulary, reaction phrases, rumor language, and the words people use when the tea starts spilling.</p>
       </div>
+      <div class="grid" data-topic-widgets="gossip"></div>
     </div>
   </div>
 
   <!-- MAKEUP -->
   <div class="tab-content" id="tab-makeup">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>💄 Makeup</h2>
-        <p>This tab is reserved for beauty vocabulary, product names, skincare and makeup routines, tutorials, shopping language, and review phrases.</p>
+        <p>Beauty and skincare vocabulary for shopping, reviews, ingredient talk, routines, and Chinese beauty content.</p>
       </div>
+      <div class="grid" data-topic-widgets="makeup"></div>
     </div>
   </div>
 
   <!-- FOOD -->
   <div class="tab-content" id="tab-food">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>🍜 Food</h2>
-        <p>This tab is reserved for ingredients, cooking terms, restaurant language, ordering phrases, regional dishes, and food culture vocabulary.</p>
+        <p>Ordering phrases, hot pot vocabulary, cuisine families, spice calibration, and dining survival language.</p>
       </div>
+      <div class="grid" data-topic-widgets="food"></div>
     </div>
   </div>
 
   <!-- DROPSHIPPING -->
   <div class="tab-content" id="tab-dropshipping">
     <div class="topic-shell">
-      <div class="topic-card">
+      <div class="topic-hero">
         <h2>📦 Dropshipping</h2>
-        <p>This tab is reserved for e-commerce and supplier language, product sourcing, negotiation vocabulary, logistics, fulfillment, and sales terms.</p>
+        <p>E-commerce sourcing vocabulary, supplier negotiation phrases, legal-risk awareness, and cross-border operations language.</p>
       </div>
+      <div class="grid" data-topic-widgets="dropship"></div>
     </div>
   </div>
   </div>
@@ -313,5 +337,6 @@
 
   <script defer src="/js/app.js"></script>
   <script defer src="/js/dashboard.js"></script>
+  <script defer src="/js/topic-widgets.js"></script>
 </body>
 </html>

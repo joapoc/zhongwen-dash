@@ -2,6 +2,7 @@ import express from "express";
 import path from "node:path";
 
 import { ankiRoutes } from "../modules/anki";
+import { languageRoutes } from "../modules/language";
 import apiRoutes from "./routes/api";
 import webRoutes from "./routes/web";
 import { ensureCacheFile } from "./services/file-cache";
@@ -21,6 +22,7 @@ ensureCacheFile().catch(() => {
 
 app.use("/api", apiRoutes);
 app.use("/api/anki", ankiRoutes);
+app.use("/api/language", languageRoutes);
 app.use("/", webRoutes);
 
 export default app;

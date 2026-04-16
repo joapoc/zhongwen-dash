@@ -54,6 +54,7 @@
   <button class="tab-btn" onclick="switchTab('reference',this)">📖 Reference</button>
   <button class="tab-btn" onclick="switchTab('practice',this)">✍️ Practice</button>
   <button class="tab-btn" onclick="switchTab('handwriting',this)">🖌️ Handwriting</button>
+  <button class="tab-btn" onclick="switchTab('textclipper',this)">📎 Text Reader/Clipper</button>
   <button class="tab-btn" onclick="switchTab('games',this)">🎮 Games</button>
   <button class="tab-btn" onclick="switchTab('immerse',this)">🌏 Immerse</button>
   <button class="tab-btn" onclick="switchTab('cybersec',this)">🛡️ Cybersec</button>
@@ -148,6 +149,16 @@
         <p>Practice full characters on a rice grid, review stroke order, browse radicals, and score each rep as you work through HSK sets.</p>
       </div>
       <div class="grid" id="widgets-handwriting"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-textclipper">
+    <div class="topic-shell">
+      <div class="topic-hero">
+        <h2>📎 Text Reader / Clipper</h2>
+        <p>Paste Chinese text, click words for pinyin and meaning, clip useful vocab with sentence context, and build a focused mini bank while you read.</p>
+      </div>
+      <div id="widgets-textclipper"></div>
     </div>
   </div>
 
@@ -337,6 +348,7 @@
 
   <script defer src="/js/app.js"></script>
   <script defer src="/js/dashboard.js"></script>
+  <script defer src="/js/text-clipper.js"></script>
   <script defer src="/js/topic-widgets.js"></script>
 </body>
 </html>

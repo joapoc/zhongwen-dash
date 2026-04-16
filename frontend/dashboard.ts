@@ -541,45 +541,233 @@ function copyCyberQuery(){
   });
 }
 
-var HW={level:1,idx:0,strokes:[],currentStroke:[],isDrawing:false,brushSize:5,brushColor:'#ffffff',gridType:'rice',showGhost:true,ghostOpacity:0.07,hideChar:false,stats:{total:0,again:0,hard:0,good:0,easy:0},practiced:{},RES:400,ready:false};
+var HW={level:'1-2',idx:0,strokes:[],currentStroke:[],isDrawing:false,brushSize:5,brushColor:'#ffffff',gridType:'rice',showGhost:true,ghostOpacity:0.07,hideChar:false,stats:{total:0,again:0,hard:0,good:0,easy:0},practiced:{},RES:400,ready:false,loading:false,error:'',levels:[],itemsByLevel:{},loadPromise:null,audioEl:null,strokeCache:{},anim:{active:false,auto:false,paths:[],medians:[],revealed:0,trace:[],timer:null,speed:40,char:''}};
 var HSK_CHARS={1:[{ch:'人',py:'ren',en:'person',sk:2,rad:'人',ex:['人们','大人','人民']},{ch:'大',py:'da',en:'big',sk:3,rad:'大',ex:['大家','大学','很大']},{ch:'小',py:'xiao',en:'small',sk:3,rad:'小',ex:['小时','小心','大小']},{ch:'中',py:'zhong',en:'middle; China',sk:4,rad:'丨',ex:['中国','中间','中文']},{ch:'我',py:'wo',en:'I; me',sk:7,rad:'戈',ex:['我们','我的']},{ch:'你',py:'ni',en:'you',sk:7,rad:'亻',ex:['你好','你们']},{ch:'他',py:'ta',en:'he; him',sk:5,rad:'亻',ex:['他们','其他']},{ch:'是',py:'shi',en:'is; am; are',sk:9,rad:'日',ex:['是的','不是','但是']},{ch:'有',py:'you',en:'have; exist',sk:6,rad:'月',ex:['有人','没有','有的']},{ch:'学',py:'xue',en:'study; learn',sk:8,rad:'子',ex:['学生','学校','学习']},{ch:'好',py:'hao',en:'good; well',sk:6,rad:'女',ex:['好的','好看','你好']},{ch:'看',py:'kan',en:'look; see',sk:9,rad:'目',ex:['看书','好看','看见']},{ch:'说',py:'shuo',en:'speak; say',sk:9,rad:'讠',ex:['说话','听说']},{ch:'天',py:'tian',en:'day; sky',sk:4,rad:'大',ex:['天气','今天','每天']},{ch:'水',py:'shui',en:'water',sk:4,rad:'水',ex:['水果','喝水']},{ch:'火',py:'huo',en:'fire',sk:4,rad:'火',ex:['火车','火锅']},{ch:'月',py:'yue',en:'moon; month',sk:4,rad:'月',ex:['月亮','一月']},{ch:'日',py:'ri',en:'sun; day',sk:4,rad:'日',ex:['日本','生日']},{ch:'山',py:'shan',en:'mountain',sk:3,rad:'山',ex:['山上','上山']},{ch:'口',py:'kou',en:'mouth; opening',sk:3,rad:'口',ex:['人口','口语']}],2:[{ch:'走',py:'zou',en:'walk; go',sk:7,rad:'走',ex:['走路','走开']},{ch:'跑',py:'pao',en:'run',sk:12,rad:'足',ex:['跑步','跑道']},{ch:'快',py:'kuai',en:'fast; happy',sk:7,rad:'忄',ex:['快乐','很快']},{ch:'慢',py:'man',en:'slow',sk:14,rad:'忄',ex:['慢慢','慢走']},{ch:'新',py:'xin',en:'new',sk:13,rad:'斤',ex:['新年','新闻']},{ch:'长',py:'chang',en:'long; grow',sk:4,rad:'长',ex:['长城','很长']},{ch:'高',py:'gao',en:'tall; high',sk:10,rad:'高',ex:['高兴','很高']},{ch:'远',py:'yuan',en:'far; distant',sk:7,rad:'辶',ex:['远处','很远']},{ch:'近',py:'jin',en:'near; close',sk:7,rad:'辶',ex:['附近','最近']},{ch:'早',py:'zao',en:'early; morning',sk:6,rad:'日',ex:['早上','早饭']},{ch:'晚',py:'wan',en:'late; evening',sk:11,rad:'日',ex:['晚上','晚饭']},{ch:'花',py:'hua',en:'flower; spend',sk:7,rad:'艹',ex:['花园','花钱']},{ch:'鸟',py:'niao',en:'bird',sk:5,rad:'鸟',ex:['小鸟','鸟类']},{ch:'鱼',py:'yu',en:'fish',sk:8,rad:'鱼',ex:['钓鱼','鱼肉']},{ch:'马',py:'ma',en:'horse',sk:3,rad:'马',ex:['马上','马路']},{ch:'黑',py:'hei',en:'black; dark',sk:12,rad:'黑',ex:['黑色','黑板']},{ch:'白',py:'bai',en:'white; plain',sk:5,rad:'白',ex:['白色','明白']},{ch:'红',py:'hong',en:'red',sk:6,rad:'纟',ex:['红色','红包']},{ch:'笑',py:'xiao',en:'laugh; smile',sk:10,rad:'竹',ex:['笑话','微笑']},{ch:'哭',py:'ku',en:'cry',sk:10,rad:'口',ex:['哭了','哭声']}],3:[{ch:'关',py:'guan',en:'close; relate',sk:6,rad:'八',ex:['关系','关心','关门']},{ch:'决',py:'jue',en:'decide',sk:6,rad:'冫',ex:['决定','解决']},{ch:'重',py:'zhong',en:'heavy; important',sk:9,rad:'里',ex:['重要','重新']},{ch:'特',py:'te',en:'special',sk:10,rad:'牜',ex:['特别','特点']},{ch:'变',py:'bian',en:'change',sk:8,rad:'又',ex:['变化','改变']},{ch:'发',py:'fa',en:'send; develop',sk:5,rad:'又',ex:['发展','发现']},{ch:'经',py:'jing',en:'pass through',sk:8,rad:'纟',ex:['经过','经验','已经']},{ch:'世',py:'shi',en:'world; era',sk:5,rad:'一',ex:['世界','世纪']},{ch:'界',py:'jie',en:'boundary; world',sk:9,rad:'田',ex:['世界','边界']},{ch:'历',py:'li',en:'experience; calendar',sk:4,rad:'厂',ex:['历史','经历']},{ch:'城',py:'cheng',en:'city; wall',sk:9,rad:'土',ex:['城市','长城']},{ch:'风',py:'feng',en:'wind; style',sk:4,rad:'风',ex:['风景','风格']},{ch:'雨',py:'yu',en:'rain',sk:8,rad:'雨',ex:['下雨','雨水']},{ch:'雪',py:'xue',en:'snow',sk:11,rad:'雨',ex:['下雪','雪花']},{ch:'河',py:'he',en:'river',sk:8,rad:'氵',ex:['河流','银河']},{ch:'海',py:'hai',en:'sea; ocean',sk:10,rad:'氵',ex:['大海','海洋','上海']},{ch:'树',py:'shu',en:'tree',sk:9,rad:'木',ex:['树木','大树']},{ch:'草',py:'cao',en:'grass',sk:9,rad:'艹',ex:['草地','花草']},{ch:'春',py:'chun',en:'spring',sk:9,rad:'日',ex:['春天','春节']},{ch:'秋',py:'qiu',en:'autumn',sk:9,rad:'禾',ex:['秋天','秋风']}],4:[{ch:'竞',py:'jing',en:'compete',sk:10,rad:'立',ex:['竞争','竞赛']},{ch:'争',py:'zheng',en:'strive; dispute',sk:6,rad:'刀',ex:['竞争','争论']},{ch:'积',py:'ji',en:'accumulate',sk:10,rad:'禾',ex:['积极','积累']},{ch:'极',py:'ji',en:'extreme; pole',sk:7,rad:'木',ex:['积极','极其']},{ch:'观',py:'guan',en:'observe; view',sk:6,rad:'又',ex:['观察','观点']},{ch:'察',py:'cha',en:'inspect',sk:14,rad:'宀',ex:['观察','察觉']},{ch:'推',py:'tui',en:'push; recommend',sk:11,rad:'扌',ex:['推荐','推动']},{ch:'严',py:'yan',en:'strict',sk:7,rad:'一',ex:['严格','严重']},{ch:'格',py:'ge',en:'standard; grid',sk:10,rad:'木',ex:['严格','风格']},{ch:'温',py:'wen',en:'warm; temperature',sk:12,rad:'氵',ex:['温度','温暖']},{ch:'度',py:'du',en:'degree; measure',sk:9,rad:'广',ex:['温度','速度','制度']},{ch:'顺',py:'shun',en:'smooth; follow',sk:9,rad:'页',ex:['顺利','顺序']},{ch:'感',py:'gan',en:'feel; sense',sk:13,rad:'心',ex:['感觉','感谢','感动']},{ch:'觉',py:'jue',en:'feel; realize',sk:9,rad:'见',ex:['感觉','觉得']},{ch:'缺',py:'que',en:'lack; missing',sk:10,rad:'缶',ex:['缺乏','缺少']},{ch:'尊',py:'zun',en:'respect',sk:12,rad:'寸',ex:['尊重','尊敬']},{ch:'敬',py:'jing',en:'respect; salute',sk:12,rad:'攵',ex:['尊敬','敬意']},{ch:'鼓',py:'gu',en:'drum; encourage',sk:13,rad:'鼓',ex:['鼓励','鼓掌']},{ch:'励',py:'li',en:'encourage',sk:7,rad:'力',ex:['鼓励','激励']},{ch:'降',py:'jiang',en:'fall; reduce',sk:8,rad:'阝',ex:['降低','下降']}],5:[{ch:'概',py:'gai',en:'approximate; general',sk:13,rad:'木',ex:['大概','概念']},{ch:'念',py:'nian',en:'think of; read',sk:8,rad:'心',ex:['概念','纪念','想念']},{ch:'策',py:'ce',en:'plan; strategy',sk:12,rad:'竹',ex:['政策','策略']},{ch:'略',py:'lue',en:'strategy; brief',sk:11,rad:'田',ex:['策略','省略']},{ch:'贡',py:'gong',en:'tribute; contribute',sk:7,rad:'贝',ex:['贡献','进贡']},{ch:'献',py:'xian',en:'offer; dedicate',sk:13,rad:'犬',ex:['贡献','献身']},{ch:'维',py:'wei',en:'maintain',sk:11,rad:'纟',ex:['维护','思维']},{ch:'护',py:'hu',en:'protect; guard',sk:7,rad:'扌',ex:['维护','保护','护士']},{ch:'促',py:'cu',en:'urge; promote',sk:9,rad:'亻',ex:['促进','催促']},{ch:'效',py:'xiao',en:'effect; imitate',sk:10,rad:'攵',ex:['效果','效率']},{ch:'率',py:'lu',en:'rate; lead',sk:11,rad:'玄',ex:['效率','概率']},{ch:'创',py:'chuang',en:'create',sk:6,rad:'刂',ex:['创造','创新']},{ch:'造',py:'zao',en:'make; build',sk:10,rad:'辶',ex:['创造','制造']},{ch:'承',py:'cheng',en:'bear; undertake',sk:8,rad:'手',ex:['承担','继承']},{ch:'担',py:'dan',en:'carry; bear',sk:8,rad:'扌',ex:['承担','负担']},{ch:'协',py:'xie',en:'assist; coordinate',sk:6,rad:'十',ex:['协调','协会']},{ch:'调',py:'tiao',en:'adjust; investigate',sk:10,rad:'讠',ex:['协调','调查']},{ch:'象',py:'xiang',en:'elephant; image',sk:11,rad:'豕',ex:['象征','大象','想象']},{ch:'征',py:'zheng',en:'journey; sign',sk:8,rad:'彳',ex:['象征','征求']},{ch:'幸',py:'xing',en:'fortunate; lucky',sk:8,rad:'干',ex:['幸福','幸运']}],6:[{ch:'践',py:'jian',en:'tread; practice',sk:12,rad:'足',ex:['实践','践行']},{ch:'摧',py:'cui',en:'destroy',sk:14,rad:'扌',ex:['摧毁','摧残']},{ch:'毁',py:'hui',en:'destroy; ruin',sk:13,rad:'殳',ex:['摧毁','毁灭']},{ch:'颠',py:'dian',en:'top; upset',sk:16,rad:'页',ex:['颠覆','颠倒']},{ch:'覆',py:'fu',en:'cover; overturn',sk:18,rad:'覀',ex:['颠覆','覆盖']},{ch:'凝',py:'ning',en:'congeal; concentrate',sk:16,rad:'冫',ex:['凝聚','凝固']},{ch:'聚',py:'ju',en:'gather; assemble',sk:14,rad:'耳',ex:['凝聚','聚会','聚集']},{ch:'释',py:'shi',en:'release; explain',sk:12,rad:'采',ex:['解释','释放']},{ch:'奠',py:'dian',en:'establish',sk:12,rad:'大',ex:['奠基','奠定']},{ch:'遏',py:'e',en:'check; restrain',sk:12,rad:'辶',ex:['遏制','遏止']},{ch:'蕴',py:'yun',en:'contain; accumulate',sk:15,rad:'艹',ex:['蕴含','底蕴']},{ch:'诚',py:'cheng',en:'sincere; honest',sk:8,rad:'讠',ex:['诚实','真诚']},{ch:'挚',py:'zhi',en:'sincere; ardent',sk:10,rad:'手',ex:['真挚','挚友']},{ch:'渊',py:'yuan',en:'deep; profound',sk:11,rad:'氵',ex:['渊博','深渊']},{ch:'博',py:'bo',en:'extensive; learned',sk:12,rad:'十',ex:['渊博','博物馆']},{ch:'谨',py:'jin',en:'cautious; careful',sk:13,rad:'讠',ex:['谨慎','谨记']},{ch:'慎',py:'shen',en:'careful; cautious',sk:13,rad:'忄',ex:['谨慎','慎重']},{ch:'坦',py:'tan',en:'flat; frank',sk:8,rad:'土',ex:['坦率','坦白']},{ch:'恳',py:'ken',en:'sincere; earnest',sk:10,rad:'心',ex:['恳切','诚恳']},{ch:'瞻',py:'zhan',en:'gaze; look forward',sk:18,rad:'目',ex:['瞻仰','瞻望']}]};
 var HW_RADICALS=[{ch:'亻',name:'person',ex:'他你们'},{ch:'氵',name:'water',ex:'河海洋'},{ch:'扌',name:'hand',ex:'打扫推'},{ch:'口',name:'mouth',ex:'吃喝听'},{ch:'女',name:'woman',ex:'她好妈'},{ch:'木',name:'tree',ex:'树林桌'},{ch:'火',name:'fire',ex:'烤热煮'},{ch:'土',name:'earth',ex:'地城墙'},{ch:'心',name:'heart',ex:'想感思'},{ch:'讠',name:'speech',ex:'说话语'},{ch:'日',name:'sun',ex:'明早晚'},{ch:'月',name:'moon',ex:'朋期脸'},{ch:'纟',name:'silk',ex:'红线绿'},{ch:'辶',name:'walk',ex:'进远道'},{ch:'艹',name:'grass',ex:'花草药'},{ch:'宀',name:'roof',ex:'家安室'},{ch:'目',name:'eye',ex:'看眼睛'},{ch:'足',name:'foot',ex:'跑跳路'},{ch:'钅',name:'metal',ex:'钱铁银'},{ch:'页',name:'page',ex:'顺须颜'},{ch:'竹',name:'bamboo',ex:'笑笔算'},{ch:'雨',name:'rain',ex:'雪雷霜'},{ch:'饣',name:'food',ex:'饭饱饿'},{ch:'刂',name:'knife',ex:'别利到'}];
 var HW_STROKE_RULES=[{rule:'Top -> Bottom',cn:'从上到下',ex:'三 言'},{rule:'Left -> Right',cn:'从左到右',ex:'你 他'},{rule:'Horizontal -> Vertical',cn:'先横后竖',ex:'十 丰'},{rule:'Left-fall -> Right-fall',cn:'先撇后捺',ex:'人 八'},{rule:'Outside -> Inside',cn:'先外后内',ex:'月 同'},{rule:'Inside -> Seal',cn:'先进后关',ex:'国 回'},{rule:'Center -> Sides',cn:'先中间后两边',ex:'小 水'},{rule:'Horizontal cross first',cn:'横撇交叉先横',ex:'右 有'}];
 var HW_BASIC_STROKES=[{name:'横 heng',desc:'Horizontal',ch:'一'},{name:'竖 shu',desc:'Vertical',ch:'丨'},{name:'撇 pie',desc:'Left-fall',ch:'丿'},{name:'捺 na',desc:'Right-fall',ch:'㇏'},{name:'点 dian',desc:'Dot',ch:'丶'},{name:'提 ti',desc:'Rising',ch:'㇀'},{name:'折 zhe',desc:'Turn',ch:'㇆'},{name:'钩 gou',desc:'Hook',ch:'亅'}];
-function hwGetChars(){return HSK_CHARS[HW.level]||[];}
+function hwGetLevelKey(level){return String(level);}
+function hwGetLevelLabel(level){return 'HSK '+String(level);}
+function hwGetLevels(){return Array.isArray(HW.levels)?HW.levels:[];}
+function hwEscapeJs(value){return String(value||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function hwGetChars(){return HW.itemsByLevel[hwGetLevelKey(HW.level)]||[];}
 function hwGetCurrentChar(){var chars=hwGetChars();return chars[HW.idx]||chars[0]||null;}
 function hwRenderSection(icon,title,tag,body,extraClass){return '<div class="widget'+(extraClass?' '+extraClass:'')+'"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(34,211,238,0.13);color:var(--cyan);">'+icon+'</div>'+title+'</div>'+(tag?'<span class="tag" style="background:rgba(34,211,238,0.13);color:var(--cyan);">'+tag+'</span>':'')+'</div>'+body+'</div>';}
-function renderHandwritingZone(){var h='';h+='<div class="hsk-tabs">';[1,2,3,4,5,6].forEach(function(l){h+='<div class="hsk-tab'+(l===HW.level?' active':'')+'" data-level="'+l+'" onclick="hwSetLevel('+l+')">HSK '+l+' <span style="opacity:.5;font-size:.6rem">('+(HSK_CHARS[l]?HSK_CHARS[l].length:0)+')</span></div>';});h+='</div>';h+='<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted)"><span id="hwProgressLabel">0/0 practiced · 0%</span><span>HSK '+HW.level+'</span></div><div class="hw-progress"><div class="hw-progress-fill" id="hwProgressFill" style="width:0%"></div></div></div>';h+=hwRenderSection('✍️','Practice Canvas','Rice Grid','<div style="text-align:center;padding:16px 12px 8px"><div style="display:flex;align-items:center;justify-content:center;gap:10px"><div class="hw-target cn" id="hwCharTarget">人</div><div class="hw-tool-btn" id="hwHideBtn" onclick="hwToggleHide()" title="Hide/Show character" style="width:28px;height:28px;font-size:.7rem">🙈</div></div><div class="hw-pinyin" id="hwCharPy">ren</div><div class="hw-meaning" id="hwCharEn">person</div><div class="hw-meta" id="hwCharMeta"></div><div class="hw-examples" id="hwCharExamples"></div></div><div class="hw-canvas-outer"><div class="hw-canvas-wrap"><canvas class="hw-canvas" id="hwCanvas"></canvas></div></div><div class="hw-stroke-count" id="hwStrokeCount">Strokes: <b>0</b></div><div class="hw-toolbar"><div class="hw-tool-btn" onclick="hwUndo()" title="Undo stroke">↩</div><div class="hw-tool-btn" onclick="hwClear()" title="Clear all">🗑</div><div class="hw-tool-btn" onclick="hwRandom()" title="Random character">🎲</div><div style="width:1px;height:20px;background:var(--border)"></div><div class="hw-color-dot active" data-color="#ffffff" style="background:#ffffff" onclick="hwSetColor(\'#ffffff\')"></div><div class="hw-color-dot" data-color="#00ff88" style="background:#00ff88" onclick="hwSetColor(\'#00ff88\')"></div><div class="hw-color-dot" data-color="#f87171" style="background:#f87171" onclick="hwSetColor(\'#f87171\')"></div><div class="hw-color-dot" data-color="#38bdf8" style="background:#38bdf8" onclick="hwSetColor(\'#38bdf8\')"></div><div style="width:1px;height:20px;background:var(--border)"></div><div class="hw-brush-row"><span>🖊</span><input type="range" min="2" max="14" value="5" oninput="hwSetBrush(this.value)"><span id="hwBrushLabel">5px</span></div></div><div class="hw-controls-row"><div style="display:flex;gap:3px"><button class="btn-secondary btn-small hw-grid-btn active" data-grid="rice" onclick="hwSetGrid(\'rice\')">米字格</button><button class="btn-secondary btn-small hw-grid-btn" data-grid="field" onclick="hwSetGrid(\'field\')">田字格</button><button class="btn-secondary btn-small hw-grid-btn" data-grid="blank" onclick="hwSetGrid(\'blank\')">Blank</button></div><div style="display:flex;align-items:center;gap:6px;font-size:.65rem;color:var(--muted)">Ghost<div class="hw-toggle on" id="hwGhostToggle" onclick="hwToggleGhost()"></div></div></div><div class="hw-nav"><button class="btn-secondary btn-small" onclick="hwNav(-1)">← Prev</button><span class="hw-counter" id="hwCounter">1 / 1</span><button class="btn-secondary btn-small" onclick="hwNav(1)">Next →</button></div><div style="text-align:center;margin-top:8px;font-size:.62rem;color:var(--muted)">How was your writing?</div><div class="hw-assess"><div class="hw-assess-btn again" onclick="hwAssess(\'again\')">🔴<br>Again</div><div class="hw-assess-btn hard" onclick="hwAssess(\'hard\')">🟡<br>Hard</div><div class="hw-assess-btn good" onclick="hwAssess(\'good\')">🟢<br>Good</div><div class="hw-assess-btn easy" onclick="hwAssess(\'easy\')">🔵<br>Easy</div></div>','span-2');h+=hwRenderSection('📊','Session Stats','Today','<div class="hw-stats"><div class="hw-stat"><div class="hw-stat-num" id="hwStatTotal" style="color:var(--tab-accent)">0</div><div class="hw-stat-label">Total</div></div><div class="hw-stat"><div class="hw-stat-num" id="hwStatGood" style="color:var(--green)">0</div><div class="hw-stat-label">Good</div></div><div class="hw-stat"><div class="hw-stat-num" id="hwStatHard" style="color:var(--gold)">0</div><div class="hw-stat-label">Hard</div></div><div class="hw-stat"><div class="hw-stat-num" id="hwStatAgain" style="color:var(--red)">0</div><div class="hw-stat-label">Again</div></div></div>');h+=hwRenderSection('📋','Character Browser','Jump to any','<div class="hw-browser" id="hwBrowser"></div><div style="font-size:.58rem;color:var(--muted);margin-top:6px">Dot = practiced · highlighted = current</div>');h+=hwRenderSection('📐','Stroke Order Rules','笔顺规则',HW_STROKE_RULES.map(function(r,i){return '<div class="hw-rule"><div class="hw-rule-num">'+(i+1)+'</div><div class="hw-rule-text"><b>'+r.rule+'</b><br><span class="cn" style="color:var(--muted);font-size:.65rem">'+r.cn+'</span></div><div class="hw-rule-ex cn">'+r.ex+'</div></div>';}).join(''));h+=hwRenderSection('🖌️','Basic Strokes','Warm-up practice','<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+HW_BASIC_STROKES.map(function(s){return '<div class="hw-stroke-card"><div class="hw-stroke-ch cn">'+s.ch+'</div><div class="hw-stroke-name">'+s.name+'</div></div>';}).join('')+'</div><div style="font-size:.6rem;color:var(--muted);margin-top:8px;text-align:center">These 8 strokes form every Chinese character</div>');h+=hwRenderSection('🧩','Common Radicals','24 essential','<div style="font-size:.65rem;color:var(--muted);margin-bottom:8px">Hover for meaning. These appear in many HSK characters.</div><div class="hw-rad-grid">'+HW_RADICALS.map(function(r){return '<div class="hw-rad" title="'+r.name+' - '+r.ex+'"><div class="hw-rad-ch cn">'+r.ch+'</div><div class="hw-rad-name">'+r.name+'</div></div>';}).join('')+'</div>','span-2');return h;}
+function hwFetchDataset(force){
+  if(HW.loadPromise&&!force)return HW.loadPromise;
+  HW.loading=true;HW.error='';
+  var container=document.getElementById('widgets-handwriting');
+  if(container&&container.children.length)hwRenderAndSync();
+  var url='/api/language/handwriting?level='+encodeURIComponent(hwGetLevelKey(HW.level));
+  HW.loadPromise=fetch(url).then(function(r){
+    return r.ok?r.json():r.json().catch(function(){return{message:'Failed to load handwriting dataset.'};}).then(function(data){throw new Error(data&&data.message?data.message:'Failed to load handwriting dataset.');});
+  }).then(function(data){
+    HW.levels=Array.isArray(data.levels)?data.levels:[];
+    HW.itemsByLevel=HW.itemsByLevel||{};
+    if(data.currentLevel&&Array.isArray(data.items))HW.itemsByLevel[String(data.currentLevel)]=data.items;
+    if(data.currentLevel)HW.level=String(data.currentLevel);
+    if(HW.idx>=hwGetChars().length)HW.idx=0;
+    HW.loading=false;HW.error='';
+    hwRenderAndSync();
+    return data;
+  }).catch(function(err){
+    HW.loading=false;
+    HW.error=err&&err.message?err.message:'Failed to load handwriting dataset.';
+    hwRenderAndSync();
+    throw err;
+  }).finally(function(){HW.loadPromise=null;});
+  return HW.loadPromise;
+}
+function renderHandwritingZone(){
+  var levels=hwGetLevels(),h='';
+  h+='<div class="hsk-tabs">';
+  if(levels.length){
+    levels.forEach(function(level){
+      var id=String(level.id);
+      h+='<div class="hsk-tab'+(id===hwGetLevelKey(HW.level)?' active':'')+'" data-level="'+escapeHtml(id)+'" onclick="hwSetLevel(\''+hwEscapeJs(id)+'\')">'+escapeHtml(level.label||hwGetLevelLabel(id))+' <span style="opacity:.5;font-size:.6rem">('+(level.count||0)+')</span></div>';
+    });
+  }else{
+    h+='<div class="hsk-tab active">HSK 3.0 2025</div>';
+  }
+  h+='</div>';
+  h+='<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted)"><span id="hwProgressLabel">'+(HW.loading?'Loading 2025 handwriting set…':'0/0 practiced · 0%')+'</span><span>'+escapeHtml(hwGetLevelLabel(HW.level))+'</span></div><div class="hw-progress"><div class="hw-progress-fill" id="hwProgressFill" style="width:0%"></div></div></div>';
+  if(HW.loading){
+    h+=hwRenderSection('⏳','Loading Handwriting Set','HSK 3.0 2025','<div style="font-size:.78rem;color:var(--muted);line-height:1.7">Pulling characters from your new <b>HSK 3.0 Handwritten 2025</b> source and matching examples/audio from the 2025 word and audio sets.</div>','span-2');
+    return h;
+  }
+  if(HW.error){
+    h+=hwRenderSection('⚠️','Handwriting Dataset Error','Retry','<div style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:10px">'+escapeHtml(HW.error)+'</div><button class="btn-secondary" type="button" onclick="hwFetchDataset(true)">Retry loading HSK 3.0 handwriting</button>','span-2');
+    return h;
+  }
+  if(!hwGetChars().length){
+    h+=hwRenderSection('📝','No Handwriting Characters','Empty','<div style="font-size:.78rem;color:var(--muted);line-height:1.7">No characters were returned for this handwriting level yet.</div>','span-2');
+    return h;
+  }
+  h+=hwRenderSection('✍️','Practice Canvas','HSK 3.0 2025','<div style="text-align:center;padding:16px 12px 8px"><div style="display:flex;align-items:center;justify-content:center;gap:10px"><div class="hw-target cn" id="hwCharTarget">人</div><button class="hw-tool-btn hw-audio-btn hidden" id="hwAudioBtn" type="button" onclick="hwPlayCurrentAudio()" title="Play audio" style="width:28px;height:28px;font-size:.72rem">🔊</button><div class="hw-tool-btn" id="hwHideBtn" onclick="hwToggleHide()" title="Hide/Show character" style="width:28px;height:28px;font-size:.7rem">🙈</div></div><div class="hw-pinyin" id="hwCharPy">ren</div><div class="hw-meaning" id="hwCharEn">person</div><div class="hw-meta" id="hwCharMeta"></div><div class="hw-examples" id="hwCharExamples"></div></div><div class="hw-canvas-outer"><div class="hw-canvas-wrap"><canvas class="hw-canvas" id="hwCanvas"></canvas></div></div><div class="hw-stroke-count" id="hwStrokeCount">Strokes: <b>0</b></div><div class="hw-toolbar"><div class="hw-tool-btn" onclick="hwUndo()" title="Undo stroke">↩</div><div class="hw-tool-btn" onclick="hwClear()" title="Clear all">🗑</div><div class="hw-tool-btn" onclick="hwRandom()" title="Random character">🎲</div><div style="width:1px;height:20px;background:var(--border)"></div><div class="hw-tool-btn" id="hwAnimBtn" onclick="hwAnimateStrokes()" title="Auto-play stroke order">▶</div><div class="hw-tool-btn" onclick="hwStepStroke()" title="Step: next stroke">⏭</div><span class="hw-anim-badge" id="hwAnimLabel" style="display:none"></span><div style="width:1px;height:20px;background:var(--border)"></div><div class="hw-color-dot active" data-color="#ffffff" style="background:#ffffff" onclick="hwSetColor(\'#ffffff\')"></div><div class="hw-color-dot" data-color="#00ff88" style="background:#00ff88" onclick="hwSetColor(\'#00ff88\')"></div><div class="hw-color-dot" data-color="#f87171" style="background:#f87171" onclick="hwSetColor(\'#f87171\')"></div><div class="hw-color-dot" data-color="#38bdf8" style="background:#38bdf8" onclick="hwSetColor(\'#38bdf8\')"></div><div style="width:1px;height:20px;background:var(--border)"></div><div class="hw-brush-row"><span>🖊</span><input type="range" min="2" max="14" value="5" oninput="hwSetBrush(this.value)"><span id="hwBrushLabel">5px</span></div></div><div class="hw-speed-row"><span>Anim speed:</span><button class="hw-speed-btn" data-speed="80" onclick="hwSetAnimSpeed(80)">Slow</button><button class="hw-speed-btn active" data-speed="40" onclick="hwSetAnimSpeed(40)">Med</button><button class="hw-speed-btn" data-speed="15" onclick="hwSetAnimSpeed(15)">Fast</button></div><div class="hw-controls-row"><div style="display:flex;gap:3px"><button class="btn-secondary btn-small hw-grid-btn active" data-grid="rice" onclick="hwSetGrid(\'rice\')">米字格</button><button class="btn-secondary btn-small hw-grid-btn" data-grid="field" onclick="hwSetGrid(\'field\')">田字格</button><button class="btn-secondary btn-small hw-grid-btn" data-grid="blank" onclick="hwSetGrid(\'blank\')">Blank</button></div><div style="display:flex;align-items:center;gap:6px;font-size:.65rem;color:var(--muted)">Ghost<div class="hw-toggle on" id="hwGhostToggle" onclick="hwToggleGhost()"></div></div></div><div class="hw-nav"><button class="btn-secondary btn-small" onclick="hwNav(-1)">← Prev</button><span class="hw-counter" id="hwCounter">1 / 1</span><button class="btn-secondary btn-small" onclick="hwNav(1)">Next →</button></div><div style="text-align:center;margin-top:8px;font-size:.62rem;color:var(--muted)">How was your writing?</div><div class="hw-assess"><div class="hw-assess-btn again" onclick="hwAssess(\'again\')">🔴<br>Again</div><div class="hw-assess-btn hard" onclick="hwAssess(\'hard\')">🟡<br>Hard</div><div class="hw-assess-btn good" onclick="hwAssess(\'good\')">🟢<br>Good</div><div class="hw-assess-btn easy" onclick="hwAssess(\'easy\')">🔵<br>Easy</div></div>','span-2');
+  h+=hwRenderSection('📊','Session Stats','Today','<div class="hw-stats"><div class="hw-stat"><div class="hw-stat-num" id="hwStatTotal" style="color:var(--tab-accent)">0</div><div class="hw-stat-label">Total</div></div><div class="hw-stat"><div class="hw-stat-num" id="hwStatGood" style="color:var(--green)">0</div><div class="hw-stat-label">Good</div></div><div class="hw-stat"><div class="hw-stat-num" id="hwStatHard" style="color:var(--gold)">0</div><div class="hw-stat-label">Hard</div></div><div class="hw-stat"><div class="hw-stat-num" id="hwStatAgain" style="color:var(--red)">0</div><div class="hw-stat-label">Again</div></div></div>');
+  h+=hwRenderSection('📋','Character Browser','Jump to any','<div class="hw-browser" id="hwBrowser"></div><div style="font-size:.58rem;color:var(--muted);margin-top:6px">Dot = practiced · highlighted = current</div>','hw-browser-panel');
+  h+=hwRenderSection('📐','Stroke Order Rules','笔顺规则',HW_STROKE_RULES.map(function(r,i){return '<div class="hw-rule"><div class="hw-rule-num">'+(i+1)+'</div><div class="hw-rule-text"><b>'+r.rule+'</b><br><span class="cn" style="color:var(--muted);font-size:.65rem">'+r.cn+'</span></div><div class="hw-rule-ex cn">'+r.ex+'</div></div>';}).join(''));
+  h+=hwRenderSection('🖌️','Basic Strokes','Warm-up practice','<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+HW_BASIC_STROKES.map(function(s){return '<div class="hw-stroke-card"><div class="hw-stroke-ch cn">'+s.ch+'</div><div class="hw-stroke-name">'+s.name+'</div></div>';}).join('')+'</div><div style="font-size:.6rem;color:var(--muted);margin-top:8px;text-align:center">These 8 strokes form every Chinese character</div>');
+  h+=hwRenderSection('🧩','Common Radicals','24 essential','<div style="font-size:.65rem;color:var(--muted);margin-bottom:8px">Hover for meaning. These appear in many HSK characters.</div><div class="hw-rad-grid">'+HW_RADICALS.map(function(r){return '<div class="hw-rad" title="'+r.name+' - '+r.ex+'"><div class="hw-rad-ch cn">'+r.ch+'</div><div class="hw-rad-name">'+r.name+'</div></div>';}).join('')+'</div>','span-2');
+  return h;
+}
 function hwInitCanvas(){var c=document.getElementById('hwCanvas');if(!c||HW.ready)return;c.width=HW.RES;c.height=HW.RES;c.addEventListener('mousedown',function(e){hwStrokeStart(hwPos(e));});c.addEventListener('mousemove',function(e){if(HW.isDrawing)hwStrokeMove(hwPos(e));});c.addEventListener('mouseup',hwStrokeEnd);c.addEventListener('mouseleave',hwStrokeEnd);c.addEventListener('touchstart',function(e){e.preventDefault();hwStrokeStart(hwTouchPos(e));},{passive:false});c.addEventListener('touchmove',function(e){e.preventDefault();if(HW.isDrawing)hwStrokeMove(hwTouchPos(e));},{passive:false});c.addEventListener('touchend',function(e){e.preventDefault();hwStrokeEnd();},{passive:false});HW.ready=true;hwRedraw();}
 function hwPos(e){var c=document.getElementById('hwCanvas'),r=c.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*HW.RES,y:(e.clientY-r.top)/r.height*HW.RES};}
 function hwTouchPos(e){var t=e.touches[0],c=document.getElementById('hwCanvas'),r=c.getBoundingClientRect();return{x:(t.clientX-r.left)/r.width*HW.RES,y:(t.clientY-r.top)/r.height*HW.RES};}
-function hwStrokeStart(p){HW.isDrawing=true;HW.currentStroke=[p];}
+  function hwFetchStrokeData(char,cb){
+    if(HW.strokeCache[char]){cb(HW.strokeCache[char]);return;}
+    var url='https://cdn.jsdelivr.net/npm/hanzi-writer-data@latest/'+encodeURIComponent(char)+'.json';
+    fetch(url).then(function(r){if(!r.ok)throw new Error('Not found');return r.json();}).then(function(data){HW.strokeCache[char]=data;cb(data);}).catch(function(){
+      var el=document.getElementById('hwAnimLabel');
+      if(el){el.textContent='✗ no data';el.style.display='';}
+      setTimeout(function(){if(el)el.style.display='none';},2000);
+    });
+  }
+  function hwGetAnimTransform(){
+    var R=HW.RES,pad=R*0.08,medians=HW.anim.medians||[];
+    if(!medians.length){
+      var sc=(R-pad*2)/1024;
+      return {minX:0,maxY:1024,scale:sc,offsetX:pad,offsetY:pad};
+    }
+    var minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    medians.forEach(function(stroke){
+      stroke.forEach(function(p){
+        if(p[0]<minX)minX=p[0];
+        if(p[0]>maxX)maxX=p[0];
+        if(p[1]<minY)minY=p[1];
+        if(p[1]>maxY)maxY=p[1];
+      });
+    });
+    if(!isFinite(minX)||!isFinite(maxX)||!isFinite(minY)||!isFinite(maxY)){
+      var fallback=(R-pad*2)/1024;
+      return {minX:0,maxY:1024,scale:fallback,offsetX:pad,offsetY:pad};
+    }
+    var width=Math.max(1,maxX-minX),height=Math.max(1,maxY-minY);
+    var scale=Math.min((R-pad*2)/width,(R-pad*2)/height);
+    var offsetX=(R-width*scale)/2;
+    var offsetY=(R-height*scale)/2;
+    return {minX:minX,maxY:maxY,scale:scale,offsetX:offsetX,offsetY:offsetY};
+  }
+  function hwTransformMedian(pts){
+    var t=hwGetAnimTransform();
+    return pts.map(function(p){return{x:t.offsetX+(p[0]-t.minX)*t.scale,y:t.offsetY+(t.maxY-p[1])*t.scale};});
+  }
+function hwStopAnim(){
+  HW.anim.auto=false;HW.anim.active=false;HW.anim.trace=[];clearTimeout(HW.anim.timer);
+  var btn=document.getElementById('hwAnimBtn');
+  if(btn){btn.classList.remove('animating');btn.textContent='▶';}
+  hwRedraw();hwUpdateAnimLabel();
+}
+function hwResetAnim(){
+  hwStopAnim();HW.anim.paths=[];HW.anim.medians=[];HW.anim.revealed=0;HW.anim.char='';hwUpdateAnimLabel();
+}
+function hwSetAnimSpeed(ms){
+  HW.anim.speed=ms;
+  document.querySelectorAll('.hw-speed-btn').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.speed,10)===ms);});
+}
+function hwUpdateAnimLabel(){
+  var el=document.getElementById('hwAnimLabel');if(!el)return;
+  if(HW.anim.paths.length&&HW.anim.revealed>0){el.textContent=HW.anim.revealed+'/'+HW.anim.paths.length;el.style.display='';}
+  else{el.textContent='';el.style.display='none';}
+}
+function hwAnimNextStroke(){
+  if(!HW.anim.auto||HW.anim.revealed>=HW.anim.medians.length){hwStopAnim();return;}
+  var pts=hwTransformMedian(HW.anim.medians[HW.anim.revealed]);HW.anim.trace=[pts[0]];var i=0;hwUpdateAnimLabel();
+  function tick(){
+    if(!HW.anim.auto)return;
+    i++;
+    if(i>=pts.length){HW.anim.revealed++;HW.anim.trace=[];hwRedraw();hwUpdateAnimLabel();hwUpdateStrokeCount();HW.anim.timer=setTimeout(hwAnimNextStroke,380);return;}
+    HW.anim.trace.push(pts[i]);hwRedraw();HW.anim.timer=setTimeout(tick,HW.anim.speed);
+  }
+  tick();
+}
+function hwAnimateStrokes(){
+  if(HW.anim.auto){hwStopAnim();return;}
+  var c=hwGetCurrentChar();if(!c)return;
+  hwClear();HW.anim.auto=true;HW.anim.active=true;HW.anim.char=c.ch;HW.anim.revealed=0;HW.anim.trace=[];HW.anim.paths=[];HW.anim.medians=[];
+  var btn=document.getElementById('hwAnimBtn');
+  if(btn){btn.classList.add('animating');btn.textContent='⏹';}
+  hwFetchStrokeData(c.ch,function(data){if(!data.strokes||!data.medians){hwStopAnim();return;}HW.anim.paths=data.strokes;HW.anim.medians=data.medians;hwAnimNextStroke();});
+}
+function hwStepStroke(){
+  if(HW.anim.active)return;
+  var c=hwGetCurrentChar();if(!c)return;
+  hwFetchStrokeData(c.ch,function(data){
+    if(!data.strokes||!data.medians)return;
+    if(HW.anim.char!==c.ch){HW.anim.char=c.ch;HW.anim.paths=data.strokes;HW.anim.medians=data.medians;HW.anim.revealed=0;HW.anim.trace=[];HW.strokes=[];HW.currentStroke=[];}
+    if(HW.anim.revealed>=data.strokes.length){HW.anim.revealed=0;hwRedraw();hwUpdateAnimLabel();hwUpdateStrokeCount();return;}
+    var pts=hwTransformMedian(data.medians[HW.anim.revealed]);HW.anim.trace=[pts[0]];HW.anim.active=true;var i=0;hwUpdateAnimLabel();
+    function tick(){
+      i++;
+      if(i>=pts.length){HW.anim.revealed++;HW.anim.trace=[];HW.anim.active=false;hwRedraw();hwUpdateAnimLabel();hwUpdateStrokeCount();return;}
+      HW.anim.trace.push(pts[i]);hwRedraw();HW.anim.timer=setTimeout(tick,HW.anim.speed);
+    }
+    tick();
+  });
+}
+function hwStrokeStart(p){hwStopAnim();HW.isDrawing=true;HW.currentStroke=[p];}
 function hwStrokeMove(p){HW.currentStroke.push(p);hwRedraw();}
 function hwStrokeEnd(){if(!HW.isDrawing)return;HW.isDrawing=false;if(HW.currentStroke.length>1)HW.strokes.push(HW.currentStroke.slice());HW.currentStroke=[];hwUpdateStrokeCount();hwRedraw();}
 function hwDrawGrid(ctx,R){if(HW.gridType==='blank')return;ctx.save();ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=2;ctx.strokeRect(4,4,R-8,R-8);ctx.setLineDash([10,8]);ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,R/2);ctx.lineTo(R,R/2);ctx.stroke();ctx.beginPath();ctx.moveTo(R/2,0);ctx.lineTo(R/2,R);ctx.stroke();if(HW.gridType==='rice'){ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R,R);ctx.stroke();ctx.beginPath();ctx.moveTo(R,0);ctx.lineTo(0,R);ctx.stroke();}ctx.restore();}
 function hwDrawGhost(ctx,R){var c=hwGetCurrentChar();if(!c||!HW.showGhost)return;ctx.save();ctx.font='bold '+(R*0.72)+'px "Noto Sans SC","SimSun",sans-serif';ctx.fillStyle='rgba(255,255,255,'+HW.ghostOpacity+')';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.ch,R/2,R/2+R*0.02);ctx.restore();}
 function hwDrawLine(ctx,pts){if(pts.length<2)return;ctx.save();ctx.strokeStyle=HW.brushColor;ctx.lineWidth=HW.brushSize;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(var i=1;i<pts.length;i++){var mx=(pts[i-1].x+pts[i].x)/2;var my=(pts[i-1].y+pts[i].y)/2;ctx.quadraticCurveTo(pts[i-1].x,pts[i-1].y,mx,my);}ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);ctx.stroke();ctx.restore();}
-function hwRedraw(){var c=document.getElementById('hwCanvas');if(!c)return;var ctx=c.getContext('2d'),R=HW.RES;ctx.clearRect(0,0,R,R);hwDrawGrid(ctx,R);hwDrawGhost(ctx,R);HW.strokes.forEach(function(s){hwDrawLine(ctx,s);});if(HW.currentStroke.length>1)hwDrawLine(ctx,HW.currentStroke);}
+  function hwDrawAnimState(ctx,R){
+    if(HW.anim.paths.length&&HW.anim.revealed>0){
+      ctx.save();
+      var t=hwGetAnimTransform();
+      ctx.translate(t.offsetX,t.offsetY);ctx.scale(t.scale,-t.scale);ctx.translate(-t.minX,-t.maxY);
+      for(var i=0;i<HW.anim.revealed;i++){
+        var p2d=new Path2D(HW.anim.paths[i]);
+        ctx.fillStyle=(i===HW.anim.revealed-1&&!HW.anim.active)?'rgba(0,255,136,0.28)':'rgba(0,255,136,0.14)';
+        ctx.fill(p2d);ctx.strokeStyle='rgba(0,255,136,0.4)';ctx.lineWidth=2;ctx.stroke(p2d);
+      }
+    ctx.restore();
+  }
+  if(HW.anim.trace&&HW.anim.trace.length>1){
+    ctx.save();ctx.strokeStyle='#00ff88';ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='#00ff88';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(HW.anim.trace[0].x,HW.anim.trace[0].y);
+    for(var j=1;j<HW.anim.trace.length;j++){var mx=(HW.anim.trace[j-1].x+HW.anim.trace[j].x)/2;var my=(HW.anim.trace[j-1].y+HW.anim.trace[j].y)/2;ctx.quadraticCurveTo(HW.anim.trace[j-1].x,HW.anim.trace[j-1].y,mx,my);}
+    ctx.stroke();var tip=HW.anim.trace[HW.anim.trace.length-1];ctx.shadowBlur=24;ctx.beginPath();ctx.arc(tip.x,tip.y,7,0,Math.PI*2);ctx.fillStyle='#00ff88';ctx.fill();ctx.restore();
+  }
+}
+function hwRedraw(){var c=document.getElementById('hwCanvas');if(!c)return;var ctx=c.getContext('2d'),R=HW.RES;ctx.clearRect(0,0,R,R);hwDrawGrid(ctx,R);hwDrawGhost(ctx,R);hwDrawAnimState(ctx,R);HW.strokes.forEach(function(s){hwDrawLine(ctx,s);});if(HW.currentStroke.length>1)hwDrawLine(ctx,HW.currentStroke);}
 function hwUndo(){HW.strokes.pop();hwUpdateStrokeCount();hwRedraw();}
-function hwClear(){HW.strokes=[];HW.currentStroke=[];hwUpdateStrokeCount();hwRedraw();}
+function hwClear(){hwResetAnim();HW.strokes=[];HW.currentStroke=[];hwUpdateStrokeCount();hwRedraw();}
 function hwToggleGhost(){HW.showGhost=!HW.showGhost;var t=document.getElementById('hwGhostToggle');if(t)t.classList.toggle('on',HW.showGhost);hwRedraw();}
 function hwSetGrid(type){HW.gridType=type;document.querySelectorAll('.hw-grid-btn').forEach(function(b){b.classList.toggle('active',b.dataset.grid===type);});hwRedraw();}
 function hwSetBrush(val){HW.brushSize=parseInt(val,10);var l=document.getElementById('hwBrushLabel');if(l)l.textContent=val+'px';}
 function hwSetColor(col){HW.brushColor=col;document.querySelectorAll('.hw-color-dot').forEach(function(d){d.classList.toggle('active',d.dataset.color===col);});}
 function hwToggleHide(){HW.hideChar=!HW.hideChar;var el=document.getElementById('hwCharTarget');if(el)el.classList.toggle('hidden-char',HW.hideChar);var btn=document.getElementById('hwHideBtn');if(btn)btn.textContent=HW.hideChar?'👁':'🙈';}
-function hwUpdateStrokeCount(){var el=document.getElementById('hwStrokeCount'),c=hwGetCurrentChar();if(el)el.innerHTML='Strokes: <b>'+HW.strokes.length+'</b> / '+(c?c.sk:'?');}
-function hwSetLevel(lvl){HW.level=lvl;HW.idx=0;HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwRenderAndSync();}
-function hwNav(dir){var chars=hwGetChars();if(!chars.length)return;HW.idx=(HW.idx+dir+chars.length)%chars.length;HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwUpdateAll();}
-function hwJumpTo(i){HW.idx=i;HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwUpdateAll();}
-function hwRandom(){var chars=hwGetChars();if(!chars.length)return;HW.idx=Math.floor(Math.random()*chars.length);HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwUpdateAll();}
+function hwPlayAudio(url){
+  if(!url)return;
+  if(!HW.audioEl){HW.audioEl=new Audio();}
+  HW.audioEl.pause();
+  HW.audioEl.src=url;
+  HW.audioEl.currentTime=0;
+  HW.audioEl.play().catch(function(){});
+}
+function hwPlayCurrentAudio(){var c=hwGetCurrentChar();if(c&&c.audioUrl)hwPlayAudio(c.audioUrl);}
+function hwRenderExampleChip(example){
+  var text=typeof example==='string'?example:(example&&example.text?example.text:'');
+  var audioUrl=example&&example.audioUrl?example.audioUrl:'';
+  if(!text)return '';
+  if(audioUrl){
+    return '<button type="button" class="hw-example-chip has-audio" onclick="hwPlayAudio(\''+hwEscapeJs(audioUrl)+'\')"><span class="cn">'+escapeHtml(text)+'</span><span class="hw-example-audio">🔊</span></button>';
+  }
+  return '<span class="hw-example-chip"><span class="cn">'+escapeHtml(text)+'</span></span>';
+}
+function hwUpdateStrokeCount(){var el=document.getElementById('hwStrokeCount'),c=hwGetCurrentChar();if(el)el.innerHTML='Strokes: <b>'+HW.strokes.length+'</b>'+(c&&c.sk?' / '+c.sk:'');}
+function hwSetLevel(lvl){hwResetAnim();HW.level=String(lvl);HW.idx=0;HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;if(HW.itemsByLevel[hwGetLevelKey(HW.level)]){hwRenderAndSync();return;}hwFetchDataset(true);}
+function hwNav(dir){var chars=hwGetChars();if(!chars.length)return;hwResetAnim();HW.idx=(HW.idx+dir+chars.length)%chars.length;HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwUpdateAll();}
+function hwJumpTo(i){hwResetAnim();HW.idx=i;HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwUpdateAll();}
+function hwRandom(){var chars=hwGetChars();if(!chars.length)return;hwResetAnim();HW.idx=Math.floor(Math.random()*chars.length);HW.strokes=[];HW.currentStroke=[];HW.hideChar=false;hwUpdateAll();}
 function hwAssess(rating){var key=HW.level+'-'+HW.idx;HW.practiced[key]=rating;HW.stats.total++;HW.stats[rating]++;hwUpdateStats();hwUpdateProgress();hwUpdateBrowser();setTimeout(function(){hwNav(1);},220);}
-function hwUpdateCharDisplay(){var c=hwGetCurrentChar();if(!c)return;var el=document.getElementById('hwCharTarget');if(el){el.textContent=c.ch;el.classList.toggle('hidden-char',HW.hideChar);}var py=document.getElementById('hwCharPy');if(py)py.textContent=convertNumberedPinyinText(c.py);var en=document.getElementById('hwCharEn');if(en)en.textContent=c.en;var meta=document.getElementById('hwCharMeta');if(meta)meta.innerHTML='<span class="hw-meta-chip"><b>'+c.sk+'</b> strokes</span><span class="hw-meta-chip">Radical <b class="cn">'+c.rad+'</b></span>';var ex=document.getElementById('hwCharExamples');if(ex)ex.innerHTML=c.ex.map(function(w){return '<span class="cn">'+w+'</span>';}).join('');var counter=document.getElementById('hwCounter');if(counter)counter.textContent=(HW.idx+1)+' / '+hwGetChars().length;var btn=document.getElementById('hwHideBtn');if(btn)btn.textContent=HW.hideChar?'👁':'🙈';}
+function hwUpdateCharDisplay(){var c=hwGetCurrentChar();if(!c)return;var el=document.getElementById('hwCharTarget');if(el){el.textContent=c.ch;el.classList.toggle('hidden-char',HW.hideChar);}var py=document.getElementById('hwCharPy');if(py)py.textContent=convertNumberedPinyinText(c.py||'');var en=document.getElementById('hwCharEn');if(en)en.textContent=c.en||'No definition found yet';var meta=document.getElementById('hwCharMeta');if(meta){var chips=['<span class="hw-meta-chip"><b>'+escapeHtml(c.sourceLevelLabel||hwGetLevelLabel(HW.level))+'</b></span>'];if(c.sk)chips.push('<span class="hw-meta-chip"><b>'+c.sk+'</b> strokes</span>');if(c.rad)chips.push('<span class="hw-meta-chip">Radical <b class="cn">'+escapeHtml(c.rad)+'</b></span>');meta.innerHTML=chips.join('');}var ex=document.getElementById('hwCharExamples');if(ex)ex.innerHTML=(c.ex&&c.ex.length?c.ex.map(hwRenderExampleChip).join(''):'<span class="hw-example-empty">No example words matched this character yet.</span>');var counter=document.getElementById('hwCounter');if(counter)counter.textContent=(HW.idx+1)+' / '+hwGetChars().length;var btn=document.getElementById('hwHideBtn');if(btn)btn.textContent=HW.hideChar?'👁':'🙈';var audioBtn=document.getElementById('hwAudioBtn');if(audioBtn){audioBtn.classList.toggle('hidden',!c.audioUrl);audioBtn.title=c.audioUrl?'Play audio':'No audio';}}
 function hwUpdateStats(){var map={hwStatTotal:HW.stats.total,hwStatGood:HW.stats.good+HW.stats.easy,hwStatHard:HW.stats.hard,hwStatAgain:HW.stats.again};Object.keys(map).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=map[id];});}
 function hwUpdateProgress(){var chars=hwGetChars();if(!chars.length)return;var done=0;chars.forEach(function(_c,i){if(HW.practiced[HW.level+'-'+i])done++;});var pct=Math.round(done/chars.length*100);var fill=document.getElementById('hwProgressFill');if(fill)fill.style.width=pct+'%';var label=document.getElementById('hwProgressLabel');if(label)label.textContent=done+'/'+chars.length+' practiced · '+pct+'%';}
 function hwUpdateBrowser(){var chars=hwGetChars(),el=document.getElementById('hwBrowser');if(!el)return;el.innerHTML=chars.map(function(c,i){var cls='hw-browse-ch';if(i===HW.idx)cls+=' current';var rating=HW.practiced[HW.level+'-'+i];if(rating)cls+=' practiced '+rating;return '<div class="'+cls+'" onclick="hwJumpTo('+i+')">'+c.ch+'</div>';}).join('');}
 function hwUpdateAll(){hwUpdateCharDisplay();hwUpdateStats();hwUpdateProgress();hwUpdateBrowser();hwUpdateStrokeCount();hwRedraw();}
-function hwRenderAndSync(){var container=document.getElementById('widgets-handwriting');if(!container)return;container.innerHTML=renderHandwritingZone();HW.ready=false;setTimeout(function(){hwInitCanvas();hwUpdateAll();},60);}
-function initHandwritingZone(){var container=document.getElementById('widgets-handwriting');if(!container)return;if(!container.children.length){hwRenderAndSync();return;}if(!HW.ready)hwInitCanvas();hwUpdateAll();}
+function hwRenderAndSync(){var container=document.getElementById('widgets-handwriting');if(!container)return;container.innerHTML=renderHandwritingZone();HW.ready=false;if(HW.loading||HW.error||!hwGetChars().length)return;setTimeout(function(){hwInitCanvas();hwUpdateAll();},60);}
+function initHandwritingZone(){var container=document.getElementById('widgets-handwriting');if(!container)return;if(!HW.levels.length||!HW.itemsByLevel[hwGetLevelKey(HW.level)]){if(!container.children.length)hwRenderAndSync();hwFetchDataset();return;}if(!container.children.length){hwRenderAndSync();return;}if(!HW.ready)hwInitCanvas();hwUpdateAll();}
 var lookupPopup=null;
 var lookupCache={};
 var lookupState={query:'',entries:[],readings:[],visible:false};

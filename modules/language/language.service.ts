@@ -257,6 +257,47 @@ function normalizeQuery(query: string) {
   return query.trim().toLowerCase();
 }
 
+/**
+ * Global rule: If the first definition is "surname X", reorder to show meaningful definitions first.
+ * This ensures users always get useful context, with surname info moved to the end.
+ */
+function enrichDefinitions(definitions: string[], minDefinitions = 3): string[] {
+  if (!definitions.length) {
+    return definitions;
+  }
+
+  const surnamePattern = /^surname\s+\w+$/i;
+  const firstIsSurname = surnamePattern.test(definitions[0].trim());
+
+  if (!firstIsSurname) {
+    // First definition is meaningful, return as-is
+    return definitions;
+  }
+
+  // First definition is surname - reorder to put non-surname definitions first
+  if (definitions.length > 1) {
+    const surname = definitions[0];
+    const others = definitions.slice(1).filter(def => !surnamePattern.test(def.trim()));
+    const otherSurnames = definitions.slice(1).filter(def => surnamePattern.test(def.trim()));
+
+    // Put meaningful definitions first, then surname info at the end
+    const reordered = [...others, surname, ...otherSurnames];
+    return reordered.slice(0, Math.max(minDefinitions, 3));
+  }
+
+  // Only surname definition exists - return it (no additional data available)
+  return definitions;
+}
+
+/**
+ * Format definitions for display, applying the surname enrichment rule.
+ * Use this globally for any definition output to ensure consistent behavior.
+ */
+function formatDefinitionsForDisplay(definitions: string[], maxDefinitions = 3): string {
+  const enriched = enrichDefinitions(definitions, maxDefinitions);
+  return enriched.slice(0, maxDefinitions).join("; ") || "No definition found";
+}
+
 function getHandwritingLevelWeight(level: HandwritingLevel) {
   if (level === "1-2") {
     return 1;
@@ -286,40 +327,54 @@ function normalizeHandwritingLevel(
   return levels.find((level) => String(level) === trimmed) ?? levels[0];
 }
 
+/**
+ * Global rule: Entries where the first definition is "surname X" should be deprioritized.
+ * This ensures common meanings (like 都 = "all, both") are shown before surname entries (都 = "surname Du").
+ */
+function isSurnameLeadingEntry(entry: CedictEntry): boolean {
+  if (!entry.english.length) return false;
+  const surnamePattern = /^surname\s+\w+$/i;
+  // Deprioritize if the FIRST definition is a surname (regardless of other definitions)
+  return surnamePattern.test(entry.english[0].trim());
+}
+
 function scoreDictionaryEntry(entry: CedictEntry, rawQuery: string) {
   const query = normalizeQuery(rawQuery);
   const english = entry.english.join(" ").toLowerCase();
   const pinyin = entry.pinyin.toLowerCase();
 
+  // Penalty for surname-leading entries (deprioritize them in results)
+  const surnamePenalty = isSurnameLeadingEntry(entry) ? 50 : 0;
+
   if (entry.simplified === rawQuery || entry.traditional === rawQuery) {
-    return 400;
+    return 400 - surnamePenalty;
   }
 
   if (pinyin === query) {
-    return 250;
+    return 250 - surnamePenalty;
   }
 
   if (entry.simplified.startsWith(rawQuery) || entry.traditional.startsWith(rawQuery)) {
-    return 220;
+    return 220 - surnamePenalty;
   }
 
   if (pinyin.startsWith(query)) {
-    return 180;
+    return 180 - surnamePenalty;
   }
 
   if (english.includes(query)) {
-    return 120;
+    return 120 - surnamePenalty;
   }
 
   if (entry.simplified.includes(rawQuery) || entry.traditional.includes(rawQuery)) {
-    return 90;
+    return 90 - surnamePenalty;
   }
 
   if (pinyin.includes(query)) {
-    return 70;
+    return 70 - surnamePenalty;
   }
 
-  return 0;
+  return 0 - surnamePenalty;
 }
 
 async function resolveHskLevelForWord(word: string): Promise<HskLevel | null> {
@@ -360,6 +415,8 @@ async function resolveHskLevelForWord(word: string): Promise<HskLevel | null> {
 async function annotateCedictEntry(entry: CedictEntry): Promise<CedictEntry> {
   return {
     ...entry,
+    // Apply global surname enrichment rule to ensure meaningful definitions
+    english: enrichDefinitions(entry.english, 3),
     hsk:
       (await resolveHskLevelForWord(entry.simplified)) ??
       (await resolveHskLevelForWord(entry.traditional)),
@@ -579,7 +636,9 @@ export async function getHandwritingCharacters(level?: string) {
     return {
       ch: character,
       py: dictionaryEntry?.pinyin ?? readingEntry?.readings?.[0] ?? "",
-      en: dictionaryEntry?.english?.slice(0, 3).join("; ") ?? "No definition found yet",
+      en: dictionaryEntry?.english
+        ? formatDefinitionsForDisplay(dictionaryEntry.english, 3)
+        : "No definition found yet",
       rad: null,
       sk: null,
       ex: examples,

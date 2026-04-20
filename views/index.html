@@ -311,7 +311,18 @@
   <!-- GAMES -->
   <div class="tab-content" id="tab-games">
     <div class="grid">
-      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🎴</div>Memory Match</div><div style="display:flex;gap:4px;align-items:center;"><span class="tag" id="memScore" style="background:rgba(244,114,182,0.13);color:var(--pink);">Moves: 0</span><button class="btn-secondary btn-small" onclick="initMemory()">↻</button></div></div><div class="mem-grid" id="memGrid"></div></div>
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title"><div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🎴</div>Memory Match</div>
+          <span class="tag" id="memScore" style="background:rgba(244,114,182,0.13);color:var(--pink);">Moves: 0</span>
+        </div>
+        <div class="mem-controls">
+          <select id="memLevelSelect" title="HSK level"></select>
+          <select id="memSizeSelect" title="Grid size"></select>
+          <button class="btn-secondary btn-small" onclick="restartMemory()" title="New game">↻</button>
+        </div>
+        <div class="mem-grid" id="memGrid"></div>
+      </div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(248,113,113,0.13);color:var(--red);">📊</div>Char Frequency</div></div><div class="traffic-bars" id="charFreqBars"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🎵</div>Tone Guess</div><span class="tag" id="toneGameScore" style="background:rgba(167,139,250,0.13);color:var(--purple);">Score: 0</span></div><div id="toneGameArea" style="text-align:center;"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🔀</div>Word Scramble</div><span class="tag" id="scrambleScore" style="background:rgba(240,160,64,0.13);color:var(--orange);">Score: 0</span></div><div id="scrambleArea"></div></div>

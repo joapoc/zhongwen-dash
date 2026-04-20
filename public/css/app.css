@@ -21,6 +21,36 @@ body {
   padding: 0.5rem 0 1.5rem;
 }
 
+/* Per-topic accent overrides — scoped so each tab's --tab-accent cascades to
+   widget headers, chips, and interactive accents inside that tab. Without
+   this the global cyan default bled into topic tabs regardless of theme. */
+#tab-tourist { --tab-accent: var(--gold); }
+#tab-food { --tab-accent: var(--orange); }
+#tab-makeup { --tab-accent: var(--pink); }
+#tab-gossip { --tab-accent: var(--pink); }
+#tab-cyber { --tab-accent: var(--green); }
+#tab-political { --tab-accent: var(--accent); }
+#tab-genz { --tab-accent: var(--purple); }
+#tab-academia { --tab-accent: var(--blue); }
+#tab-dropship { --tab-accent: var(--accent2); }
+
+/* Tourist-specific compactions */
+#tab-tourist .phrase-card { padding: 10px 12px; margin-bottom: 6px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+#tab-tourist .phrase-card:hover { transform: translateY(-1px); }
+#tab-tourist .phrase-card.copied { border-left-color: var(--green); }
+#tab-tourist .tourist-phrase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+#tab-tourist .tourist-emergency { background: linear-gradient(135deg, rgba(42,10,10,0.9), rgba(26,10,20,0.9)); border: 1px solid var(--red); border-radius: 12px; padding: 14px; }
+#tab-tourist .tourist-emergency-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(248,113,113,0.15); }
+#tab-tourist .tourist-emergency-row:last-child { border-bottom: 0; }
+#tab-tourist .tourist-emergency-num { font: 800 1.35rem "JetBrains Mono", monospace; color: var(--red); letter-spacing: 0.04em; }
+#tab-tourist .tourist-emergency-tip { font-size: 0.68rem; color: var(--muted); line-height: 1.6; margin-top: 10px; }
+#tab-tourist .tourist-currency-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+#tab-tourist .tourist-currency-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; }
+#tab-tourist .tourist-currency-cell .tcc-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+#tab-tourist .tourist-currency-cell .tcc-val { font-size: 1rem; font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; }
+#tab-tourist .tourist-apps-group { margin-bottom: 8px; }
+#tab-tourist .tourist-apps-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; color: var(--gold); text-transform: uppercase; margin: 6px 0 4px; }
+
 .topic-hero {
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 1.25rem;

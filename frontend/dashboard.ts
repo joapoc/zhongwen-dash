@@ -937,9 +937,132 @@ var dialogues=[{scene:'🏪 At a store',messages:[{who:'店员',text:'你好！�
 function renderDialogue(){var d=dialogues[dlgIdx];document.getElementById('dialogueScene').textContent=d.scene;var msgs=document.getElementById('dialogueMessages');msgs.innerHTML='';d.messages.forEach(function(m){var isy=m.who==='你';msgs.innerHTML+='<div style="padding:8px 10px;background:'+(isy?'rgba(230,57,70,0.1)':'var(--surface)')+';border-radius:8px;font-size:0.78rem;font-family:\'Noto Sans SC\',sans-serif;"><strong style="color:'+(isy?'var(--accent)':'var(--blue)')+';">'+m.who+':</strong> '+m.text+'</div>';});var cc=document.getElementById('dialogueChoices');cc.innerHTML='';d.choices.forEach(function(ch,i){var btn=document.createElement('div');btn.className='quiz-opt';btn.style.fontFamily="'Noto Sans SC','Inter',sans-serif";btn.innerHTML='<span class="letter">'+ltrs[i]+'</span>'+ch.text;btn.onclick=function(){cc.querySelectorAll('.quiz-opt').forEach(function(b){b.style.pointerEvents='none';});btn.classList.add(ch.correct?'correct':'wrong');var r=document.createElement('div');r.style.cssText='padding:8px;background:var(--surface);border-radius:8px;font-size:0.78rem;margin-top:6px;font-family:"Noto Sans SC",sans-serif;';r.innerHTML='<strong style="color:var(--blue);">Reply:</strong> '+ch.reply;document.getElementById('dialogueMessages').appendChild(r);};cc.appendChild(btn);});}
 function nextDialogue(){dlgIdx=(dlgIdx+1)%dialogues.length;renderDialogue();}renderDialogue();
 
-var memCards=[],memFlipped=[],memMatched=0,memMoves=0,memLock=false;
-function initMemory(){var pool=charKeys.filter(function(k){return charDB[k].str<=8;}).sort(function(){return Math.random()-.5;}).slice(0,8);var pairs=[];pool.forEach(function(ch){pairs.push({type:'char',value:ch,id:ch});pairs.push({type:'meaning',value:charDB[ch].en,id:ch});});memCards=pairs.sort(function(){return Math.random()-.5;});memFlipped=[];memMatched=0;memMoves=0;memLock=false;document.getElementById('memScore').textContent='Moves: 0';var g=document.getElementById('memGrid');g.innerHTML='';memCards.forEach(function(c2,i){var d=document.createElement('div');d.className='mem-card'+(c2.type==='char'?' is-char':'');d.textContent=c2.value;d.dataset.idx=i;d.onclick=function(){flipMem(i);};g.appendChild(d);});}
-function flipMem(idx){if(memLock)return;var cards=document.querySelectorAll('.mem-card');var card=cards[idx];if(card.classList.contains('flipped')||card.classList.contains('matched'))return;card.classList.add('flipped');memFlipped.push(idx);if(memFlipped.length===2){memMoves++;document.getElementById('memScore').textContent='Moves: '+memMoves;memLock=true;var a=memFlipped[0],b=memFlipped[1];if(memCards[a].id===memCards[b].id&&a!==b){cards[a].classList.add('matched');cards[b].classList.add('matched');memMatched+=2;memFlipped=[];memLock=false;}else{setTimeout(function(){cards[a].classList.remove('flipped');cards[b].classList.remove('flipped');memFlipped=[];memLock=false;},800);}}}initMemory();
+var MEM={level:'1',sizeId:'4x4',cards:[],flipped:[],matched:0,moves:0,lock:false,cols:4,loading:false};
+var MEM_SIZES=[
+  {id:'3x4',label:'3×4 · Easy',pairs:6,cols:4},
+  {id:'4x4',label:'4×4 · Medium',pairs:8,cols:4},
+  {id:'4x5',label:'4×5 · Hard',pairs:10,cols:4},
+  {id:'5x6',label:'5×6 · Expert',pairs:15,cols:5}
+];
+function getMemSize(){return MEM_SIZES.find(function(s){return s.id===MEM.sizeId;})||MEM_SIZES[1];}
+function initMemory(){
+  var sizeSel=document.getElementById('memSizeSelect');
+  var lvlSel=document.getElementById('memLevelSelect');
+  if(sizeSel&&!sizeSel.dataset.inited){
+    sizeSel.dataset.inited='1';
+    sizeSel.innerHTML=MEM_SIZES.map(function(s){return '<option value="'+s.id+'">'+s.label+'</option>';}).join('');
+    sizeSel.value=MEM.sizeId;
+    sizeSel.onchange=function(){MEM.sizeId=sizeSel.value;loadMemoryWords();};
+  }
+  if(lvlSel){
+    // Populate from KAHOOT/WORDS levels if we have them; otherwise fall back to a
+    // static list and refresh once real levels arrive.
+    var levels=(KAHOOT&&KAHOOT.levels&&KAHOOT.levels.length)?KAHOOT.levels:(WORDS&&WORDS.levels&&WORDS.levels.length?WORDS.levels:[
+      {id:'1',label:'HSK 1'},{id:'2',label:'HSK 2'},{id:'3',label:'HSK 3'},
+      {id:'4',label:'HSK 4'},{id:'5',label:'HSK 5'},{id:'6',label:'HSK 6'},{id:'7-9',label:'HSK 7-9'}
+    ]);
+    if(!lvlSel.dataset.inited||lvlSel.dataset.inited!==String(levels.length)){
+      lvlSel.dataset.inited=String(levels.length);
+      lvlSel.innerHTML=levels.map(function(l){return '<option value="'+l.id+'">'+l.label+'</option>';}).join('');
+      lvlSel.value=MEM.level;
+      lvlSel.onchange=function(){MEM.level=lvlSel.value;loadMemoryWords();};
+    }
+  }
+  loadMemoryWords();
+}
+function restartMemory(){loadMemoryWords();}
+function loadMemoryWords(){
+  if(MEM.loading)return;
+  var size=getMemSize();
+  MEM.cols=size.cols;
+  var g=document.getElementById('memGrid');
+  if(g){
+    g.style.gridTemplateColumns='repeat('+size.cols+',minmax(0,1fr))';
+    g.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.75rem;grid-column:1/-1;"><span class="spinner"></span> Loading words…</div>';
+  }
+  MEM.loading=true;
+  // Fetch plenty of words so we can dedupe and still have enough unique pairs.
+  fetchWordsForLevel(MEM.level,size.pairs*3,true).then(function(data){
+    MEM.loading=false;
+    var raw=(data&&data.words)||[];
+    var seen={};var unique=[];
+    for(var i=0;i<raw.length&&unique.length<size.pairs;i++){
+      var w=raw[i];if(!w||!w.simplified)continue;
+      if(seen[w.simplified])continue;seen[w.simplified]=true;
+      var en=Array.isArray(w.english)?w.english[0]:(w.english||'');
+      en=String(en||'').split(';')[0].trim();
+      if(!en)continue;
+      unique.push({cn:w.simplified,py:w.pinyin||'',en:en});
+    }
+    if(unique.length<size.pairs){
+      // Fallback to the static charDB when the HSK dataset is thin.
+      var fallback=charKeys.filter(function(k){return charDB[k]&&charDB[k].en;}).slice(0,size.pairs);
+      fallback.forEach(function(k){if(unique.length<size.pairs)unique.push({cn:k,py:charDB[k].py||'',en:charDB[k].en||''});});
+    }
+    if(unique.length<size.pairs){
+      if(g)g.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.75rem;grid-column:1/-1;">Not enough words at this level for '+size.label+'.</div>';
+      return;
+    }
+    renderMemoryBoard(unique);
+  }).catch(function(){
+    MEM.loading=false;
+    if(g)g.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.75rem;grid-column:1/-1;">Could not load words.</div>';
+  });
+}
+function renderMemoryBoard(pool){
+  var pairs=[];
+  pool.forEach(function(w){
+    pairs.push({type:'char',value:w.cn,id:w.cn,py:w.py});
+    pairs.push({type:'meaning',value:w.en,id:w.cn});
+  });
+  MEM.cards=pairs.sort(function(){return Math.random()-0.5;});
+  MEM.flipped=[];MEM.matched=0;MEM.moves=0;MEM.lock=false;
+  var score=document.getElementById('memScore');
+  if(score)score.textContent='Moves: 0';
+  var g=document.getElementById('memGrid');
+  if(!g)return;
+  g.style.gridTemplateColumns='repeat('+MEM.cols+',minmax(0,1fr))';
+  g.innerHTML='';
+  MEM.cards.forEach(function(c,i){
+    var d=document.createElement('div');
+    d.className='mem-card'+(c.type==='char'?' is-char':'');
+    d.textContent=c.value;
+    d.dataset.idx=String(i);
+    d.onclick=function(){flipMem(i);};
+    g.appendChild(d);
+  });
+}
+function flipMem(idx){
+  if(MEM.lock)return;
+  var cards=document.querySelectorAll('#memGrid .mem-card');
+  var card=cards[idx];
+  if(!card||card.classList.contains('flipped')||card.classList.contains('matched'))return;
+  card.classList.add('flipped');
+  MEM.flipped.push(idx);
+  if(MEM.flipped.length===2){
+    MEM.moves++;
+    var score=document.getElementById('memScore');
+    if(score)score.textContent='Moves: '+MEM.moves;
+    MEM.lock=true;
+    var a=MEM.flipped[0],b=MEM.flipped[1];
+    if(MEM.cards[a].id===MEM.cards[b].id&&a!==b){
+      cards[a].classList.add('matched');
+      cards[b].classList.add('matched');
+      MEM.matched+=2;
+      MEM.flipped=[];MEM.lock=false;
+      if(MEM.matched===MEM.cards.length&&score){
+        score.innerHTML='🏆 Won in '+MEM.moves+' moves!';
+      }
+    }else{
+      setTimeout(function(){
+        cards[a].classList.remove('flipped');
+        cards[b].classList.remove('flipped');
+        MEM.flipped=[];MEM.lock=false;
+      },800);
+    }
+  }
+}
+initMemory();
 
 var toneScore=0;var toneWords=[{ch:'妈',tone:1},{ch:'麻',tone:2},{ch:'马',tone:3},{ch:'骂',tone:4},{ch:'花',tone:1},{ch:'人',tone:2},{ch:'水',tone:3},{ch:'大',tone:4}];
 function newToneGame(){var w=toneWords[Math.floor(Math.random()*toneWords.length)];var area=document.getElementById('toneGameArea');area.innerHTML='<div class="cn" style="font-size:3rem;font-weight:800;color:#eee;margin:10px;">'+w.ch+'</div><div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;">What tone?</div><div style="display:flex;gap:8px;justify-content:center;" id="toneGameBtns"></div><div style="margin-top:10px;"><button class="btn-secondary btn-small" onclick="newToneGame()">Next →</button></div>';var btns=document.getElementById('toneGameBtns');var ans=false;[1,2,3,4].forEach(function(t){var b=document.createElement('button');b.className='btn-secondary';b.textContent=t===1?'1st ¯':t===2?'2nd ´':t===3?'3rd ˇ':'4th `';b.onclick=function(){if(ans)return;ans=true;if(t===w.tone){b.style.borderColor='var(--green)';b.style.color='var(--green)';toneScore++;document.getElementById('toneGameScore').textContent='Score: '+toneScore;}else{b.style.borderColor='var(--red)';b.style.color='var(--red)';btns.children[w.tone-1].style.borderColor='var(--green)';btns.children[w.tone-1].style.color='var(--green)';}};btns.appendChild(b);});}newToneGame();

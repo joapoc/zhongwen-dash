@@ -4,6 +4,7 @@ import path from "node:path";
 import { ankiRoutes } from "../modules/anki";
 import { languageRoutes } from "../modules/language";
 import { trendingRoutes } from "../modules/trending";
+import { ytfeedRoutes } from "../modules/ytfeed";
 import apiRoutes from "./routes/api";
 import webRoutes from "./routes/web";
 
@@ -19,6 +20,7 @@ app.use("/api", apiRoutes);
 app.use("/api/anki", ankiRoutes);
 app.use("/api/language", languageRoutes);
 app.use("/api/trending", trendingRoutes);
+app.use("/api/yt-feed", ytfeedRoutes);
 app.use("/", webRoutes);
 
 export default app;

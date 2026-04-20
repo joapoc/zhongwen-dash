@@ -36,27 +36,112 @@ quickReactions:[{cn:'瓜来了！',en:'The tea is here!'},{cn:'坐等反转',en:
 formats:['吃瓜时间线 / 事件复盘 — Timeline / Recap','十问 X 事件 — Ten questions about X','一图读懂 — One-picture summary','全网最全 / 合集 / 盘点 — Most complete compilation','年度大瓜 / 每周瓜汇总 — Annual / Weekly roundup']
 };
 TOPIC_WIDGET_DATA.makeup={
-terms:[{cn:'成分党',py:'chéngfèn dǎng',en:'ingredient nerd',cat:'archetype'},{cn:'平替',py:'píng tì',en:'affordable dupe/alternative',cat:'shopping'},{cn:'种草',py:'zhòng cǎo',en:'plant grass — recommend',cat:'review'},{cn:'踩雷',py:'cǎi léi',en:'stepped on mine — bad buy',cat:'review'},{cn:'空瓶记',py:'kōng píng jì',en:'empties review',cat:'format'},{cn:'横评',py:'héng píng',en:'multi-brand comparison',cat:'format'},{cn:'敏感肌',py:'mǐngǎn jī',en:'sensitive skin',cat:'skin'},{cn:'油皮',py:'yóu pí',en:'oily skin',cat:'skin'},{cn:'干皮',py:'gān pí',en:'dry skin',cat:'skin'},{cn:'黄皮',py:'huáng pí',en:'warm/yellow undertone',cat:'skin'},{cn:'防晒',py:'fáng shài',en:'sunscreen/UV protection',cat:'product'},{cn:'精华',py:'jīnghuá',en:'serum/essence',cat:'product'},{cn:'底妆',py:'dǐ zhuāng',en:'base makeup/foundation',cat:'product'},{cn:'A醇',py:'A chún',en:'retinol',cat:'ingredient'},{cn:'烟酰胺',py:'yān xiān àn',en:'niacinamide',cat:'ingredient'},{cn:'玻尿酸',py:'bō niào suān',en:'hyaluronic acid',cat:'ingredient'}],
+terms:[
+// archetype
+{cn:'成分党',py:'chéngfèn dǎng',en:'ingredient nerd',cat:'archetype'},
+{cn:'博主',py:'bó zhǔ',en:'blogger/influencer',cat:'archetype'},
+{cn:'种草达人',py:'zhòngcǎo dárén',en:'recommendation guru',cat:'archetype'},
+{cn:'素颜',py:'sù yán',en:'barefaced / no makeup',cat:'archetype'},
+// shopping & commerce
+{cn:'平替',py:'píng tì',en:'affordable dupe/alternative',cat:'shopping'},
+{cn:'爆款',py:'bào kuǎn',en:'bestseller / viral hit',cat:'shopping'},
+{cn:'代购',py:'dài gòu',en:'proxy buyer',cat:'shopping'},
+{cn:'海淘',py:'hǎi táo',en:'overseas online shopping',cat:'shopping'},
+{cn:'回购',py:'huí gòu',en:'repurchase',cat:'shopping'},
+{cn:'新品',py:'xīn pǐn',en:'new launch',cat:'shopping'},
+{cn:'大牌',py:'dà pái',en:'luxury/big brand',cat:'shopping'},
+{cn:'国货',py:'guó huò',en:'domestic (Chinese) brand',cat:'shopping'},
+// review
+{cn:'种草',py:'zhòng cǎo',en:'plant grass — recommend',cat:'review'},
+{cn:'拔草',py:'bá cǎo',en:'pull grass — un-recommend',cat:'review'},
+{cn:'踩雷',py:'cǎi léi',en:'stepped on a mine — bad buy',cat:'review'},
+{cn:'试色',py:'shì sè',en:'swatch / color test',cat:'review'},
+{cn:'测评',py:'cè píng',en:'product review',cat:'review'},
+{cn:'亲测',py:'qīn cè',en:'personally tested',cat:'review'},
+// format
+{cn:'空瓶记',py:'kōng píng jì',en:'empties review',cat:'format'},
+{cn:'横评',py:'héng píng',en:'multi-brand comparison',cat:'format'},
+{cn:'开箱',py:'kāi xiāng',en:'unboxing',cat:'format'},
+{cn:'教程',py:'jiào chéng',en:'tutorial',cat:'format'},
+{cn:'仿妆',py:'fǎng zhuāng',en:'copy-look / makeup imitation',cat:'format'},
+// skin type
+{cn:'敏感肌',py:'mǐngǎn jī',en:'sensitive skin',cat:'skin'},
+{cn:'油皮',py:'yóu pí',en:'oily skin',cat:'skin'},
+{cn:'干皮',py:'gān pí',en:'dry skin',cat:'skin'},
+{cn:'混油皮',py:'hùn yóu pí',en:'combination-oily skin',cat:'skin'},
+{cn:'痘痘肌',py:'dòudou jī',en:'acne-prone skin',cat:'skin'},
+{cn:'黄皮',py:'huáng pí',en:'warm/yellow undertone',cat:'skin'},
+{cn:'白皮',py:'bái pí',en:'fair skin',cat:'skin'},
+{cn:'冷白皮',py:'lěng bái pí',en:'cool-fair undertone',cat:'skin'},
+// product — face / skincare
+{cn:'防晒',py:'fáng shài',en:'sunscreen / UV protection',cat:'product'},
+{cn:'精华',py:'jīnghuá',en:'serum / essence',cat:'product'},
+{cn:'面霜',py:'miàn shuāng',en:'face cream',cat:'product'},
+{cn:'乳液',py:'rǔ yè',en:'lotion / emulsion',cat:'product'},
+{cn:'洁面',py:'jié miàn',en:'cleanser',cat:'product'},
+{cn:'卸妆',py:'xiè zhuāng',en:'makeup remover',cat:'product'},
+{cn:'化妆水',py:'huàzhuāng shuǐ',en:'toner',cat:'product'},
+{cn:'面膜',py:'miàn mó',en:'face mask',cat:'product'},
+{cn:'眼霜',py:'yǎn shuāng',en:'eye cream',cat:'product'},
+// product — makeup
+{cn:'底妆',py:'dǐ zhuāng',en:'base makeup / foundation',cat:'product'},
+{cn:'粉底液',py:'fěndǐ yè',en:'liquid foundation',cat:'product'},
+{cn:'遮瑕',py:'zhē xiá',en:'concealer / concealing',cat:'product'},
+{cn:'散粉',py:'sǎn fěn',en:'setting powder',cat:'product'},
+{cn:'定妆喷雾',py:'dìngzhuāng pēnwù',en:'setting spray',cat:'product'},
+{cn:'口红',py:'kǒu hóng',en:'lipstick',cat:'product'},
+{cn:'唇釉',py:'chún yòu',en:'liquid lipstick / lip glaze',cat:'product'},
+{cn:'腮红',py:'sāi hóng',en:'blush',cat:'product'},
+{cn:'眼影',py:'yǎn yǐng',en:'eyeshadow',cat:'product'},
+{cn:'眼线',py:'yǎn xiàn',en:'eyeliner',cat:'product'},
+{cn:'睫毛膏',py:'jiémáo gāo',en:'mascara',cat:'product'},
+{cn:'眉笔',py:'méi bǐ',en:'brow pencil',cat:'product'},
+{cn:'修容',py:'xiū róng',en:'contour',cat:'product'},
+{cn:'高光',py:'gāo guāng',en:'highlighter',cat:'product'},
+// ingredient
+{cn:'A醇',py:'A chún',en:'retinol',cat:'ingredient'},
+{cn:'烟酰胺',py:'yān xiān àn',en:'niacinamide',cat:'ingredient'},
+{cn:'玻尿酸',py:'bō niào suān',en:'hyaluronic acid',cat:'ingredient'},
+{cn:'水杨酸',py:'shuǐyáng suān',en:'salicylic acid (BHA)',cat:'ingredient'},
+{cn:'果酸',py:'guǒ suān',en:'AHA / fruit acid',cat:'ingredient'},
+{cn:'神经酰胺',py:'shénjīng xiān àn',en:'ceramide',cat:'ingredient'},
+{cn:'维C',py:'wéi C',en:'vitamin C',cat:'ingredient'},
+{cn:'熊果苷',py:'xióngguǒ gān',en:'arbutin (brightener)',cat:'ingredient'},
+{cn:'胜肽',py:'shèng tài',en:'peptide',cat:'ingredient'},
+// effect
+{cn:'保湿',py:'bǎo shī',en:'moisturizing',cat:'effect'},
+{cn:'补水',py:'bǔ shuǐ',en:'hydrating',cat:'effect'},
+{cn:'美白',py:'měi bái',en:'whitening / brightening',cat:'effect'},
+{cn:'抗老',py:'kàng lǎo',en:'anti-aging',cat:'effect'},
+{cn:'控油',py:'kòng yóu',en:'oil control',cat:'effect'},
+{cn:'提亮',py:'tí liàng',en:'brighten tone',cat:'effect'},
+{cn:'修护',py:'xiū hù',en:'repair / recover',cat:'effect'},
+{cn:'持妆',py:'chí zhuāng',en:'long-lasting wear',cat:'effect'}
+],
 routineSteps:['洁面 Cleanser','化妆水 Toner','精华 Serum','乳液 Lotion','面霜 Cream','防晒 Sunscreen'],
 searches:['防晒 横评 2025 最新','敏感肌 修护 空瓶 盘点','平替 粉底 黄皮 试色','踩雷 清单 美妆','A醇 梯度 使用 指南','油皮 底妆 持妆 测试'],
 skinQuiz:[{q:'After washing, how does skin feel in 30 min?',opts:[{t:'Tight and dry',s:'dry'},{t:'Oily T-zone only',s:'combo'},{t:'Shiny everywhere',s:'oily'},{t:'Comfortable',s:'normal'}]},{q:'How does skin react to new products?',opts:[{t:'Often red/irritated',s:'sensitive'},{t:'Usually fine',s:'normal'},{t:'Rarely notice',s:'oily'}]}],
 youtubeChannels:[
-{id:'luffy0823',label:'Luffy',name:'Luffy 0823',handle:'@luffy0823',url:'https://www.youtube.com/@luffy0823',videosUrl:'https://www.youtube.com/@luffy0823/videos',focus:'Soft glam, GRWM, and wearable beauty looks.'},
-{id:'cindyhhh32',label:'Cindy H',name:'Cindy H',handle:'@cindyhhh32',url:'https://www.youtube.com/@cindyhhh32',videosUrl:'https://www.youtube.com/@cindyhhh32/videos',focus:'Beginner-friendly tutorials and practical makeup teaching.'},
-{id:'qiuqiouqiu',label:'QiuQiuQiu',name:'QiuQiuQiu',handle:'@QiuQiuQiu',url:'https://www.youtube.com/@QiuQiuQiu',videosUrl:'https://www.youtube.com/@QiuQiuQiu/videos',focus:'Chinese beauty trends, looks, and product-driven content.'},
-{id:'itspeachi',label:'Peachi',name:'itsPeachi',handle:'@itsPeachi',url:'https://www.youtube.com/@itsPeachi',videosUrl:'https://www.youtube.com/@itsPeachi/videos',focus:'Cute aesthetic looks, lifestyle-beauty crossover, and easy inspo.'},
-{id:'rrei_ier',label:'rrei_ier',name:'rrei_ier',handle:'@rrei_ier',url:'https://www.youtube.com/@rrei_ier',videosUrl:'https://www.youtube.com/@rrei_ier/videos',focus:'Look breakdowns and trend-first makeup content.'},
-{id:'itsjcnana',label:'Jcnana',name:'ItsJcnana',handle:'@ItsJcnana',url:'https://www.youtube.com/@ItsJcnana',videosUrl:'https://www.youtube.com/@ItsJcnana/videos',focus:'Beauty videos with creator personality, routines, and product testing.'}
+// videoId = the currently-featured video to embed for this creator. IDs rot when videos go private;
+// replace by grabbing the share link from any video on the creator's channel.
+{id:'luffy0823',label:'Luffy',name:'Luffy 0823',handle:'@luffy0823',url:'https://www.youtube.com/@luffy0823',videosUrl:'https://www.youtube.com/@luffy0823/videos',videoId:'',focus:'Soft glam, GRWM, and wearable beauty looks.'},
+{id:'cindyhhh32',label:'Cindy H',name:'Cindy H',handle:'@cindyhhh32',url:'https://www.youtube.com/@cindyhhh32',videosUrl:'https://www.youtube.com/@cindyhhh32/videos',videoId:'',focus:'Beginner-friendly tutorials and practical makeup teaching.'},
+{id:'qiuqiouqiu',label:'QiuQiuQiu',name:'QiuQiuQiu',handle:'@QiuQiuQiu',url:'https://www.youtube.com/@QiuQiuQiu',videosUrl:'https://www.youtube.com/@QiuQiuQiu/videos',videoId:'',focus:'Chinese beauty trends, looks, and product-driven content.'},
+{id:'itspeachi',label:'Peachi',name:'itsPeachi',handle:'@itsPeachi',url:'https://www.youtube.com/@itsPeachi',videosUrl:'https://www.youtube.com/@itsPeachi/videos',videoId:'',focus:'Cute aesthetic looks, lifestyle-beauty crossover, and easy inspo.'},
+{id:'rrei_ier',label:'rrei_ier',name:'rrei_ier',handle:'@rrei_ier',url:'https://www.youtube.com/@rrei_ier',videosUrl:'https://www.youtube.com/@rrei_ier/videos',videoId:'',focus:'Look breakdowns and trend-first makeup content.'},
+{id:'itsjcnana',label:'Jcnana',name:'ItsJcnana',handle:'@ItsJcnana',url:'https://www.youtube.com/@ItsJcnana',videosUrl:'https://www.youtube.com/@ItsJcnana/videos',videoId:'',focus:'Beauty videos with creator personality, routines, and product testing.'}
 ]
 };
 TOPIC_WIDGET_DATA.food={
 hotpot:{broths:[{n:'红锅 Spicy',p:38},{n:'清汤 Clear',p:28},{n:'鸳鸯 Half/Half',p:48},{n:'菌汤 Mushroom',p:38},{n:'番茄 Tomato',p:35}],meats:[{n:'肥牛 Fatty Beef',p:38},{n:'肥羊 Lamb',p:36},{n:'毛肚 Tripe',p:32},{n:'黄喉 Aorta',p:28},{n:'鸭肠 Duck Int.',p:26},{n:'午餐肉 Spam',p:18}],vegs:[{n:'藕片 Lotus Root',p:12},{n:'土豆 Potato',p:10},{n:'金针菇 Enoki',p:12},{n:'豆皮 Tofu Skin',p:10},{n:'冻豆腐 Frozen Tofu',p:10},{n:'蔬菜拼盘 Veg Platter',p:22}],staples:[{n:'宽粉 Wide Noodles',p:12},{n:'方便面 Instant',p:8},{n:'米饭 Rice',p:3}],extras:[{n:'油碟 Oil Dip',p:5},{n:'芝麻酱 Sesame',p:6},{n:'冰粉 Jelly',p:8},{n:'酸梅汤 Plum Drink',p:8}]},
 cuisines:[{name:'川菜 Sichuan',icon:'🌶️',flavor:'麻辣 Numbing-spicy',dishes:'水煮牛肉, 宫保鸡丁, 回锅肉, 鱼香肉丝'},{name:'粤菜 Cantonese',icon:'🦐',flavor:'清鲜 Light-fresh',dishes:'虾饺, 白切鸡, 清蒸鱼, 叉烧'},{name:'湘菜 Hunan',icon:'🔥',flavor:'香辣 Fragrant-spicy',dishes:'剁椒鱼头, 小炒肉, 辣子鸡'},{name:'东北 Northeast',icon:'🥟',flavor:'咸鲜 Salty-savory',dishes:'锅包肉, 地三鲜, 酸菜白肉'},{name:'西北 Northwest',icon:'🐑',flavor:'清真 Halal',dishes:'兰州拉面, 羊肉泡馍, 烤串'},{name:'淮扬 Jiangsu',icon:'🍖',flavor:'甜鲜 Sweet-fresh',dishes:'红烧肉, 松鼠桂鱼, 东坡肉'}],
-spiceLevels:[{cn:'不要辣',en:'No spice',emoji:'😊',bg:'#1a2a1a'},{cn:'微辣',en:'Mild',emoji:'😅',bg:'#2a2a1a'},{cn:'中辣',en:'Medium',emoji:'🥵',bg:'#2a1a1a'},{cn:'特辣',en:'DEATH',emoji:'💀',bg:'#3a0a0a'}],
-orderPhrases:[{cn:'有什么推荐？',en:'What do you recommend?'},{cn:'少辣，可以吗？',en:'Less spicy, OK?'},{cn:'可以打包吗？',en:'Can we box leftovers?'},{cn:'买单/结账',en:'Bill please'},{cn:'扫码点餐',en:'Scan QR to order'},{cn:'米饭要三碗',en:'Three bowls of rice'}],
+spiceLevels:[{cn:'不要辣',py:'bú yào là',en:'No spice',emoji:'😊',bg:'#1a2a1a'},{cn:'微辣',py:'wēi là',en:'Mild',emoji:'😅',bg:'#2a2a1a'},{cn:'中辣',py:'zhōng là',en:'Medium',emoji:'🥵',bg:'#2a1a1a'},{cn:'特辣',py:'tè là',en:'DEATH',emoji:'💀',bg:'#3a0a0a'}],
+orderPhrases:[{cn:'有什么推荐？',py:'yǒu shénme tuījiàn?',en:'What do you recommend?'},{cn:'少辣，可以吗？',py:'shǎo là, kěyǐ ma?',en:'Less spicy, OK?'},{cn:'可以打包吗？',py:'kěyǐ dǎbāo ma?',en:'Can we box leftovers?'},{cn:'买单',py:'mǎi dān',en:'Bill please'},{cn:'扫码点餐',py:'sǎomǎ diǎncān',en:'Scan QR to order'},{cn:'米饭要三碗',py:'mǐfàn yào sān wǎn',en:'Three bowls of rice'},{cn:'服务员',py:'fúwùyuán',en:'Waiter! (call over)'},{cn:'加点水',py:'jiā diǎn shuǐ',en:'More water please'},{cn:'这个是什么？',py:'zhège shì shénme?',en:'What is this?'}],
+cookingVerbs:[{cn:'炒',py:'chǎo',en:'stir-fry'},{cn:'煎',py:'jiān',en:'pan-fry'},{cn:'炸',py:'zhá',en:'deep-fry'},{cn:'蒸',py:'zhēng',en:'steam'},{cn:'煮',py:'zhǔ',en:'boil'},{cn:'焖',py:'mèn',en:'braise'},{cn:'烤',py:'kǎo',en:'roast/bake'},{cn:'凉拌',py:'liángbàn',en:'cold-mixed'},{cn:'红烧',py:'hóngshāo',en:'red-braised'},{cn:'水煮',py:'shuǐzhǔ',en:'water-boiled (Sichuan)'}],
+flavorWords:[{cn:'麻',py:'má',en:'numbing'},{cn:'辣',py:'là',en:'spicy'},{cn:'酸',py:'suān',en:'sour'},{cn:'甜',py:'tián',en:'sweet'},{cn:'咸',py:'xián',en:'salty'},{cn:'鲜',py:'xiān',en:'umami/fresh'},{cn:'香',py:'xiāng',en:'fragrant'},{cn:'苦',py:'kǔ',en:'bitter'}],
 youtubeChannels:[
-{id:'xiaoyingfood',label:'XiaoYing',name:'XiaoYing Food',handle:'@XiaoYingFood',url:'https://www.youtube.com/@XiaoYingFood',videosUrl:'https://www.youtube.com/@XiaoYingFood/videos',focus:'Chinese home-style dishes, practical recipes, and ingredient vocabulary.'},
-{id:'chefwang',label:'Chef Wang',name:'Chef Wang',handle:'@chefwang',url:'https://www.youtube.com/@chefwang',videosUrl:'https://www.youtube.com/@chefwang/videos',focus:'Professional Chinese cooking technique, wok skills, and restaurant-style dishes.'}
+{id:'xiaoyingfood',label:'XiaoYing',name:'XiaoYing Food',handle:'@XiaoYingFood',url:'https://www.youtube.com/@XiaoYingFood',videosUrl:'https://www.youtube.com/@XiaoYingFood/videos',videoId:'',focus:'Chinese home-style dishes, practical recipes, and ingredient vocabulary.'},
+{id:'chefwang',label:'Chef Wang',name:'Chef Wang',handle:'@chefwang',url:'https://www.youtube.com/@chefwang',videosUrl:'https://www.youtube.com/@chefwang/videos',videoId:'',focus:'Professional Chinese cooking technique, wok skills, and restaurant-style dishes.'}
 ]
 };
 TOPIC_WIDGET_DATA.dropship={
@@ -112,8 +197,308 @@ function topicLoadFoodYoutubeChannel(){var channels=TOPIC_WIDGET_DATA.food.youtu
 function topicSaveFoodYoutubeChannel(channelId){try{localStorage.setItem(TOPIC_FOOD_YOUTUBE_STORAGE_KEY,channelId);}catch(_e){}}
 function topicGetActiveFoodYoutubeChannel(){var channels=TOPIC_WIDGET_DATA.food.youtubeChannels||[];return channels.find(function(channel){return channel.id===activeTopicFoodYoutubeChannelId;})||channels[0]||null;}
 function topicSetFoodYoutubeChannel(channelId){activeTopicFoodYoutubeChannelId=channelId;topicSaveFoodYoutubeChannel(channelId);topicRenderFoodYoutubeWidget();}
-function topicRenderMakeupYoutubeWidget(){var mount=document.getElementById('topic-makeupYoutubeWidget'),channels=TOPIC_WIDGET_DATA.makeup.youtubeChannels||[],active=topicGetActiveMakeupYoutubeChannel();if(!mount||!active)return;mount.innerHTML=['<div class=\"youtube-news-head\">','<div class=\"youtube-news-copy\">','<div class=\"youtube-news-kicker\">Curated Creator Feed</div>','<div class=\"youtube-news-title-row\"><strong>',active.name,'</strong><span class=\"youtube-news-live-tag\">Beauty YouTube</span></div>','<div class=\"youtube-news-sub\">',active.handle,' · switch creators here and keep your last selection saved.</div>','</div>','<div style=\"display:flex;gap:8px;flex-wrap:wrap\">','<a class=\"btn-secondary btn-small\" href=\"',active.url,'\" target=\"_blank\" rel=\"noopener noreferrer\">Open Channel</a>','<a class=\"btn-secondary btn-small\" href=\"',active.videosUrl,'\" target=\"_blank\" rel=\"noopener noreferrer\">Open Videos</a>','<button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"topicCopyText(&quot;',active.url,'&quot;,this)\">Copy Link</button>','</div>','</div>','<div class=\"youtube-news-player\" style=\"display:flex;align-items:center;justify-content:center;padding:20px\">','<div style=\"width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:stretch\">','<div style=\"background:linear-gradient(135deg,rgba(244,114,182,.16),rgba(167,139,250,.14));border:1px solid var(--border);border-radius:14px;padding:16px\">','<div class=\"topic-mini-label\">Selected Creator</div>','<div style=\"font-size:1.1rem;font-weight:800;color:#fff\">',active.name,'</div>','<div class=\"cn\" style=\"font-size:.86rem;color:var(--tab-accent);margin-top:4px\">',active.handle,'</div>','<div style=\"font-size:.72rem;color:var(--muted);line-height:1.7;margin-top:10px\">',active.focus,'</div>','</div>','<div style=\"background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px\">','<div class=\"topic-mini-label\">Workflow</div>','<div style=\"font-size:.74rem;color:#ddd;line-height:1.8\">1. Open the creator channel or videos tab.<br>2. Browse tutorials, hauls, reviews, and GRWM clips.<br>3. Save new vocab in the <span class=\"cn\">Found While Browsing</span> widget below.</div>','<div style=\"margin-top:10px;font-size:.68rem;color:var(--muted)\">Tip: use the search templates in this tab after you spot a trend or product name.</div>','</div>','<div style=\"background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px\">','<div class=\"topic-mini-label\">Your Channel Set</div>','<div style=\"display:flex;flex-wrap:wrap;gap:6px\">',channels.map(function(channel){return '<span style=\"padding:5px 10px;border-radius:999px;background:'+(channel.id===active.id?'rgba(244,114,182,.16)':'rgba(255,255,255,.03)')+';border:1px solid '+(channel.id===active.id?'var(--tab-accent)':'var(--border)')+';font-size:.68rem;color:'+(channel.id===active.id?'var(--tab-accent)':'#c9cfdb')+'\">'+channel.handle+'</span>';}).join(''),'</div>','</div>','</div>','</div>','<div class=\"youtube-news-channel-row\">',channels.map(function(channel){return '<button class=\"youtube-news-channel-btn'+(channel.id===active.id?' active':'')+'\" type=\"button\" onclick=\"topicSetMakeupYoutubeChannel(&quot;'+channel.id+'&quot;)\">'+channel.label+'</button>';}).join(''),'</div>'].join('');}
-function topicRenderFoodYoutubeWidget(){var mount=document.getElementById('topic-foodYoutubeWidget'),channels=TOPIC_WIDGET_DATA.food.youtubeChannels||[],active=topicGetActiveFoodYoutubeChannel();if(!mount||!active)return;mount.innerHTML=['<div class=\"youtube-news-head\">','<div class=\"youtube-news-copy\">','<div class=\"youtube-news-kicker\">Curated Creator Feed</div>','<div class=\"youtube-news-title-row\"><strong>',active.name,'</strong><span class=\"youtube-news-live-tag\">Food YouTube</span></div>','<div class=\"youtube-news-sub\">',active.handle,' · switch cooks here and keep your last selection saved.</div>','</div>','<div style=\"display:flex;gap:8px;flex-wrap:wrap\">','<a class=\"btn-secondary btn-small\" href=\"',active.url,'\" target=\"_blank\" rel=\"noopener noreferrer\">Open Channel</a>','<a class=\"btn-secondary btn-small\" href=\"',active.videosUrl,'\" target=\"_blank\" rel=\"noopener noreferrer\">Open Videos</a>','<button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"topicCopyText(&quot;',active.url,'&quot;,this)\">Copy Link</button>','</div>','</div>','<div class=\"youtube-news-player\" style=\"display:flex;align-items:center;justify-content:center;padding:20px\">','<div style=\"width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:stretch\">','<div style=\"background:linear-gradient(135deg,rgba(240,160,64,.18),rgba(251,191,36,.14));border:1px solid var(--border);border-radius:14px;padding:16px\">','<div class=\"topic-mini-label\">Selected Creator</div>','<div style=\"font-size:1.1rem;font-weight:800;color:#fff\">',active.name,'</div>','<div class=\"cn\" style=\"font-size:.86rem;color:var(--tab-accent);margin-top:4px\">',active.handle,'</div>','<div style=\"font-size:.72rem;color:var(--muted);line-height:1.7;margin-top:10px\">',active.focus,'</div>','</div>','<div style=\"background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px\">','<div class=\"topic-mini-label\">Workflow</div>','<div style=\"font-size:.74rem;color:#ddd;line-height:1.8\">1. Open the recipe channel or videos tab.<br>2. Browse recipes, cooking steps, ingredients, and kitchen technique.<br>3. Save new vocab in the <span class=\"cn\">Found While Browsing</span> widget below.</div>','<div style=\"margin-top:10px;font-size:.68rem;color:var(--muted)\">Tip: pair this with the Food tab glossary and ordering phrases after spotting dish names or cooking verbs.</div>','</div>','<div style=\"background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px\">','<div class=\"topic-mini-label\">Your Channel Set</div>','<div style=\"display:flex;flex-wrap:wrap;gap:6px\">',channels.map(function(channel){return '<span style=\"padding:5px 10px;border-radius:999px;background:'+(channel.id===active.id?'rgba(240,160,64,.16)':'rgba(255,255,255,.03)')+';border:1px solid '+(channel.id===active.id?'var(--tab-accent)':'var(--border)')+';font-size:.68rem;color:'+(channel.id===active.id?'var(--tab-accent)':'#c9cfdb')+'\">'+channel.handle+'</span>';}).join(''),'</div>','</div>','</div>','</div>','<div class=\"youtube-news-channel-row\">',channels.map(function(channel){return '<button class=\"youtube-news-channel-btn'+(channel.id===active.id?' active':'')+'\" type=\"button\" onclick=\"topicSetFoodYoutubeChannel(&quot;'+channel.id+'&quot;)\">'+channel.label+'</button>';}).join(''),'</div>'].join('');}
+// ===== Creator video feed (Flavor A — one iframe, swap src on chip click) =====
+var TOPIC_FEED_VIDEO_STORAGE_KEY='zhongwen-dash:topic-feed-videos';
+function topicLoadFeedVideoMap(){try{return JSON.parse(localStorage.getItem(TOPIC_FEED_VIDEO_STORAGE_KEY)||'{}');}catch(_e){return {};}}
+function topicSaveFeedVideoMap(map){try{localStorage.setItem(TOPIC_FEED_VIDEO_STORAGE_KEY,JSON.stringify(map||{}));}catch(_e){}}
+function topicGetChannelVideoId(feedKey,channelId,fallback){var map=topicLoadFeedVideoMap();return (map[feedKey]&&map[feedKey][channelId])||fallback||'';}
+function topicSetChannelVideoId(feedKey,channelId,videoId){var map=topicLoadFeedVideoMap();if(!map[feedKey])map[feedKey]={};map[feedKey][channelId]=videoId||'';topicSaveFeedVideoMap(map);}
+function topicExtractYouTubeId(input){
+  if(!input)return '';
+  input=String(input).trim();
+  if(/^[A-Za-z0-9_-]{11}$/.test(input))return input;
+  var m=input.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m?m[1]:'';
+}
+function topicFeedEmbedUrl(videoId){
+  return 'https://www.youtube.com/embed/'+videoId+'?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1';
+}
+function topicFeedEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function topicRenderCreatorFeed(feedKey,mountId,channels,getActiveId,setActiveId,badge){
+  var mount=document.getElementById(mountId);
+  if(!mount||!channels||!channels.length)return;
+  var activeId=getActiveId();
+  var active=channels.find(function(c){return c.id===activeId;})||channels[0];
+  if(!active)return;
+
+  if(!mount.dataset.feedInited){
+    mount.dataset.feedInited='1';
+    mount.innerHTML=
+      '<div class="creator-feed">'+
+        '<header class="creator-feed-top">'+
+          '<div class="creator-feed-meta">'+
+            '<span class="creator-feed-kicker"></span>'+
+            '<strong class="creator-feed-name"></strong>'+
+            '<span class="creator-feed-handle"></span>'+
+          '</div>'+
+          '<div class="creator-feed-actions">'+
+            '<a class="creator-feed-open btn-secondary btn-small" target="_blank" rel="noopener noreferrer">Open Channel</a>'+
+            '<button class="creator-feed-setvid btn-secondary btn-small" type="button" title="Paste a video URL or 11-char ID">🎬 Set Video</button>'+
+          '</div>'+
+        '</header>'+
+        '<div class="creator-feed-player">'+
+          '<iframe class="creator-feed-frame" allow="autoplay; encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'+
+          '<div class="creator-feed-empty" hidden>'+
+            '<div style="font-size:2rem;margin-bottom:6px;">🎬</div>'+
+            '<div style="font-size:0.9rem;font-weight:700;margin-bottom:4px;">No video set for this creator yet</div>'+
+            '<div class="creator-feed-empty-sub">Click <strong>🎬 Set Video</strong> above and paste any video URL from their channel — it saves to your browser.</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="creator-feed-focus"></div>'+
+        '<nav class="creator-feed-chips"></nav>'+
+      '</div>';
+    var chipsEl=mount.querySelector('.creator-feed-chips');
+    chipsEl.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-feed-id]');
+      if(!btn)return;
+      setActiveId(btn.getAttribute('data-feed-id'));
+    });
+    var setBtn=mount.querySelector('.creator-feed-setvid');
+    setBtn.addEventListener('click',function(){
+      var currentActive=channels.find(function(c){return c.id===getActiveId();})||channels[0];
+      var current=topicGetChannelVideoId(feedKey,currentActive.id,currentActive.videoId);
+      var input=window.prompt('Paste a YouTube video URL or 11-character ID for '+(currentActive.name||currentActive.label||'this creator')+' (leave blank to clear):',current||'');
+      if(input===null)return;
+      var trimmed=input.trim();
+      if(trimmed===''){
+        topicSetChannelVideoId(feedKey,currentActive.id,'');
+      }else{
+        var id=topicExtractYouTubeId(trimmed);
+        if(!id){alert('Could not find a YouTube video ID in that input.');return;}
+        topicSetChannelVideoId(feedKey,currentActive.id,id);
+      }
+      topicRenderCreatorFeed(feedKey,mountId,channels,getActiveId,setActiveId,badge);
+    });
+  }
+
+  var kickerEl=mount.querySelector('.creator-feed-kicker');
+  var nameEl=mount.querySelector('.creator-feed-name');
+  var handleEl=mount.querySelector('.creator-feed-handle');
+  var openEl=mount.querySelector('.creator-feed-open');
+  var focusEl=mount.querySelector('.creator-feed-focus');
+  var chipsEl=mount.querySelector('.creator-feed-chips');
+  var iframe=mount.querySelector('.creator-feed-frame');
+  var emptyEl=mount.querySelector('.creator-feed-empty');
+
+  if(kickerEl)kickerEl.textContent=badge||'CREATOR FEED';
+  if(nameEl)nameEl.textContent=active.name||'';
+  if(handleEl)handleEl.textContent=active.handle||'';
+  if(openEl)openEl.href=active.videosUrl||active.url||'#';
+  if(focusEl)focusEl.textContent=active.focus||'';
+
+  if(chipsEl){
+    chipsEl.innerHTML=channels.map(function(c){
+      var hasVideo=!!topicGetChannelVideoId(feedKey,c.id,c.videoId);
+      var cls='creator-feed-chip'+(c.id===active.id?' active':'')+(hasVideo?' has-video':'');
+      var title=c.name||c.label||'';
+      if(!hasVideo)title+=' · no video set';
+      return '<button type="button" class="'+cls+'" data-feed-id="'+topicFeedEscape(c.id)+'" title="'+topicFeedEscape(title)+'">'+topicFeedEscape(c.label||c.name||'')+'</button>';
+    }).join('');
+  }
+
+  var videoId=topicGetChannelVideoId(feedKey,active.id,active.videoId);
+  if(videoId&&iframe){
+    if(emptyEl)emptyEl.setAttribute('hidden','');
+    iframe.style.display='';
+    var targetSrc=topicFeedEmbedUrl(videoId);
+    if(iframe.src!==targetSrc)iframe.src=targetSrc;
+    iframe.title=(active.name||'YouTube')+' video';
+  }else{
+    if(emptyEl)emptyEl.removeAttribute('hidden');
+    if(iframe){iframe.style.display='none';if(iframe.src&&iframe.src!=='about:blank')iframe.src='about:blank';}
+  }
+}
+
+function topicRenderMakeupYoutubeWidget(){
+  topicRenderCreatorFeed(
+    'makeup','topic-makeupYoutubeWidget',
+    TOPIC_WIDGET_DATA.makeup.youtubeChannels||[],
+    function(){return activeTopicMakeupYoutubeChannelId;},
+    function(id){topicSetMakeupYoutubeChannel(id);},
+    'BEAUTY CREATOR FEED'
+  );
+}
+function topicRenderFoodYoutubeWidget(){
+  topicRenderCreatorFeed(
+    'food','topic-foodYoutubeWidget',
+    TOPIC_WIDGET_DATA.food.youtubeChannels||[],
+    function(){return activeTopicFoodYoutubeChannelId;},
+    function(id){topicSetFoodYoutubeChannel(id);},
+    'FOOD CREATOR FEED'
+  );
+}
+
+// ===== Latest Videos grid (server-scraped via YouTube RSS) =====
+var TOPIC_LATEST_FEED_CHANNEL_KEY='zhongwen-dash:yt-feed-channels';
+function topicLoadLatestFeedMap(){try{return JSON.parse(localStorage.getItem(TOPIC_LATEST_FEED_CHANNEL_KEY)||'{}');}catch(_e){return {};}}
+function topicSaveLatestFeedMap(m){try{localStorage.setItem(TOPIC_LATEST_FEED_CHANNEL_KEY,JSON.stringify(m||{}));}catch(_e){}}
+function topicGetCreatorChannelId(feedKey,creatorId){var m=topicLoadLatestFeedMap();return (m[feedKey]&&m[feedKey][creatorId])||'';}
+function topicSetCreatorChannelId(feedKey,creatorId,channelId){var m=topicLoadLatestFeedMap();if(!m[feedKey])m[feedKey]={};m[feedKey][creatorId]=channelId||'';topicSaveLatestFeedMap(m);}
+
+function topicResolveCreatorChannelIds(feedKey,creators,done){
+  var toResolve=creators.filter(function(c){return c.handle&&!topicGetCreatorChannelId(feedKey,c.id);});
+  if(!toResolve.length){done&&done(false);return;}
+  var remaining=toResolve.length;var changed=false;
+  toResolve.forEach(function(c){
+    var handle=String(c.handle||'').replace(/^@/,'');
+    fetch('/api/yt-feed/resolve?handle='+encodeURIComponent(handle))
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data&&data.ok&&data.channelId){
+          topicSetCreatorChannelId(feedKey,c.id,data.channelId);
+          changed=true;
+        }
+      })
+      .catch(function(){})
+      .then(function(){
+        remaining--;
+        if(remaining<=0)done&&done(changed);
+      });
+  });
+}
+
+function topicLatestFeedFormatDate(iso){
+  if(!iso)return '';
+  var d=new Date(iso);
+  if(isNaN(d.getTime()))return '';
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+
+function topicRenderLatestFeedContent(mount,data,creators,feedKey){
+  var activeFilter=mount.dataset.latestFilter||'all';
+  var metaEl=mount.querySelector('.yt-latest-meta');
+  var noteEl=mount.querySelector('.yt-latest-note');
+  var chipsEl=mount.querySelector('.yt-latest-chips');
+  var gridEl=mount.querySelector('.yt-latest-grid');
+
+  if(metaEl){
+    var when=data.updatedAt?new Date(data.updatedAt).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    metaEl.textContent=(data.total||0)+' video'+((data.total===1)?'':'s')+(when?' · '+when:'')+(data.cached?' · cached':'');
+  }
+  if(noteEl){
+    if(data.stale&&data.message){noteEl.textContent='⚠ '+data.message;noteEl.style.display='';}
+    else if(data.message&&!data.cached){noteEl.textContent=data.message;noteEl.style.display='';}
+    else{noteEl.textContent='';noteEl.style.display='none';}
+  }
+
+  var creatorByChannelId={};
+  creators.forEach(function(c){var cid=topicGetCreatorChannelId(feedKey,c.id);if(cid)creatorByChannelId[cid]=c;});
+
+  var chips=[{id:'all',label:'All',count:data.total}];
+  (data.channels||[]).forEach(function(ch){
+    var creator=creatorByChannelId[ch.id];
+    chips.push({id:ch.id,label:creator?(creator.label||creator.name||ch.name||ch.id):(ch.name||ch.id),count:ch.count});
+  });
+  if(chipsEl){
+    chipsEl.innerHTML=chips.map(function(c){
+      return '<button type="button" class="yt-latest-chip'+(c.id===activeFilter?' active':'')+'" data-latest-filter="'+topicFeedEscape(c.id)+'">'+topicFeedEscape(c.label)+' <span class="count">'+(c.count||0)+'</span></button>';
+    }).join('');
+  }
+
+  var items=activeFilter==='all'?data.items:(data.items||[]).filter(function(it){return it.channelId===activeFilter;});
+  if(!gridEl)return;
+  if(!items.length){
+    gridEl.innerHTML='<div class="yt-latest-msg">No videos to show. Try Refresh.</div>';
+    return;
+  }
+  gridEl.innerHTML=items.map(function(it){
+    var creator=creatorByChannelId[it.channelId];
+    var chName=creator?(creator.label||creator.name||it.channelName||''):(it.channelName||'');
+    var when=topicLatestFeedFormatDate(it.publishedAt);
+    return '<article class="yt-latest-card">'+
+      '<a class="yt-latest-thumb-link" href="'+topicFeedEscape(it.url||'#')+'" target="_blank" rel="noopener noreferrer">'+
+        '<img class="yt-latest-thumb" src="'+topicFeedEscape(it.thumbnailUrl||'')+'" loading="lazy" alt="'+topicFeedEscape(it.title||'')+'">'+
+      '</a>'+
+      '<div class="yt-latest-card-body">'+
+        '<div class="yt-latest-card-meta"><span class="yt-latest-card-channel">'+topicFeedEscape(chName)+'</span>'+(when?'<span class="yt-latest-card-date">'+topicFeedEscape(when)+'</span>':'')+'</div>'+
+        '<a class="yt-latest-card-title" href="'+topicFeedEscape(it.url||'#')+'" target="_blank" rel="noopener noreferrer">'+topicFeedEscape(it.title||'')+'</a>'+
+      '</div>'+
+      '</article>';
+  }).join('');
+}
+
+function topicLoadLatestFeed(feedKey,mountId,creators,opts){
+  opts=opts||{};
+  var mount=document.getElementById(mountId);
+  if(!mount)return;
+  var gridEl=mount.querySelector('.yt-latest-grid');
+  var metaEl=mount.querySelector('.yt-latest-meta');
+  if(gridEl&&!mount._latestData)gridEl.innerHTML='<div class="yt-latest-msg"><span class="spinner"></span> Loading…</div>';
+
+  topicResolveCreatorChannelIds(feedKey,creators,function(){
+    var ids=creators.map(function(c){return topicGetCreatorChannelId(feedKey,c.id);}).filter(Boolean);
+    if(!ids.length){
+      if(metaEl)metaEl.textContent='';
+      if(gridEl)gridEl.innerHTML='<div class="yt-latest-msg">Could not resolve any creator handles to channel IDs. Check the handles or your network, then Refresh.</div>';
+      return;
+    }
+    var url='/api/yt-feed?ids='+encodeURIComponent(ids.join(','))+(opts.refresh?'&refresh=1':'');
+    fetch(url).then(function(r){return r.json();}).then(function(data){
+      if(!data||!data.ok){
+        if(gridEl)gridEl.innerHTML='<div class="yt-latest-msg">Could not load feed ('+((data&&data.message)||'unknown error')+').</div>';
+        return;
+      }
+      mount._latestData=data;
+      mount._latestCreators=creators;
+      mount._latestFeedKey=feedKey;
+      topicRenderLatestFeedContent(mount,data,creators,feedKey);
+    }).catch(function(err){
+      if(gridEl)gridEl.innerHTML='<div class="yt-latest-msg">Network error: '+topicFeedEscape(String(err&&err.message||err))+'.</div>';
+    });
+  });
+}
+
+function topicRenderLatestFeed(feedKey,mountId,creators,badge){
+  var mount=document.getElementById(mountId);
+  if(!mount)return;
+  if(!mount.dataset.latestInited){
+    mount.dataset.latestInited='1';
+    mount.dataset.latestFilter='all';
+    mount.innerHTML=
+      '<div class="yt-latest">'+
+        '<header class="yt-latest-top">'+
+          '<div>'+
+            '<div class="yt-latest-kicker">'+(badge||'LATEST VIDEOS')+'</div>'+
+            '<div class="yt-latest-meta">—</div>'+
+            '<div class="yt-latest-note" style="display:none;"></div>'+
+          '</div>'+
+          '<div class="yt-latest-actions">'+
+            '<button type="button" class="btn-secondary btn-small" data-latest-action="clear" title="Wipe scrape cache">🗑</button>'+
+            '<button type="button" class="btn-secondary btn-small" data-latest-action="refresh" title="Re-fetch from YouTube RSS">↻ Refresh</button>'+
+          '</div>'+
+        '</header>'+
+        '<nav class="yt-latest-chips"></nav>'+
+        '<div class="yt-latest-grid"></div>'+
+      '</div>';
+    mount.addEventListener('click',function(e){
+      var chip=e.target.closest('[data-latest-filter]');
+      if(chip){
+        mount.dataset.latestFilter=chip.getAttribute('data-latest-filter');
+        if(mount._latestData)topicRenderLatestFeedContent(mount,mount._latestData,mount._latestCreators||creators,mount._latestFeedKey||feedKey);
+        return;
+      }
+      var action=e.target.closest('[data-latest-action]');
+      if(!action)return;
+      var kind=action.getAttribute('data-latest-action');
+      if(kind==='refresh'){topicLoadLatestFeed(feedKey,mountId,creators,{refresh:true});return;}
+      if(kind==='clear'){
+        fetch('/api/yt-feed/cache',{method:'DELETE'}).then(function(r){return r.json();}).then(function(){
+          mount._latestData=null;
+          topicLoadLatestFeed(feedKey,mountId,creators,{refresh:true});
+        }).catch(function(){});
+      }
+    });
+  }
+  topicLoadLatestFeed(feedKey,mountId,creators);
+}
+
+function topicRenderMakeupLatestFeed(){
+  topicRenderLatestFeed('makeup','topic-makeupLatestFeed',TOPIC_WIDGET_DATA.makeup.youtubeChannels||[],'BEAUTY · LATEST VIDEOS');
+}
+function topicRenderFoodLatestFeed(){
+  topicRenderLatestFeed('food','topic-foodLatestFeed',TOPIC_WIDGET_DATA.food.youtubeChannels||[],'FOOD · LATEST VIDEOS');
+}
 function topicBuildFlashcards(id,cards){topicFcStates[id]={idx:0,flipped:false,cards:cards};var c=cards[0];return '<div class=\"fc-area\" onclick=\"topicFlipFC(\''+id+'\')\"><div class=\"fc-inner\" id=\"topic-fci-'+id+'\"><div class=\"fc-face fc-front cn\" id=\"topic-fcf-'+id+'\">'+c.cn+'<div class=\"fc-sub\">'+(c.py||'')+'</div></div><div class=\"fc-face fc-back\" id=\"topic-fcb-'+id+'\">'+c.en+'</div></div></div><div class=\"fc-nav\"><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"event.stopPropagation();topicNavFC(\''+id+'\',-1)\">← Prev</button><span class=\"fc-counter\" id=\"topic-fcc-'+id+'\">1/'+cards.length+'</span><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"event.stopPropagation();topicNavFC(\''+id+'\',1)\">Next →</button></div>';}
 function topicFlipFC(id){var s=topicFcStates[id],el=document.getElementById('topic-fci-'+id);if(!s||!el)return;s.flipped=!s.flipped;el.classList.toggle('flipped',s.flipped);}
 function topicNavFC(id,dir){var s=topicFcStates[id];if(!s)return;s.idx=(s.idx+dir+s.cards.length)%s.cards.length;s.flipped=false;var c=s.cards[s.idx],inner=document.getElementById('topic-fci-'+id),front=document.getElementById('topic-fcf-'+id),back=document.getElementById('topic-fcb-'+id),count=document.getElementById('topic-fcc-'+id);if(inner)inner.classList.remove('flipped');if(front)front.innerHTML=c.cn+'<div class=\"fc-sub\">'+(c.py||'')+'</div>';if(back)back.textContent=c.en;if(count)count.textContent=(s.idx+1)+'/'+s.cards.length;}
@@ -191,8 +576,87 @@ function renderTouristWidgets(){
   return h;
 }
 function renderGossipWidgets(){var d=TOPIC_WIDGET_DATA.gossip,h='';h+=topicBuildBaiduWidget('gossip','Search drama and gossip terms');h+=topicWidgetOpen('🍵','Tea Strength Meter','How reliable?','var(--pink)');h+='<div style=\"text-align:center;padding:10px\"><div style=\"font-size:3rem;margin-bottom:8px\" id=\"topic-teaEmoji\">🫖</div><div style=\"font-size:.82rem;color:#ddd;margin-bottom:4px\" id=\"topic-teaLabel\">Rate this gossip:</div><div style=\"display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px\">'+['🌱 Rumor','🔨 Some proof','🔨🔨 Strong','💣 Nuclear'].map(function(l,i){return '<button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"topicSetTea('+i+')\">'+l+'</button>';}).join('')+'</div><div style=\"font-size:.7rem;color:var(--muted)\" id=\"topic-teaAdvice\">Click to rate the gossip strength</div></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🃏','Gossip Vocabulary Cards','Drill','var(--pink)');h+=topicBuildFlashcards('gossip',d.terms);h+=topicWidgetClose();h+=topicWidgetOpen('📖','Full Gossip Glossary',d.terms.length+' terms','var(--pink)');h+=topicBuildTermList(d.terms,'topic-gossipTerms');h+=topicWidgetClose();h+=topicWidgetOpen('🧠','Decode the Drama','Quiz','var(--pink)');h+=topicBuildQuiz('gossip');h+=topicWidgetClose();h+=topicWidgetOpen('🎭','Quick Reaction Phrases','Copy & Paste in comments','var(--pink)');d.quickReactions.forEach(function(r){h+='<div class=\"copy-row\" onclick=\"topicCopyText(\''+r.cn.replace(/'/g,"\\'")+'\',this)\"><span class=\"cn\" style=\"font-weight:600;color:#ddd\">'+r.cn+'</span><span style=\"color:var(--muted);flex:1;margin-left:6px\">'+r.en+'</span><span style=\"font-size:.6rem;color:var(--muted)\">📋</span></div>';});h+=topicWidgetClose();h+=topicWidgetOpen('📝','Drama Post Formats','How they write it','var(--pink)');d.formats.forEach(function(f){var parts=f.split('—');h+='<div style=\"padding:6px 10px;background:var(--surface);border-radius:8px;margin-bottom:3px;font-size:.72rem\"><span class=\"cn\" style=\"color:#ddd\">'+parts[0]+'</span><span style=\"color:var(--muted)\">—'+(parts[1]||'')+'</span></div>';});h+=topicWidgetClose();return h;}
-function renderMakeupWidgets(){var d=TOPIC_WIDGET_DATA.makeup,h='';h+=topicBuildBaiduWidget('makeup','Search products and looks');h+=topicWidgetOpen('▶️','YouTube Beauty Feed','Creator hub','var(--pink)','span-2 youtube-news-widget');h+='<div class=\"youtube-news-shell\" id=\"topic-makeupYoutubeWidget\"></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🔬','Skin Type Finder','Quick quiz','var(--pink)');h+='<div id=\"topic-skinQuiz\"></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🃏','Beauty Vocabulary Cards','Drill','var(--pink)');h+=topicBuildFlashcards('makeup',d.terms);h+=topicWidgetClose();h+=topicWidgetOpen('🧴','Routine Builder','Morning routine order','var(--pink)');d.routineSteps.forEach(function(s,i){h+='<div style=\"display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px\"><div style=\"width:24px;height:24px;border-radius:50%;background:var(--tab-accent);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#000;flex-shrink:0\">'+(i+1)+'</div><span style=\"font-size:.78rem;font-weight:600;color:#ddd\" class=\"cn\">'+s+'</span></div>';});h+=topicWidgetClose();h+=topicWidgetOpen('📖','Beauty Glossary',d.terms.length+' terms','var(--pink)');h+=topicBuildTermList(d.terms,'topic-makeupTerms');h+=topicWidgetClose();h+=topicWidgetOpen('🧠','Ingredient Quiz','Test yourself','var(--pink)');h+=topicBuildQuiz('makeup');h+=topicWidgetClose();h+=topicWidgetOpen('🔍','XHS/Bilibili Search Templates','Copy & Paste','var(--pink)');d.searches.forEach(function(s){h+='<div class=\"copy-row\" onclick=\"topicCopyText(\''+s+'\',this)\"><span class=\"cn\" style=\"color:#ddd\">'+s+'</span><span style=\"color:var(--muted);margin-left:auto\">📋</span></div>';});h+=topicWidgetClose();return h;}
-function renderFoodWidgets(){var d=TOPIC_WIDGET_DATA.food,h='',hp=d.hotpot,sections=[{label:'🍲 Broth 锅底',items:hp.broths},{label:'🥩 Meats 荤菜',items:hp.meats},{label:'🥬 Vegs 素菜',items:hp.vegs},{label:'🍜 Staples 主食',items:hp.staples},{label:'🧊 Extras 附加',items:hp.extras}];h+=topicBuildBaiduWidget('food','Search dishes and ingredients');h+=topicWidgetOpen('▶️','YouTube Food Feed','Creator hub','var(--orange)','span-2 youtube-news-widget');h+='<div class=\"youtube-news-shell\" id=\"topic-foodYoutubeWidget\"></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🫕','Hot Pot Order Builder','Interactive!',null,'span-2');h+='<div style=\"font-size:.72rem;color:var(--muted);margin-bottom:10px\">Click items to add to your order. Total updates automatically.</div>';sections.forEach(function(sec){h+='<div class=\"hp-section\"><div class=\"hp-section-title\">'+sec.label+'</div><div class=\"hp-items\">';sec.items.forEach(function(item){h+='<div class=\"hp-item cn\" onclick=\"topicToggleHP(this,\''+item.n.replace(/'/g,"\\'")+'\','+item.p+')\">'+item.n+' ¥'+item.p+'</div>';});h+='</div></div>';});h+='<div class=\"hp-order\" id=\"topic-hpOrder\"><div style=\"font-size:.7rem;color:var(--muted)\">Your order will appear here...</div></div><div class=\"hp-total\" id=\"topic-hpTotal\">Total: ¥0</div>';h+=topicWidgetClose();h+=topicWidgetOpen('🗺️','Regional Cuisine Explorer','6 flavors');d.cuisines.forEach(function(c){h+='<div class=\"phrase-card\" style=\"cursor:pointer\" onclick=\"var d=this.querySelector(\'.cuis-detail\');d.style.display=d.style.display===\'none\'?\'block\':\'none\'\"><div style=\"display:flex;align-items:center;gap:8px\"><span style=\"font-size:1.2rem\">'+c.icon+'</span><div><div class=\"phrase-cn cn\" style=\"font-size:.85rem\">'+c.name+'</div><div style=\"font-size:.65rem;color:var(--tab-accent)\">'+c.flavor+'</div></div></div><div class=\"cuis-detail phrase-en\" style=\"margin-top:4px;display:none\">'+c.dishes+'</div></div>';});h+=topicWidgetClose();h+=topicWidgetOpen('🌶️','Spice Level Guide','Choose wisely');h+='<div style=\"display:grid;grid-template-columns:repeat(4,1fr);gap:6px\">';d.spiceLevels.forEach(function(s){h+='<div style=\"background:'+s.bg+';border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center\"><div style=\"font-size:1.6rem\">'+s.emoji+'</div><div class=\"cn\" style=\"font-size:.82rem;font-weight:700;color:#eee;margin-top:4px\">'+s.cn+'</div><div style=\"font-size:.62rem;color:var(--muted)\">'+s.en+'</div></div>';});h+='</div>';h+=topicWidgetClose();h+=topicWidgetOpen('🗣️','Ordering Phrases','Essential');d.orderPhrases.forEach(function(p){h+='<div class=\"phrase-card\"><div class=\"phrase-cn cn\">'+p.cn+'</div><div class=\"phrase-en\">'+p.en+'</div></div>';});h+=topicWidgetClose();return h;}
+function renderMakeupWidgets(){var d=TOPIC_WIDGET_DATA.makeup,h='';h+=topicBuildBaiduWidget('makeup','Search products and looks');h+=topicWidgetOpen('▶️','YouTube Beauty Feed','Creator hub','var(--pink)','span-2 youtube-news-widget');h+='<div class=\"youtube-news-shell\" id=\"topic-makeupYoutubeWidget\"></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🎞️','Latest Videos','Thumbnail grid · alt view','var(--pink)','span-2');h+='<div id=\"topic-makeupLatestFeed\"></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🔬','Skin Type Finder','Quick quiz','var(--pink)');h+='<div id=\"topic-skinQuiz\"></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🃏','Beauty Vocabulary Cards','Drill','var(--pink)');h+=topicBuildFlashcards('makeup',d.terms);h+=topicWidgetClose();h+=topicWidgetOpen('🧴','Routine Builder','Morning routine order','var(--pink)');d.routineSteps.forEach(function(s,i){h+='<div style=\"display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px\"><div style=\"width:24px;height:24px;border-radius:50%;background:var(--tab-accent);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#000;flex-shrink:0\">'+(i+1)+'</div><span style=\"font-size:.78rem;font-weight:600;color:#ddd\" class=\"cn\">'+s+'</span></div>';});h+=topicWidgetClose();h+=topicWidgetOpen('📖','Beauty Glossary',d.terms.length+' terms','var(--pink)');h+=topicBuildTermList(d.terms,'topic-makeupTerms');h+=topicWidgetClose();h+=topicWidgetOpen('🧠','Ingredient Quiz','Test yourself','var(--pink)');h+=topicBuildQuiz('makeup');h+=topicWidgetClose();h+=topicWidgetOpen('🔍','XHS/Bilibili Search Templates','Copy & Paste','var(--pink)');d.searches.forEach(function(s){h+='<div class=\"copy-row\" onclick=\"topicCopyText(\''+s+'\',this)\"><span class=\"cn\" style=\"color:#ddd\">'+s+'</span><span style=\"color:var(--muted);margin-left:auto\">📋</span></div>';});h+=topicWidgetClose();return h;}
+function renderFoodOrderPhraseCard(p){
+  var cnEsc=(p.cn||'').replace(/'/g,"\\'");
+  return '<div class=\"phrase-card\" onclick=\"topicCopyText(\''+cnEsc+'\',this)\" title=\"Click to copy\"><div class=\"phrase-cn cn\">'+p.cn+'</div><div class=\"phrase-py\">'+(p.py||'')+'</div><div class=\"phrase-en\">'+(p.en||'')+'</div></div>';
+}
+function renderFoodWidgets(){
+  var d=TOPIC_WIDGET_DATA.food,h='',hp=d.hotpot;
+  var sections=[{label:'🍲 Broth 锅底',items:hp.broths},{label:'🥩 Meats 荤菜',items:hp.meats},{label:'🥬 Vegs 素菜',items:hp.vegs},{label:'🍜 Staples 主食',items:hp.staples},{label:'🧊 Extras 附加',items:hp.extras}];
+  h+=topicBuildBaiduWidget('food','Search dishes and ingredients');
+
+  h+=topicWidgetOpen('▶️','YouTube Food Feed','Creator hub',null,'span-2 youtube-news-widget');
+  h+='<div class=\"youtube-news-shell\" id=\"topic-foodYoutubeWidget\"></div>';
+  h+=topicWidgetClose();
+
+  h+=topicWidgetOpen('🎞️','Latest Videos','Thumbnail grid · alt view',null,'span-2');
+  h+='<div id=\"topic-foodLatestFeed\"></div>';
+  h+=topicWidgetClose();
+
+  h+=topicWidgetOpen('🫕','Hot Pot Order Builder','Interactive',null,'span-2');
+  h+='<div style=\"font-size:.72rem;color:var(--muted);margin-bottom:10px;\">Click items to add to your order. Total updates automatically.</div>';
+  sections.forEach(function(sec){
+    h+='<div class=\"hp-section\"><div class=\"hp-section-title\">'+sec.label+'</div><div class=\"hp-items\">';
+    sec.items.forEach(function(item){h+='<div class=\"hp-item cn\" onclick=\"topicToggleHP(this,\''+item.n.replace(/'/g,"\\'")+'\','+item.p+')\">'+item.n+' <span style=\"color:var(--muted);font-family:JetBrains Mono,monospace;\">¥'+item.p+'</span></div>';});
+    h+='</div></div>';
+  });
+  h+='<div class=\"hp-order\" id=\"topic-hpOrder\"><div style=\"font-size:.7rem;color:var(--muted);\">Your order will appear here…</div></div>';
+  h+='<div class=\"hp-total\" id=\"topic-hpTotal\">Total: ¥0</div>';
+  h+=topicWidgetClose();
+
+  h+=topicWidgetOpen('🗺️','Regional Cuisine Explorer',d.cuisines.length+' flavors');
+  d.cuisines.forEach(function(c){
+    h+='<div class=\"food-cuisine-card phrase-card\" onclick=\"this.classList.toggle(\'expanded\')\">'+
+      '<div class=\"food-cuisine-head\"><span class=\"food-cuisine-icon\">'+c.icon+'</span>'+
+        '<div style=\"flex:1;min-width:0;\"><div class=\"phrase-cn cn\" style=\"font-size:.9rem;\">'+c.name+'</div>'+
+        '<div style=\"font-size:.66rem;color:var(--tab-accent);\">'+c.flavor+'</div></div>'+
+        '<span class=\"food-cuisine-chevron\">▸</span></div>'+
+      '<div class=\"food-cuisine-dishes phrase-en\">'+c.dishes+'</div>'+
+      '</div>';
+  });
+  h+=topicWidgetClose();
+
+  h+=topicWidgetOpen('🌶️','Spice Level Guide','Choose wisely');
+  h+='<div class=\"food-spice-grid\">';
+  d.spiceLevels.forEach(function(s){
+    h+='<div class=\"food-spice-cell\" style=\"background:'+s.bg+';\">'+
+      '<div style=\"font-size:1.6rem;\">'+s.emoji+'</div>'+
+      '<div class=\"cn\" style=\"font-size:.82rem;font-weight:700;color:#eee;margin-top:4px;\">'+s.cn+'</div>'+
+      '<div style=\"font-size:.6rem;color:var(--tab-accent);font-style:italic;\">'+(s.py||'')+'</div>'+
+      '<div style=\"font-size:.62rem;color:var(--muted);\">'+s.en+'</div>'+
+      '</div>';
+  });
+  h+='</div>';
+  h+=topicWidgetClose();
+
+  // Menu decoder — how dish names are built. Useful for reading any menu.
+  h+=topicWidgetOpen('📜','Menu Decoder','How dish names are built',null,'span-2');
+  h+='<div style=\"font-size:.7rem;color:var(--muted);margin-bottom:10px;\">Most dishes follow <strong style=\"color:var(--tab-accent);\">method + ingredient</strong> (e.g. <span class=\"cn\">红烧肉</span> = red-braised pork). Learn these and you can read almost any menu.</div>';
+  h+='<div class=\"food-decoder-grid\">';
+  h+='<div><div class=\"food-decoder-title\">🍳 Cooking methods</div><div class=\"food-decoder-chips\">';
+  d.cookingVerbs.forEach(function(v){
+    var cnEsc=(v.cn||'').replace(/'/g,"\\'");
+    h+='<div class=\"food-decoder-chip\" onclick=\"topicCopyText(\''+cnEsc+'\',this)\" title=\"Click to copy\"><span class=\"fdc-cn cn\">'+v.cn+'</span><span class=\"fdc-py\">'+v.py+'</span><span class=\"fdc-en\">'+v.en+'</span></div>';
+  });
+  h+='</div></div>';
+  h+='<div><div class=\"food-decoder-title\">👅 Flavors</div><div class=\"food-decoder-chips\">';
+  d.flavorWords.forEach(function(v){
+    var cnEsc=(v.cn||'').replace(/'/g,"\\'");
+    h+='<div class=\"food-decoder-chip\" onclick=\"topicCopyText(\''+cnEsc+'\',this)\" title=\"Click to copy\"><span class=\"fdc-cn cn\">'+v.cn+'</span><span class=\"fdc-py\">'+v.py+'</span><span class=\"fdc-en\">'+v.en+'</span></div>';
+  });
+  h+='</div></div>';
+  h+='</div>';
+  h+=topicWidgetClose();
+
+  h+=topicWidgetOpen('🗣️','Ordering Phrases',d.orderPhrases.length+' phrases · click to copy',null,'span-2');
+  h+='<div class=\"food-order-grid\">';
+  d.orderPhrases.forEach(function(p){h+=renderFoodOrderPhraseCard(p);});
+  h+='</div>';
+  h+=topicWidgetClose();
+
+  return h;
+}
 function renderDropshipWidgets(){var d=TOPIC_WIDGET_DATA.dropship,h='';h+=topicBuildBaiduWidget('dropship','Search supplier and sourcing terms');h+=topicWidgetOpen('🧮','Profit Calculator','Quick math','var(--green)');h+='<div class=\"calc-row\"><span class=\"calc-label\">Cost (¥)</span><input class=\"search-input\" type=\"number\" id=\"topic-dsCost\" value=\"25\" style=\"width:100px\" oninput=\"topicCalcProfit()\"></div><div class=\"calc-row\"><span class=\"calc-label\">Shipping (¥)</span><input class=\"search-input\" type=\"number\" id=\"topic-dsShip\" value=\"15\" style=\"width:100px\" oninput=\"topicCalcProfit()\"></div><div class=\"calc-row\"><span class=\"calc-label\">Sell ($)</span><input class=\"search-input\" type=\"number\" id=\"topic-dsSell\" value=\"19.99\" step=\"0.01\" style=\"width:100px\" oninput=\"topicCalcProfit()\"></div><div class=\"calc-row\"><span class=\"calc-label\">Rate (¥/$)</span><input class=\"search-input\" type=\"number\" id=\"topic-dsRate\" value=\"7.25\" step=\"0.01\" style=\"width:100px\" oninput=\"topicCalcProfit()\"></div><div class=\"calc-result\"><div class=\"calc-big\" id=\"topic-dsProfit\" style=\"color:var(--tab-accent)\">$0.00</div><div class=\"calc-sub\" id=\"topic-dsMargin\">Profit per unit · 0% margin</div></div>';h+=topicWidgetClose();h+=topicWidgetOpen('🃏','Sourcing Vocabulary','Drill','var(--green)');h+=topicBuildFlashcards('dropship',d.terms);h+=topicWidgetClose();h+=topicWidgetOpen('💬','Supplier Message Templates','Copy & Send','var(--green)');d.supplierPhrases.forEach(function(p){h+='<div class=\"copy-row\" onclick=\"topicCopyText(\''+p.replace(/'/g,"\\'")+'\',this)\"><span class=\"cn\" style=\"font-size:.78rem;color:#ddd;flex:1\">'+p+'</span><span style=\"font-size:.6rem;color:var(--muted)\">📋</span></div>';});h+=topicWidgetClose();h+=topicWidgetOpen('⚠️','IP Risk Checker','Stay legal','var(--red)');h+='<div style=\"font-size:.72rem;color:var(--muted);margin-bottom:8px\">Is your product safe to sell?</div>';d.riskItems.forEach(function(r){var col=r.risk==='HIGH'?'var(--red)':r.risk==='MED'?'var(--gold)':r.risk==='LOW'?'var(--green)':r.risk==='SAFE'?'var(--green)':'var(--blue)';h+='<div style=\"display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:3px;border-left:3px solid '+col+'\"><div style=\"flex:1\"><div style=\"font-size:.75rem;color:#ddd\">'+r.q+'</div><div style=\"font-size:.62rem;color:var(--muted)\">'+r.note+'</div></div><span class=\"tag\" style=\"background:'+col+'18;color:'+col+'\">'+r.risk+'</span></div>';});h+=topicWidgetClose();h+=topicWidgetOpen('📖','Full E-Commerce Glossary',d.terms.length+' terms','var(--green)');h+=topicBuildTermList(d.terms,'topic-dsTerms');h+=topicWidgetClose();h+=topicWidgetOpen('🧠','Quick Quiz','Test yourself','var(--green)');h+=topicBuildQuiz('dropship');h+=topicWidgetClose();return h;}
 function topicBuildCyberQuery(){var plats=[],kws=[],el=document.getElementById('topic-cyberQuery');Array.prototype.forEach.call(document.querySelectorAll('#topic-cyberPlat .qb-chip.on'),function(node){plats.push('site:'+node.getAttribute('data-site'));});Array.prototype.forEach.call(document.querySelectorAll('#topic-cyberKw .qb-chip.on'),function(node){kws.push(node.textContent);});var q=kws.join(' ');if(plats.length)q+=(q?' ':'')+plats.join(' OR ');if(el)el.innerHTML='<span class=\"qb-copy\" onclick=\"topicCopyElText(\'topic-cyberQuery\')\">📋 Copy</span>'+(q||'<span style=\"color:var(--muted)\">← Click chips above</span>');}
 function topicInitCyberTerminal(){var input=document.getElementById('topic-cyberTermInput');if(!input||input.dataset.bound)return;input.dataset.bound='1';input.addEventListener('keydown',function(e){if(e.key==='Enter'){var cmd=this.value.trim();if(!cmd)return;topicCyberCmd(cmd);this.value='';}});}
@@ -207,7 +671,7 @@ function topicToggleHP(el,name,price){el.classList.toggle('on');if(topicHpOrder[
 function topicRenderHPOrder(){var el=document.getElementById('topic-hpOrder'),totalEl=document.getElementById('topic-hpTotal'),keys=Object.keys(topicHpOrder);if(!el||!totalEl)return;if(!keys.length){el.innerHTML='<div style=\"font-size:.7rem;color:var(--muted)\">Your order will appear here...</div>';totalEl.textContent='Total: ¥0';return;}var total=0;el.innerHTML=keys.map(function(k){total+=topicHpOrder[k];return '<div class=\"hp-order-item\"><span class=\"cn\">'+k+'</span><span>¥'+topicHpOrder[k]+'</span></div>';}).join('');totalEl.textContent='Total: ¥'+total+' (~$'+(total/7.25).toFixed(2)+')';}
 function topicCalcProfit(){var cost=parseFloat((document.getElementById('topic-dsCost')||{}).value)||0,ship=parseFloat((document.getElementById('topic-dsShip')||{}).value)||0,sell=parseFloat((document.getElementById('topic-dsSell')||{}).value)||0,rate=parseFloat((document.getElementById('topic-dsRate')||{}).value)||7.25,totalCostUSD=(cost+ship)/rate,profit=sell-totalCostUSD,margin=sell>0?Math.round(profit/sell*100):0;document.getElementById('topic-dsProfit').textContent='$'+profit.toFixed(2);document.getElementById('topic-dsProfit').style.color=profit>=0?'var(--tab-accent)':'var(--red)';document.getElementById('topic-dsMargin').textContent='Profit per unit · '+margin+'% margin';}
 function topicInitSkinQuiz(){var el=document.getElementById('topic-skinQuiz');if(!el)return;var qs=TOPIC_WIDGET_DATA.makeup.skinQuiz,step=0,answers=[];function render(){if(step>=qs.length){var result=answers.indexOf('sensitive')>-1?'敏感肌 Sensitive':answers.indexOf('dry')>-1?'干皮 Dry':answers.indexOf('oily')>-1?'油皮 Oily':answers.indexOf('combo')>-1?'混合 Combo':'中性 Normal';el.innerHTML='<div style=\"text-align:center;padding:16px\"><div style=\"font-size:2rem;margin-bottom:8px\">✨</div><div style=\"font-size:1rem;font-weight:700;color:#eee\" class=\"cn\">'+result+'</div><div style=\"font-size:.72rem;color:var(--muted);margin-top:4px\">Search XHS for: \"'+result.split(' ')[0]+' 护肤 推荐\"</div><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"topicInitSkinQuiz()\" style=\"margin-top:10px\">↻ Retake</button></div>';return;}var q=qs[step];el.innerHTML='<div class=\"quiz-q\">'+q.q+'</div><div class=\"quiz-opts\">'+q.opts.map(function(o){return '<div class=\"quiz-opt\" data-score=\"'+o.s+'\">'+o.t+'</div>';}).join('')+'</div>';Array.prototype.forEach.call(el.querySelectorAll('.quiz-opt'),function(opt){opt.onclick=function(){answers.push(this.dataset.score);this.classList.add('correct');Array.prototype.forEach.call(el.querySelectorAll('.quiz-opt'),function(o){o.style.pointerEvents='none';});setTimeout(function(){step++;render();},400);};});}render();}
-function initTopicWidgets(){var renderers={cyber:renderCyberWidgets,political:renderPoliticalWidgets,genz:renderGenZWidgets,academia:renderAcademiaWidgets,tourist:renderTouristWidgets,gossip:renderGossipWidgets,makeup:renderMakeupWidgets,food:renderFoodWidgets,dropship:renderDropshipWidgets};Object.keys(renderers).forEach(function(tabId){var container=document.querySelector('[data-topic-widgets=\"'+tabId+'\"]');if(container)container.innerHTML=renderers[tabId]()+topicBuildFoundWordsWidget(tabId,'Per section');});['cyber','political','genz','academia','gossip','makeup','dropship'].forEach(function(tabId){var d=TOPIC_WIDGET_DATA[tabId];if(d&&d.terms)topicInitQuiz(tabId,d.terms);});setTimeout(function(){topicRenderMakeupYoutubeWidget();topicRenderFoodYoutubeWidget();topicInitCyberTerminal();topicInitSkinQuiz();topicConvertGPA();topicConvertCurrency();topicCalcProfit();topicRenderHPOrder();topicMigrateFoundWordsToSavedWords();topicRefreshAllFoundWords();},50);}
+function initTopicWidgets(){var renderers={cyber:renderCyberWidgets,political:renderPoliticalWidgets,genz:renderGenZWidgets,academia:renderAcademiaWidgets,tourist:renderTouristWidgets,gossip:renderGossipWidgets,makeup:renderMakeupWidgets,food:renderFoodWidgets,dropship:renderDropshipWidgets};Object.keys(renderers).forEach(function(tabId){var container=document.querySelector('[data-topic-widgets=\"'+tabId+'\"]');if(container)container.innerHTML=renderers[tabId]()+topicBuildFoundWordsWidget(tabId,'Per section');});['cyber','political','genz','academia','gossip','makeup','dropship'].forEach(function(tabId){var d=TOPIC_WIDGET_DATA[tabId];if(d&&d.terms)topicInitQuiz(tabId,d.terms);});setTimeout(function(){topicRenderMakeupYoutubeWidget();topicRenderFoodYoutubeWidget();topicRenderMakeupLatestFeed();topicRenderFoodLatestFeed();topicInitCyberTerminal();topicInitSkinQuiz();topicConvertGPA();topicConvertCurrency();topicCalcProfit();topicRenderHPOrder();topicMigrateFoundWordsToSavedWords();topicRefreshAllFoundWords();},50);}
 window.topicFlipFC=topicFlipFC;window.topicNavFC=topicNavFC;window.topicBuildCyberQuery=topicBuildCyberQuery;window.topicSetVibe=topicSetVibe;window.topicSetTea=topicSetTea;window.topicSetEmailTpl=topicSetEmailTpl;window.topicConvertGPA=topicConvertGPA;window.topicConvertCurrency=topicConvertCurrency;window.topicToggleHP=topicToggleHP;window.topicCalcProfit=topicCalcProfit;window.topicNextQuiz=topicNextQuiz;window.topicInitSkinQuiz=topicInitSkinQuiz;window.topicCopyText=topicCopyText;window.topicCopyElText=topicCopyElText;window.topicAddFoundWord=topicAddFoundWord;window.topicDeleteFoundWord=topicDeleteFoundWord;window.topicRefreshFoundWords=topicRefreshFoundWords;window.topicRefreshAllFoundWords=topicRefreshAllFoundWords;window.topicMigrateFoundWordsToSavedWords=topicMigrateFoundWordsToSavedWords;window.topicSetMakeupYoutubeChannel=topicSetMakeupYoutubeChannel;window.topicSetFoodYoutubeChannel=topicSetFoodYoutubeChannel;window.topicOpenBaiduSearch=topicOpenBaiduSearch;window.topicBaiduKeydown=topicBaiduKeydown;window.topicBaiduSearchFromInput=topicBaiduSearchFromInput;window.topicBaiduQuickSearch=topicBaiduQuickSearch;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initTopicWidgets);else initTopicWidgets();
 })();

@@ -569,6 +569,67 @@ function setLookupFields(data) {
     document.getElementById('clStrokes').textContent = (data.str != null ? String(data.str) : '—');
     document.getElementById('clHsk').textContent = data.hsk ? ('HSK ' + data.hsk) : '—';
 }
+var CHAR_LOOKUP_SUGGESTIONS = [
+    { group: 'Basics', chars: ['我', '你', '好', '是', '的', '不', '在', '有', '吃', '喝'] },
+    { group: 'Particles', chars: ['了', '过', '着', '地', '得', '把', '被'] },
+    { group: 'Radicals', chars: ['水', '火', '木', '金', '土', '心', '口', '手'] },
+    { group: 'Useful', chars: ['爱', '学', '说', '听', '写', '读', '想', '请', '谢', '再'] }
+];
+var CHAR_LOOKUP_RECENT_KEY = 'zhongwen-dash:char-lookup-recent';
+function loadCharLookupRecent() { try {
+    var raw = localStorage.getItem(CHAR_LOOKUP_RECENT_KEY);
+    return raw ? JSON.parse(raw) : [];
+}
+catch (_e) {
+    return [];
+} }
+function saveCharLookupRecent(arr) { try {
+    localStorage.setItem(CHAR_LOOKUP_RECENT_KEY, JSON.stringify(arr.slice(0, 12)));
+}
+catch (_e) { } }
+function pushCharLookupRecent(ch) {
+    if (!ch)
+        return;
+    var list = loadCharLookupRecent().filter(function (c) { return c !== ch; });
+    list.unshift(ch);
+    saveCharLookupRecent(list);
+    renderCharLookupSuggestions();
+}
+function renderCharLookupSuggestions() {
+    var mount = document.getElementById('charLookupSuggestions');
+    if (!mount)
+        return;
+    var recent = loadCharLookupRecent();
+    var html = '';
+    if (recent.length) {
+        html += '<div class="char-suggestions-row"><span class="char-suggestions-label">🕒 Recent</span><div class="char-suggestions-chips">';
+        recent.forEach(function (c) {
+            html += '<button type="button" class="char-chip cn" onclick="lookupFromSuggestion(\'' + c.replace(/'/g, "\\'") + '\')">' + escapeHtml(c) + '</button>';
+        });
+        html += '</div></div>';
+    }
+    CHAR_LOOKUP_SUGGESTIONS.forEach(function (group) {
+        html += '<div class="char-suggestions-row"><span class="char-suggestions-label">' + escapeHtml(group.group) + '</span><div class="char-suggestions-chips">';
+        group.chars.forEach(function (c) {
+            html += '<button type="button" class="char-chip cn" onclick="lookupFromSuggestion(\'' + c.replace(/'/g, "\\'") + '\')">' + escapeHtml(c) + '</button>';
+        });
+        html += '</div></div>';
+    });
+    mount.innerHTML = html;
+}
+function lookupFromSuggestion(ch) {
+    var input = document.getElementById('charLookupInput');
+    if (!input)
+        return;
+    input.value = ch;
+    lookupChar();
+}
+function lookupRandomChar() {
+    var pool = charKeys && charKeys.length ? charKeys : ['我'];
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    lookupFromSuggestion(pick);
+}
+renderCharLookupSuggestions();
 function lookupChar() {
     var input = document.getElementById('charLookupInput');
     var raw = (input && input.value || '').trim();
@@ -577,6 +638,7 @@ function lookupChar() {
         setLookupFields({ char: '', py: '', en: '', rad: '', str: null, hsk: null });
         return;
     }
+    pushCharLookupRecent(ch);
     // Show char immediately, rest as loading
     setLookupFields({ char: ch, py: '…', en: '…', rad: '…', str: '…', hsk: null });
     var local = charDB[ch];

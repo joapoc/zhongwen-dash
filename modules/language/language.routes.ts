@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  annotateLanguageText,
   getLanguageCharacter,
   getLanguageReadings,
   getLanguageHandwriting,
@@ -23,6 +24,7 @@ router.get("/readings/:character", getLanguageReadings);
 router.get("/character/:character", getLanguageCharacter);
 router.get("/words", getLanguageWords);
 router.post("/segment", segmentLanguageText);
+router.post("/annotate", annotateLanguageText);
 router.post("/translate", translateLanguageText);
 router.get("/sentences/search", searchLanguageSentences);
 

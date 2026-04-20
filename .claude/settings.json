@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PORT=3459 npx tsx server/index.ts)",
+      "Bash(curl -sI \"http://localhost:3459/css/app.css\")",
+      "Bash(curl -s \"http://localhost:3459/css/app.css\")",
+      "Bash(PORT=3460 npx tsx server/index.ts)",
+      "Bash(curl -s -X POST http://localhost:3460/api/language/annotate -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_annotate.json\")"
+    ]
+  }
+}

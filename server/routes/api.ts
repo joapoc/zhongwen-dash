@@ -2,8 +2,10 @@ import { Router } from "express";
 
 import {
   getChallenges,
+  getMastery,
   getSavedWords,
   setChallenges,
+  setMastery,
   setSavedWords,
 } from "../services/storage";
 
@@ -29,6 +31,24 @@ router.put("/words", async (request, response) => {
   response.json({
     savedWords: nextSavedWords,
     count: nextSavedWords.length,
+  });
+});
+
+router.get("/mastery", async (_request, response) => {
+  const mastery = await getMastery();
+  response.json({ mastery });
+});
+
+router.put("/mastery", async (request, response) => {
+  const payload =
+    request.body && typeof request.body.mastery === "object" && request.body.mastery !== null
+      ? (request.body.mastery as Record<string, unknown>)
+      : {};
+  const nextMastery = await setMastery(payload);
+  response.json({
+    ok: true,
+    mastery: nextMastery,
+    levelCount: Object.keys(nextMastery).length,
   });
 });
 

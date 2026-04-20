@@ -304,6 +304,8 @@ body {
 /* Trending source picker (tophub widget) */
 .trending-source-picker {
   position: relative;
+  flex-shrink: 0;
+  z-index: 10;
 }
 .trending-source-trigger {
   display: inline-flex;
@@ -343,16 +345,17 @@ body {
 .trending-source-menu {
   position: absolute;
   top: calc(100% + 4px);
-  right: 0;
+  left: 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 4px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  z-index: 100;
-  max-height: 420px;
+  z-index: 500;
+  max-height: 480px;
   overflow-y: auto;
-  min-width: 260px;
+  width: 320px;
+  max-width: calc(100vw - 48px);
   scrollbar-width: thin;
 }
 .trending-source-menu[hidden] {
@@ -396,72 +399,292 @@ body {
   flex-shrink: 0;
 }
 
-/* Trending item expansion — click a tile to dissect */
-.trending-item {
-  border-radius: 6px;
-  margin-bottom: 2px;
-}
-.trending-item-row {
-  display: flex;
+/* Kahoot HSK climb-the-mountain visualization */
+.kahoot-mountains {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
+  margin-top: 4px;
+}
+.mountain-card {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 5px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: background 0.15s;
-}
-.trending-item-row:hover {
-  background: var(--surface);
-}
-.trending-item-row.open {
-  background: rgba(244, 114, 182, 0.08);
-}
-.trending-item-row .trend-rank {
-  color: var(--accent2);
-  font-family: "JetBrains Mono", monospace;
-  min-width: 24px;
-  text-align: right;
-  font-weight: 600;
-  font-size: 0.72rem;
-}
-.trending-item-row .trend-title {
-  color: var(--text);
-  flex: 1;
-  line-height: 1.4;
-}
-.trending-item-row .trend-caret {
-  color: var(--muted);
-  font-size: 0.7rem;
-  opacity: 0.7;
-}
-.trending-item-detail {
-  padding: 10px 12px 14px;
-  margin: 2px 4px 8px 28px;
+  gap: 6px;
+  padding: 10px 8px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  font-family: "Noto Sans SC", "Inter", sans-serif;
+  border-radius: 10px;
+  transition: border-color 0.2s, background 0.2s;
 }
-.trending-detail-title {
+.mountain-card.complete {
+  border-color: var(--green);
+  background: rgba(52, 211, 153, 0.06);
+}
+.mountain-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.mountain-svg-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 120px;
+  aspect-ratio: 1;
+}
+.mountain-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.mountain-svg polygon {
+  transition: points 0.5s;
+}
+.mountain-climber {
+  position: absolute;
+  transform: translate(-50%, -50%);
   font-size: 0.95rem;
+  line-height: 1;
+  pointer-events: none;
+  transition: top 0.5s, left 0.5s;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+.mountain-stats {
+  text-align: center;
+  line-height: 1.2;
+}
+.mountain-pct {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--accent2);
+}
+.mountain-card.complete .mountain-pct {
+  color: var(--green);
+}
+.mountain-counts {
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* YouTube News widget (Flavor A — static iframe, swap src only) */
+.ytnews {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  overflow: hidden;
+}
+.ytnews-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.ytnews-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.ytnews-kicker {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--accent2);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.ytnews-label {
+  font-size: 0.88rem;
+  color: var(--text);
+  font-weight: 700;
+}
+.ytnews-name {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.ytnews-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.55);
+  animation: ytnews-pulse 1.6s infinite;
+  flex-shrink: 0;
+}
+@keyframes ytnews-pulse {
+  70% { box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); }
+}
+.ytnews-open {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.ytnews-player {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+.ytnews-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.ytnews-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+.ytnews-chip {
+  appearance: none;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+.ytnews-chip:hover:not(.active) {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+.ytnews-chip.active {
+  background: var(--accent2);
+  color: #0b0d14;
+  border-color: var(--accent2);
+}
+
+/* Reading pane — unified News + Trending mode tabs */
+.reading-mode-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.reading-mode-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.reading-mode-btn:hover {
+  color: var(--text);
+}
+.reading-mode-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+}
+.reading-filter-row {
+  padding: 10px 16px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.reading-filter-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.reading-filter-group[hidden] {
+  display: none;
+}
+
+/* Trending rows inside the shared reading list */
+.trending-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 10px 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.trending-group-header img {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.trending-group-header .tgh-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pink, #f472b6);
+  display: inline-block;
+}
+.trending-group-header strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.trending-group-header .subtitle {
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+.trending-group-header .count {
+  color: var(--muted);
+  font-size: 0.65rem;
+  margin-left: auto;
+}
+.rss-item.trending-row .trend-rank {
+  color: var(--pink, #f472b6);
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+/* Trending detail pane (right side) */
+.trending-detail-title {
+  font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
   line-height: 1.6;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  font-family: "Noto Sans SC", "Inter", sans-serif;
 }
 .trending-detail-translation {
-  font-size: 0.72rem;
-  color: var(--muted);
-  background: var(--bg);
-  border-radius: 6px;
-  padding: 6px 10px;
-  margin-bottom: 10px;
+  font-size: 0.78rem;
+  color: var(--text);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
   line-height: 1.5;
+  border-left: 3px solid var(--pink, #f472b6);
 }
 .trending-detail-loading,
 .trending-detail-empty {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
   padding: 8px 4px;
 }

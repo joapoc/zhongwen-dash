@@ -798,6 +798,60 @@ export async function segmentChineseText(text: string) {
   };
 }
 
+// Lazy-built simplified→CedictEntry index so annotation of long texts doesn't
+// re-scan the full dataset per word. Reset on dataset reload.
+type AnnotationVocab = { cn: string; py: string; en: string; hsk: HskLevel | null };
+let cedictSimpIndex: { filePath: string; map: Map<string, CedictEntry> } | null = null;
+
+async function getCedictSimpIndex(): Promise<Map<string, CedictEntry>> {
+  const dataset = await getCedictDataset();
+  if (!dataset.available) return new Map();
+  if (cedictSimpIndex && cedictSimpIndex.filePath === dataset.filePath) {
+    return cedictSimpIndex.map;
+  }
+  const map = new Map<string, CedictEntry>();
+  for (const entry of dataset.entries) {
+    // Keep the first-seen entry per simplified form; dataset is roughly sorted
+    // by usefulness already.
+    if (!map.has(entry.simplified)) map.set(entry.simplified, entry);
+  }
+  cedictSimpIndex = { filePath: dataset.filePath, map };
+  return map;
+}
+
+export async function annotateChineseText(text: string): Promise<AnnotationVocab[]> {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  const jieba = await getJiebaModule();
+  const rawWords = jieba.cut(trimmed, true);
+  const chineseOnly = /^[\u4e00-\u9fff]+$/;
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const word of rawWords) {
+    if (!word || seen.has(word)) continue;
+    if (word.length < 2) continue; // skip single characters — too noisy in bulk
+    if (!chineseOnly.test(word)) continue;
+    seen.add(word);
+    unique.push(word);
+  }
+
+  const index = await getCedictSimpIndex();
+  const out: AnnotationVocab[] = [];
+  for (const word of unique) {
+    const entry = index.get(word);
+    if (!entry) continue;
+    const hsk = (await resolveHskLevelForWord(word)) ?? entry.hsk ?? null;
+    const english = enrichDefinitions((entry.english || []).slice(), 2);
+    out.push({
+      cn: word,
+      py: entry.pinyin || "",
+      en: english[0] || "",
+      hsk,
+    });
+  }
+  return out;
+}
+
 function parseTatoebaTranslations(rawTranslations: unknown) {
   if (!Array.isArray(rawTranslations)) {
     return [];

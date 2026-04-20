@@ -7,8 +7,9 @@ var wordsPersistTimer=null;
 function normalizeSavedWord(word){
   return {
     cn:word.cn,
-    py:word.py,
-    en:word.en,
+    py:word.py||'',
+    en:word.en||'',
+    note:word.note||'',
     source:word.source||'manual',
     sourceArticle:word.sourceArticle||'',
     addedAt:word.addedAt||new Date().toISOString(),
@@ -17,6 +18,9 @@ function normalizeSavedWord(word){
 }
 
 function queuePersistSavedWords(){
+  // Write the in-memory snapshot to localStorage synchronously — this is the
+  // failsafe copy that survives if the server write fails or the DB gets wiped.
+  backupSavedWordsLocal();
   clearTimeout(wordsPersistTimer);
   wordsPersistTimer=setTimeout(persistSavedWords,120);
 }
@@ -31,22 +35,199 @@ function persistSavedWords(){
   });
 }
 
+var SAVED_WORDS_BACKUP_KEY='zhongwen-dash:savedWords-backup';
+function backupSavedWordsLocal(){
+  try{
+    localStorage.setItem(SAVED_WORDS_BACKUP_KEY,JSON.stringify({
+      savedWords:savedWords,
+      backedUpAt:new Date().toISOString()
+    }));
+  }catch(_e){}
+}
+function readSavedWordsBackup(){
+  try{
+    var raw=localStorage.getItem(SAVED_WORDS_BACKUP_KEY);
+    if(!raw)return null;
+    var parsed=JSON.parse(raw);
+    if(!parsed||!Array.isArray(parsed.savedWords))return null;
+    return parsed;
+  }catch(_e){return null;}
+}
+
+function downloadBlob(filename,content,mime){
+  var blob=new Blob([content],{type:mime||'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;a.style.display='none';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);if(a.parentNode)a.parentNode.removeChild(a);},100);
+}
+
+function csvEscape(v){
+  var s=v==null?'':String(v);
+  if(/["',\r\n]/.test(s))return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function buildSavedWordsCsv(words){
+  var cols=['cn','py','en','note','source','sourceArticle','addedAt','inFlashcards'];
+  var out=[cols.join(',')];
+  (words||[]).forEach(function(w){
+    out.push(cols.map(function(c){return csvEscape(w[c]);}).join(','));
+  });
+  return out.join('\n');
+}
+function parseCsv(text){
+  var rows=[];var row=[];var field='';var inQuotes=false;var i=0;
+  while(i<text.length){
+    var c=text.charAt(i);
+    if(inQuotes){
+      if(c==='"'){
+        if(text.charAt(i+1)==='"'){field+='"';i+=2;continue;}
+        inQuotes=false;i++;continue;
+      }
+      field+=c;i++;
+    }else{
+      if(c==='"'){inQuotes=true;i++;continue;}
+      if(c===','){row.push(field);field='';i++;continue;}
+      if(c==='\r'){i++;continue;}
+      if(c==='\n'){row.push(field);rows.push(row);row=[];field='';i++;continue;}
+      field+=c;i++;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows;
+}
+
+function downloadWordsCsv(){
+  if(!savedWords.length){showToast('📋','','Word list is empty — nothing to export',true);return;}
+  var stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+  downloadBlob('zhongwen-words-'+stamp+'.csv',buildSavedWordsCsv(savedWords),'text/csv;charset=utf-8');
+  showToast('⬇️','',savedWords.length+' words exported to CSV',false);
+}
+
+function downloadWordsJson(){
+  var masterySerial=(typeof serializeKahootMastery==='function')?serializeKahootMastery():{};
+  var masteryCount=Object.keys(masterySerial).reduce(function(n,lvl){return n+(masterySerial[lvl]||[]).length;},0);
+  if(!savedWords.length&&!masteryCount){showToast('📄','','Nothing to export yet',true);return;}
+  var stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+  var payload={
+    exportedAt:new Date().toISOString(),
+    count:savedWords.length,
+    savedWords:savedWords,
+    kahootMastery:masterySerial,
+    kahootMasteryCount:masteryCount
+  };
+  downloadBlob('zhongwen-snapshot-'+stamp+'.json',JSON.stringify(payload,null,2),'application/json');
+  showToast('📄','',savedWords.length+' words · '+masteryCount+' mastered exported',false);
+}
+
+function importWordsCsv(){
+  var input=document.createElement('input');
+  input.type='file';
+  input.accept='.csv,text/csv,application/vnd.ms-excel';
+  input.style.display='none';
+  input.onchange=function(ev){
+    var file=ev.target&&ev.target.files&&ev.target.files[0];
+    if(!file){if(input.parentNode)input.parentNode.removeChild(input);return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        applyImportedCsv(String(e.target.result||''));
+      }catch(err){
+        console.error('CSV import failed',err);
+        alert('Could not parse that CSV file.');
+      }
+      if(input.parentNode)input.parentNode.removeChild(input);
+    };
+    reader.readAsText(file,'utf-8');
+  };
+  document.body.appendChild(input);input.click();
+}
+
+function applyImportedCsv(text){
+  var rows=parseCsv(text).filter(function(r){return r&&r.length&&!(r.length===1&&!r[0]);});
+  if(!rows.length){alert('CSV is empty.');return;}
+  var header=rows[0].map(function(h){return (h||'').trim().toLowerCase();});
+  var idx={};
+  ['cn','py','en','note','source','sourcearticle','addedat','inflashcards'].forEach(function(k){
+    idx[k]=header.indexOf(k);
+  });
+  if(idx.cn<0){alert('CSV must have a "cn" column (Chinese word).');return;}
+  var added=0,skipped=0;
+  for(var r=1;r<rows.length;r++){
+    var row=rows[r];
+    var cn=(row[idx.cn]||'').trim();
+    if(!cn){skipped++;continue;}
+    if(isWordSaved(cn)){skipped++;continue;}
+    var inFlag=idx.inflashcards>=0?String(row[idx.inflashcards]||'').toLowerCase():'';
+    var word={
+      cn:cn,
+      py:idx.py>=0?(row[idx.py]||''):'',
+      en:idx.en>=0?(row[idx.en]||''):'',
+      note:idx.note>=0?(row[idx.note]||''):'',
+      source:idx.source>=0?((row[idx.source]||'').trim()||'manual'):'manual',
+      sourceArticle:idx.sourcearticle>=0?(row[idx.sourcearticle]||''):'',
+      addedAt:idx.addedat>=0?(row[idx.addedat]||new Date().toISOString()):new Date().toISOString(),
+      inFlashcards:inFlag==='true'||inFlag==='1'
+    };
+    savedWords.push(normalizeSavedWord(word));
+    added++;
+  }
+  if(added>0){
+    rebuildSavedWordFlashcards();
+    queuePersistSavedWords();
+    updateWordCountDisplays();
+    renderCard();
+    renderWordlistContent();
+  }
+  showToast('📥','','Imported '+added+' · skipped '+skipped+' duplicates',false);
+}
+
+function restoreWordsFromLocalBackup(){
+  var backup=readSavedWordsBackup();
+  if(!backup||!backup.savedWords||!backup.savedWords.length){
+    alert('No local backup found.');
+    return;
+  }
+  var when=backup.backedUpAt?new Date(backup.backedUpAt).toLocaleString():'an earlier session';
+  var msg='Restore '+backup.savedWords.length+' words from local backup ('+when+')?\n\nThis will merge with your current list — duplicates will be skipped.';
+  if(!confirm(msg))return;
+  var added=0,skipped=0;
+  backup.savedWords.forEach(function(w){
+    if(!w||!w.cn){skipped++;return;}
+    if(isWordSaved(w.cn)){skipped++;return;}
+    savedWords.push(normalizeSavedWord(w));
+    added++;
+  });
+  if(added>0){
+    rebuildSavedWordFlashcards();
+    queuePersistSavedWords();
+    updateWordCountDisplays();
+    renderCard();
+    renderWordlistContent();
+  }
+  showToast('♻️','','Restored '+added+' words · skipped '+skipped+' duplicates',false);
+}
+
 // ===== SAVED WORDS SYSTEM =====
 var savedWords=[];var wlFilter='all';
 function isWordSaved(cn){return savedWords.some(function(w){return w.cn===cn;});}
 function addWord(word){
   if(isWordSaved(word.cn))return false;
-  savedWords.push(normalizeSavedWord({cn:word.cn,py:word.py,en:word.en,source:word.source,sourceArticle:word.sourceArticle,inFlashcards:false}));
+  savedWords.push(normalizeSavedWord({cn:word.cn,py:word.py,en:word.en,note:word.note,source:word.source,sourceArticle:word.sourceArticle,inFlashcards:false}));
   queuePersistSavedWords();
   updateWordCountDisplays();
+  if(typeof topicRefreshFoundWords==='function'&&word.source==='browsing'&&word.sourceArticle)topicRefreshFoundWords(word.sourceArticle);
   if(typeof recordActivity==='function')recordActivity(1);
   return true;
 }
 function removeWord(cn){
+  var removed=savedWords.filter(function(w){return w.cn===cn;})[0];
   savedWords=savedWords.filter(function(w){return w.cn!==cn;});
   flashcards=flashcards.filter(function(fc){return fc.source!=='saved'||fc.srcCn!==cn;});
   queuePersistSavedWords();
   updateWordCountDisplays();
+  if(typeof topicRefreshFoundWords==='function'&&removed&&removed.source==='browsing'&&removed.sourceArticle)topicRefreshFoundWords(removed.sourceArticle);
 }
 function updateWordCountDisplays(){
   var n=savedWords.length;
@@ -98,12 +279,26 @@ function rebuildSavedWordFlashcards(){
 function loadSavedWordsCache(){
   return fetch('/api/words').then(function(r){return r.json();}).then(function(data){
     var nextSavedWords=Array.isArray(data.savedWords)?data.savedWords.map(normalizeSavedWord):[];
+    var backup=readSavedWordsBackup();
+    // If the server returns empty but we have a non-trivial local backup, the
+    // DB may have been wiped. Don't silently overwrite the backup — keep the
+    // server's view, but surface a notice so the user can click Restore.
+    var serverLooksWiped=(!nextSavedWords.length)&&backup&&Array.isArray(backup.savedWords)&&backup.savedWords.length>0;
     savedWords=nextSavedWords;
     rebuildSavedWordFlashcards();
     updateWordCountDisplays();
     renderCard();
     refreshCurrentArticleVocab();
     if(document.getElementById('wordlistModal').classList.contains('show'))renderWordlistContent();
+    // Keep local backup in sync with the authoritative server copy — only when
+    // server actually has words, so a wipe doesn't erase the backup too.
+    if(nextSavedWords.length)backupSavedWordsLocal();
+    if(serverLooksWiped){
+      console.warn('[savedWords] Server returned empty but local backup has '+backup.savedWords.length+' words. Open 📖 Words → ♻️ Restore to recover.');
+      showToast('⚠️','','Server list is empty but '+backup.savedWords.length+' words exist in local backup — open 📖 Words to restore.',false);
+    }
+    if(typeof topicMigrateFoundWordsToSavedWords==='function')topicMigrateFoundWordsToSavedWords();
+    if(typeof topicRefreshAllFoundWords==='function')topicRefreshAllFoundWords();
   }).catch(function(err){
     console.error('Failed to load saved words cache.',err);
   });
@@ -166,17 +361,19 @@ function renderWordlistContent(){
   if(!filtered.length){c.innerHTML='<div class="wl-empty"><div class="wl-empty-icon">📖</div><div>No words saved yet!<br><span style="font-size:0.72rem;color:#555;">Go to Immerse → RSS Reader and click ➕ on highlighted vocabulary words</span></div></div>';return;}
   var html='';
   filtered.forEach(function(w){
-    var srcColor=w.source==='rss'?'var(--cyan)':w.source==='trending'?'var(--pink)':'var(--purple)';
-    var srcLabel=w.source==='rss'?'📡 RSS':w.source==='trending'?'🔥 Trending':'✏️ Manual';
+    var srcColor=w.source==='rss'?'var(--cyan)':w.source==='trending'?'var(--pink)':w.source==='browsing'?'var(--green)':'var(--purple)';
+    var srcLabel=w.source==='rss'?'📡 RSS':w.source==='trending'?'🔥 Trending':w.source==='browsing'?'✍️ Browsing':'✏️ Manual';
     var fcIcon=w.inFlashcards?'✓':'🃏';
     var fcClass=w.inFlashcards?' fc-added':'';
-    html+='<div class="wl-item"><div class="wl-cn">'+w.cn+'</div><div class="wl-info"><div class="wl-py">'+w.py+'</div><div class="wl-en">'+w.en+'</div>'+(w.sourceArticle?'<span class="wl-source-tag" style="background:rgba(34,211,238,0.08);color:'+srcColor+';">'+srcLabel+(w.sourceArticle?' · '+w.sourceArticle.substring(0,20)+'…':'')+'</span>':'<span class="wl-source-tag" style="background:rgba(167,139,250,0.08);color:var(--purple);">'+srcLabel+'</span>')+'</div><div class="wl-actions"><button class="wl-action-btn'+fcClass+'" onclick="addSavedWordToFlashcards({cn:\''+w.cn.replace(/'/g,"\\'")+'\',py:\''+w.py.replace(/'/g,"\\'")+'\',en:\''+w.en.replace(/'/g,"\\'")+'\'}); renderWordlistContent();" title="Add to Flashcards">'+fcIcon+'</button><button class="wl-action-btn delete-btn" onclick="removeWord(\''+w.cn.replace(/'/g,"\\'")+'\'); showToast(\''+w.cn.replace(/'/g,"\\'")+'\',\''+w.py.replace(/'/g,"\\'")+'\',\''+w.en.replace(/'/g,"\\'")+'\',true); renderWordlistContent(); refreshCurrentArticleVocab();" title="Remove">✕</button></div></div>';
+    var py=w.py||'';var en=w.en||'';var note=w.note||'';
+    var meaning=en||note;
+    html+='<div class="wl-item"><div class="wl-cn">'+w.cn+'</div><div class="wl-info"><div class="wl-py">'+py+'</div><div class="wl-en">'+meaning+'</div>'+(note&&en?'<div class="wl-note" style="font-size:0.68rem;color:var(--muted);margin-top:2px;">📝 '+note+'</div>':'')+(w.sourceArticle?'<span class="wl-source-tag" style="background:rgba(34,211,238,0.08);color:'+srcColor+';">'+srcLabel+(w.sourceArticle?' · '+w.sourceArticle.substring(0,20)+'…':'')+'</span>':'<span class="wl-source-tag" style="background:rgba(167,139,250,0.08);color:'+srcColor+';">'+srcLabel+'</span>')+'</div><div class="wl-actions"><button class="wl-action-btn'+fcClass+'" onclick="addSavedWordToFlashcards({cn:\''+w.cn.replace(/'/g,"\\'")+'\',py:\''+py.replace(/'/g,"\\'")+'\',en:\''+meaning.replace(/'/g,"\\'")+'\'}); renderWordlistContent();" title="Add to Flashcards">'+fcIcon+'</button><button class="wl-action-btn delete-btn" onclick="removeWord(\''+w.cn.replace(/'/g,"\\'")+'\'); showToast(\''+w.cn.replace(/'/g,"\\'")+'\',\''+py.replace(/'/g,"\\'")+'\',\''+meaning.replace(/'/g,"\\'")+'\',true); renderWordlistContent(); refreshCurrentArticleVocab();" title="Remove">✕</button></div></div>';
   });
   c.innerHTML=html;updateWordCountDisplays();
 }
 function renderWlFilters(){
   var c=document.getElementById('wlFilterRow');
-  var sources=[{id:'all',label:'All'},{id:'rss',label:'📡 RSS'},{id:'trending',label:'🔥 Trending'},{id:'manual',label:'✏️ Manual'}];
+  var sources=[{id:'all',label:'All'},{id:'rss',label:'📡 RSS'},{id:'trending',label:'🔥 Trending'},{id:'browsing',label:'✍️ Browsing'},{id:'manual',label:'✏️ Manual'}];
   c.innerHTML='';
   sources.forEach(function(s){
     var count=s.id==='all'?savedWords.length:savedWords.filter(function(w){return w.source===s.id;}).length;
@@ -189,7 +386,9 @@ function exportWordlist(){
   if(navigator.clipboard)navigator.clipboard.writeText(text).then(function(){showToast('📋','','Word list copied!',false);});
 }
 function clearWordlist(){
-  if(!savedWords.length)return;savedWords=[];flashcards=flashcards.filter(function(fc){return fc.source!=='saved';});
+  if(!savedWords.length)return;
+  if(!confirm('Clear all '+savedWords.length+' saved words?\n\nThis cannot be undone from the UI — but a local backup will still exist under ♻️ Restore.'))return;
+  savedWords=[];flashcards=flashcards.filter(function(fc){return fc.source!=='saved';});
   queuePersistSavedWords();
   updateWordCountDisplays();renderWordlistContent();renderCard();showToast('🗑','','All words cleared',true);
 }
@@ -709,7 +908,7 @@ var hskVocab={1:[{ch:'你好',py:'nǐ hǎo',en:'hello'},{ch:'谢谢',py:'xièxie
 function showHSK(lvl,btn){document.querySelectorAll('.hsk-btn').forEach(function(b){b.style.borderColor='var(--border)';b.style.color='var(--muted)';});btn.style.borderColor='var(--accent)';btn.style.color='var(--accent)';var c=document.getElementById('hskList');c.innerHTML='';hskVocab[lvl].forEach(function(w){c.innerHTML+='<div class="phrase-item"><span class="phrase-cn">'+w.ch+'</span><span class="phrase-py">'+w.py+'</span><span class="phrase-en">'+w.en+'</span></div>';});}showHSK(1,document.querySelector('.hsk-btn'));
 
 var grammarPatterns=[{pattern:'S + V + O',desc:'Basic SVO',ex:'<strong>我吃饭。</strong>'},{pattern:'S + 很 + Adj',desc:'Adj predicates',ex:'<strong>她很漂亮。</strong>'},{pattern:'是...的',desc:'Emphasis',ex:'<strong>我是昨天来的。</strong>'},{pattern:'把 + O + V',desc:'Disposal',ex:'<strong>请把门关上。</strong>'},{pattern:'被 + Agent + V',desc:'Passive',ex:'<strong>蛋糕被他吃了。</strong>'}];
-(function(){var c=document.getElementById('grammarList');grammarPatterns.forEach(function(g){var d=document.createElement('div');d.className='grammar-item';d.innerHTML='<div class="grammar-pattern">'+g.pattern+'</div><div class="grammar-desc">'+g.desc+'</div><div class="grammar-example">'+g.ex+'</div>';d.onclick=function(){d.classList.toggle('expanded');};c.appendChild(d);});})();
+(function(){var c=document.getElementById('grammarListMini');if(!c)return;grammarPatterns.forEach(function(g){var d=document.createElement('div');d.className='grammar-item';d.innerHTML='<div class="grammar-pattern">'+g.pattern+'</div><div class="grammar-desc">'+g.desc+'</div><div class="grammar-example">'+g.ex+'</div>';d.onclick=function(){d.classList.toggle('expanded');};c.appendChild(d);});})();
 
 var idioms=[{ch:'一举两得',py:'yì jǔ liǎng dé',en:'Two birds one stone'},{ch:'画蛇添足',py:'huà shé tiān zú',en:'Over-doing it'},{ch:'马马虎虎',py:'mǎmahūhū',en:'So-so'}];
 (function(){var c=document.getElementById('idiomList');idioms.forEach(function(item){var d=document.createElement('div');d.className='idiom-item';d.innerHTML='<div class="idiom-chars">'+item.ch+'</div><div class="idiom-py">'+item.py+'</div><div class="idiom-meaning"><strong>Meaning:</strong> '+item.en+'</div>';d.onclick=function(){d.classList.toggle('expanded');};c.appendChild(d);});})();
@@ -765,7 +964,7 @@ function fetchRSS(feed,callback){
       var articles=data.items.slice(0,15).map(function(item,idx){
         var desc=(item.description||item.content||'').replace(/<[^>]+>/g,'').trim();
         var pubDate=item.pubDate?new Date(item.pubDate):new Date();
-        return{id:feed.id+'_'+idx,feedId:feed.id,feedName:feed.name,feedNameCn:feed.nameCn,feedColor:feed.color,feedIcon:feed.icon,title:item.title||'无标题',snippet:desc.substring(0,200),body:desc||desc.substring(0,200),link:item.link||feed.url,date:pubDate,dateStr:formatTimeAgo(pubDate),vocab:extractVocab(),live:true};
+        return{id:feed.id+'_'+idx,feedId:feed.id,feedName:feed.name,feedNameCn:feed.nameCn,feedColor:feed.color,feedIcon:feed.icon,title:item.title||'无标题',snippet:desc.substring(0,200),body:desc||desc.substring(0,200),link:item.link||feed.url,date:pubDate,dateStr:formatTimeAgo(pubDate),vocab:[],live:true};
       });callback(articles);}else callback([]);
   }).catch(function(){callback([]);});
 }
@@ -785,43 +984,92 @@ var fallbackArticles=[
   {feedId:'nyt',title:'全球粮食安全问题日益突出',snippet:'联合国粮农组织报道，全球粮食安全情况正在恶化。',body:'联合国粮农组织报道，全球粮食安全情况正在恶化。多个地区面临严重的问题。国际社会呼吁各国政府加强合作，共同应对挑战。分析人士表示，技术创新和政策改革是解决问题的关键。'},
   {feedId:'nyt',title:'中国传统文化走向世界',snippet:'中医药在全球范围内的影响不断扩大。',body:'中医药在全球范围内的影响不断扩大。世界卫生组织最近发布了关于传统医学的历史性报道。研究人员表示，国际合作是推动文化交流的关键。教育机构也在积极参与。市场分析显示，相关公司的增长前景良好。'}
 ];
-function buildFallbackArticles(){var now=new Date();return fallbackArticles.map(function(a,i){var feed=rssFeeds.find(function(f){return f.id===a.feedId;});var d=new Date(now.getTime()-(Math.floor(Math.random()*48)+1)*3600000);return{id:a.feedId+'_fb_'+i,feedId:a.feedId,feedName:feed.name,feedNameCn:feed.nameCn,feedColor:feed.color,feedIcon:feed.icon,title:a.title,snippet:a.snippet,body:a.body,link:'#',date:d,dateStr:formatTimeAgo(d),vocab:extractVocab(),live:false};}).sort(function(a,b){return b.date-a.date;});}
+function buildFallbackArticles(){var now=new Date();return fallbackArticles.map(function(a,i){var feed=rssFeeds.find(function(f){return f.id===a.feedId;});var d=new Date(now.getTime()-(Math.floor(Math.random()*48)+1)*3600000);return{id:a.feedId+'_fb_'+i,feedId:a.feedId,feedName:feed.name,feedNameCn:feed.nameCn,feedColor:feed.color,feedIcon:feed.icon,title:a.title,snippet:a.snippet,body:a.body,link:'#',date:d,dateStr:formatTimeAgo(d),vocab:[],live:false};}).sort(function(a,b){return b.date-a.date;});}
 
 function renderRssFeedBtns(){var c=document.getElementById('rssFeedBtns');c.innerHTML='';var allBtn=document.createElement('button');allBtn.className='rss-feed-btn'+(activeRssFeed==='all'?' active':'');allBtn.innerHTML='<span class="feed-dot" style="background:var(--cyan);"></span>All';allBtn.onclick=function(){activeRssFeed='all';renderRssFeedBtns();renderRssList();};c.appendChild(allBtn);rssFeeds.forEach(function(f){var btn=document.createElement('button');btn.className='rss-feed-btn'+(activeRssFeed===f.id?' active':'');btn.innerHTML='<span class="feed-dot" style="background:'+f.color+';"></span>'+f.icon+' '+f.name;btn.onclick=function(){activeRssFeed=f.id;renderRssFeedBtns();renderRssList();};c.appendChild(btn);});}
 
 function renderRssList(){var list=document.getElementById('rssList');var filtered=activeRssFeed==='all'?allRssArticles:allRssArticles.filter(function(a){return a.feedId===activeRssFeed;});list.innerHTML='';if(!filtered.length){list.innerHTML='<div class="rss-loading">No articles found.</div>';return;}document.getElementById('rssArticleCount').textContent=filtered.length+' articles';filtered.forEach(function(art){var item=document.createElement('div');item.className='rss-item';item.dataset.artId=art.id;item.innerHTML='<div class="rss-item-source"><span class="src-dot" style="background:'+art.feedColor+';"></span><span class="src-name">'+art.feedIcon+' '+art.feedName+'</span><span class="src-time">'+art.dateStr+'</span></div><div class="rss-item-title">'+art.title+'</div><div class="rss-item-snippet">'+art.snippet+'</div><div class="rss-item-tags">'+(art.live?'<span class="rit" style="background:rgba(52,211,153,0.1);color:var(--green);">LIVE</span>':'<span class="rit" style="background:rgba(251,191,36,0.1);color:var(--accent2);">CACHED</span>')+'<span class="rit" style="background:rgba(230,57,70,0.1);color:var(--accent);">'+art.feedNameCn+'</span></div>';item.onclick=function(){document.querySelectorAll('.rss-item').forEach(function(i2){i2.classList.remove('active');});item.classList.add('active');showArticle(art);};list.appendChild(item);});}
 
+function loadArticleDissection(art){
+  if(!art||art.vocabLoading||art.vocabLoaded)return;
+  art.vocabLoading=true;
+  var payload=(art.title||'')+'\n'+(art.body||'');
+  fetch('/api/language/annotate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:payload})
+  }).then(function(r){return r.json();}).then(function(data){
+    var words=(data&&Array.isArray(data.words))?data.words:[];
+    art.vocab=words.map(function(w){
+      var py=w.py||'';
+      try{if(py&&typeof convertNumberedPinyinText==='function')py=convertNumberedPinyinText(py);}catch(_){}
+      return {cn:w.cn,py:py,en:w.en||'',hsk:w.hsk||null};
+    });
+    art.vocabLoaded=true;
+    art.vocabLoading=false;
+    if(currentDisplayedArticle===art)showArticle(art);
+  }).catch(function(){
+    art.vocabLoading=false;
+    art.vocabError=true;
+    if(currentDisplayedArticle===art)showArticle(art);
+  });
+}
+
 function showArticle(art){
   currentDisplayedArticle=art;
   var detail=document.getElementById('rssDetail');
 
-  // Highlight vocab words in title and body
-  var highlightedTitle=highlightVocabInText(art.title,art.vocab,art.title);
-  var bodyParagraphs=art.body.split('\n').filter(function(p){return p.trim();});
+  // Kick off real dissection the first time we open this article. The render
+  // below runs immediately with whatever vocab we have (possibly none); when
+  // annotation returns it calls showArticle again to paint highlights/chips.
+  if(!art.vocabLoaded&&!art.vocabLoading)loadArticleDissection(art);
+
+  var vocab=Array.isArray(art.vocab)?art.vocab:[];
+  var highlightedTitle=highlightVocabInText(art.title,vocab,art.title);
+  var bodyParagraphs=(art.body||'').split('\n').filter(function(p){return p.trim();});
   var highlightedBody=bodyParagraphs.map(function(p){
-    return '<p>'+highlightVocabInText(p,art.vocab,art.title)+'</p>';
+    return '<p>'+highlightVocabInText(p,vocab,art.title)+'</p>';
   }).join('');
 
-  var vocabHtml=art.vocab.map(function(v){
+  var vocabHtml=vocab.map(function(v){
     var isSaved=isWordSaved(v.cn);
-    var eCn=v.cn.replace(/'/g,"\\'");var ePy=v.py.replace(/'/g,"\\'");var eEn=v.en.replace(/'/g,"\\'");var eTitle=art.title.replace(/'/g,"\\'");
-    return '<span class="rss-vocab-chip'+(isSaved?' added':'')+'" onclick="addWordFromVocab(\''+eCn+'\',\''+ePy+'\',\''+eEn+'\',\''+eTitle+'\')" title="'+(isSaved?'Click to remove':'Click to add')+'"><span class="vc-cn">'+v.cn+'</span><span class="vc-py">'+v.py+'</span><span class="vc-en">'+v.en+'</span><span class="vc-add">'+(isSaved?'✓':'+')+'</span></span>';
+    var eCn=v.cn.replace(/'/g,"\\'");var ePy=(v.py||'').replace(/'/g,"\\'");var eEn=(v.en||'').replace(/'/g,"\\'");var eTitle=art.title.replace(/'/g,"\\'");
+    var hskTag=v.hsk?'<span class="vc-hsk" style="font-size:0.55rem;color:var(--muted);margin-left:4px;">HSK '+v.hsk+'</span>':'';
+    return '<span class="rss-vocab-chip'+(isSaved?' added':'')+'" onclick="addWordFromVocab(\''+eCn+'\',\''+ePy+'\',\''+eEn+'\',\''+eTitle+'\')" title="'+(isSaved?'Click to remove':'Click to add')+'"><span class="vc-cn">'+escapeHtml(v.cn)+'</span><span class="vc-py">'+escapeHtml(v.py||'—')+'</span><span class="vc-en">'+escapeHtml(v.en||'')+'</span>'+hskTag+'<span class="vc-add">'+(isSaved?'✓':'+')+'</span></span>';
   }).join('');
 
-  var addAllSaved=art.vocab.every(function(v){return isWordSaved(v.cn);});
+  var addAllSaved=vocab.length>0&&vocab.every(function(v){return isWordSaved(v.cn);});
+
+  var vocabSection;
+  if(art.vocabLoading&&!vocab.length){
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary</div><div class="trending-detail-loading"><span class="spinner"></span> Segmenting and looking up vocab…</div></div>';
+  }else if(art.vocabError&&!vocab.length){
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary</div><div class="trending-detail-empty">Could not dissect this article.</div></div>';
+  }else if(!vocab.length){
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary</div><div class="trending-detail-empty">No dictionary-matching vocab found in this article.</div></div>';
+  }else{
+    var addAllBtn=vocab.length>1&&!addAllSaved?'<button class="add-all-btn" onclick="addAllVocabFromArticle()">➕ Add All Words to List</button>':'';
+    var allSavedMsg=addAllSaved?'<div style="font-size:0.65rem;color:var(--green);margin-top:8px;">✅ All words from this article saved!</div>':'';
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary · <span style="font-weight:400;color:var(--muted);">'+vocab.length+' words · Click ➕ to save</span></div><div class="rss-vocab-list">'+vocabHtml+'</div>'+addAllBtn+allSavedMsg+'</div>';
+  }
 
   detail.innerHTML='<div class="rss-detail-header"><div class="rss-detail-source"><span class="rds-name" style="background:'+art.feedColor+'22;color:'+art.feedColor+';">'+art.feedIcon+' '+art.feedName+'</span><span class="rds-time">'+art.dateStr+(art.live?' · 🟢 Live':'')+'</span></div><div class="rss-detail-title">'+highlightedTitle+'</div></div>'+
   '<div class="vocab-highlight-legend"><div class="vhl-item"><div class="vhl-swatch" style="background:var(--accent2);"></div><span>Vocab word (hover for details)</span></div><div class="vhl-item"><div class="vhl-swatch" style="background:var(--green);"></div><span>Already saved ✓</span></div></div>'+
   '<div class="rss-detail-body">'+highlightedBody+'</div>'+
-  '<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary · <span style="font-weight:400;color:var(--muted);">Click ➕ to save</span></div><div class="rss-vocab-list">'+vocabHtml+'</div>'+(art.vocab.length>1&&!addAllSaved?'<button class="add-all-btn" onclick="addAllVocabFromArticle()">➕ Add All Words to List</button>':'')+(addAllSaved&&art.vocab.length>0?'<div style="font-size:0.65rem;color:var(--green);margin-top:8px;">✅ All words from this article saved!</div>':'')+'</div>'+(art.link&&art.link!=='#'?'<a class="rss-detail-link" href="'+art.link+'" target="_blank" rel="noopener noreferrer">🔗 Read Full on '+art.feedName+' →</a>':'');
+  vocabSection+
+  (art.link&&art.link!=='#'?'<a class="rss-detail-link" href="'+art.link+'" target="_blank" rel="noopener noreferrer">🔗 Read Full on '+art.feedName+' →</a>':'');
 }
 
 function addAllVocabFromArticle(){
   if(!currentDisplayedArticle)return;var count=0;
-  currentDisplayedArticle.vocab.forEach(function(v){
-    if(!isWordSaved(v.cn)){addWord({cn:v.cn,py:v.py,en:v.en,source:'rss',sourceArticle:currentDisplayedArticle.title});addSavedWordToFlashcards({cn:v.cn,py:v.py,en:v.en});count++;}
+  var vocab=Array.isArray(currentDisplayedArticle.vocab)?currentDisplayedArticle.vocab:[];
+  vocab.forEach(function(v){
+    if(!v||!v.cn||isWordSaved(v.cn))return;
+    addWord({cn:v.cn,py:v.py||'',en:v.en||'',source:'rss',sourceArticle:currentDisplayedArticle.title});
+    addSavedWordToFlashcards({cn:v.cn,py:v.py||'',en:v.en||''});
+    count++;
   });
-  if(count>0){showToast(count+' words','','added to word list & flashcards',false);refreshCurrentArticleVocab();renderCard();}
+  if(count>0){showToast(count+' words','','added to word list & flashcards',false);refreshCurrentArticleVocab();renderCard();renderWordlistContent();}
 }
 
 var feedsLoaded=0;var feedsFailed=0;
@@ -831,12 +1079,19 @@ function loadAllFeeds(){if(rssLoaded)return;allRssArticles=[];feedsLoaded=0;feed
 var immerseResources=[{name:'哔哩哔哩 Bilibili',cat:'video',icon:'📱',color:'#38bdf8',desc:'China\'s biggest video community.',tags:['video','social'],level:'easy',url:'https://www.bilibili.com/',tip:'Search 学中文 for learner content.'},{name:'CCTV 中文国际',cat:'tv',icon:'📺',color:'#e63946',desc:'China\'s main state broadcaster.',tags:['live','video'],level:'hard',url:'https://tv.cctv.com/live/cctv4/',tip:'Watch 新闻联播 for standardized Mandarin.'},{name:'微博 Weibo',cat:'social',icon:'💬',color:'#f472b6',desc:'China\'s Twitter — real opinions.',tags:['social','text'],level:'med',url:'https://weibo.com/',tip:'Follow @人民日报 and check 热搜.'},{name:'知乎 Zhihu',cat:'social',icon:'❓',color:'#38bdf8',desc:'China\'s Quora. Great for reading.',tags:['text','community'],level:'hard',url:'https://www.zhihu.com/',tip:'Search topics you know well.'},{name:'喜马拉雅 Ximalaya',cat:'audio',icon:'🎧',color:'#a78bfa',desc:'Biggest podcast platform.',tags:['audio','podcast'],level:'med',url:'https://www.ximalaya.com/',tip:'Start with 儿童故事.'},{name:'Mandarin Corner',cat:'learning',icon:'🎓',color:'#34d399',desc:'YouTube street interviews and lessons.',tags:['video','learning'],level:'easy',url:'https://www.youtube.com/@MandarinCorner',tip:'Street interviews are amazing.'}];
 var immerseCats=[{id:'all',label:'🌏 All'},{id:'tv',label:'📺 TV'},{id:'video',label:'▶️ Video'},{id:'social',label:'💬 Social'},{id:'audio',label:'🎧 Audio'},{id:'learning',label:'🎓 Learning'}];var activeImmerseCat='all';
 var YOUTUBE_NEWS_STORAGE_KEY='hanzi-dash:immerse-youtube-news-channel';
+// NOTE: YouTube live video IDs rot — a channel's live ID changes when the
+// current stream ends. If a slot goes 404/offline, swap the videoId below.
+// The first three are Chinese-language streams; the last is English (kept
+// at the end so Chinese listening practice is the default).
 var youtubeNewsChannels=[
-  {id:'feed-1',label:'Feed 1',name:'Live News Feed 1',videoId:'BOy2xDU1LC8',url:'https://www.youtube.com/watch?v=BOy2xDU1LC8'},
-  {id:'feed-2',label:'Feed 2',name:'Live News Feed 2',videoId:'TsccmbyNk6g',url:'https://www.youtube.com/watch?v=TsccmbyNk6g'},
-  {id:'feed-3',label:'Feed 3',name:'Live News Feed 3',videoId:'fN9uYWCjQaw',url:'https://www.youtube.com/watch?v=fN9uYWCjQaw'},
-  {id:'feed-4',label:'Feed 4',name:'Live News Feed 4',videoId:'6IquAgfvYmc',url:'https://www.youtube.com/watch?v=6IquAgfvYmc'}
+  {id:'feed-2',label:'CN 1',name:'Chinese News · Live 1',videoId:'TsccmbyNk6g',url:'https://www.youtube.com/watch?v=TsccmbyNk6g'},
+  {id:'feed-3',label:'CN 2',name:'Chinese News · Live 2',videoId:'fN9uYWCjQaw',url:'https://www.youtube.com/watch?v=fN9uYWCjQaw'},
+  {id:'feed-4',label:'CN 3',name:'Chinese News · Live 3',videoId:'6IquAgfvYmc',url:'https://www.youtube.com/watch?v=6IquAgfvYmc'},
+  {id:'feed-1',label:'EN',name:'English News · Live',videoId:'BOy2xDU1LC8',url:'https://www.youtube.com/watch?v=BOy2xDU1LC8'}
 ];
+function ytNewsEmbedUrl(videoId){
+  return 'https://www.youtube.com/embed/'+videoId+'?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1';
+}
 var activeYoutubeNewsChannelId=loadYoutubeNewsChannel();
 function loadYoutubeNewsChannel(){
   try{
@@ -863,8 +1118,62 @@ function setYoutubeNewsChannel(channelId){
 function renderYoutubeNewsWidget(){
   var mount=document.getElementById('youtubeNewsWidget');
   if(!mount)return;
-  var activeChannel=getActiveYoutubeNewsChannel();
-  mount.innerHTML='<div class="youtube-news-head"><div class="youtube-news-copy"><div class="youtube-news-kicker">Persistent Live News</div><div class="youtube-news-title-row"><strong>'+activeChannel.name+'</strong><span class="youtube-news-live-tag">Live</span></div><div class="youtube-news-sub">Your selected channel stays active after reload.</div></div><a class="btn-secondary btn-small" href="'+activeChannel.url+'" target="_blank" rel="noopener noreferrer">Open on YouTube</a></div><div class="youtube-news-player"><iframe src="https://www.youtube.com/embed/'+activeChannel.videoId+'?autoplay=0&mute=1&playsinline=1&rel=0&modestbranding=1" title="'+activeChannel.name+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><div class="youtube-news-channel-row">'+youtubeNewsChannels.map(function(channel){return '<button class="youtube-news-channel-btn'+(channel.id===activeChannel.id?' active':'')+'" onclick="setYoutubeNewsChannel(\''+channel.id+'\')">'+channel.label+'</button>';}).join('')+'</div>';
+
+  // Build the static shell once. Channel switches below only update text,
+  // chips, and iframe.src — the iframe element itself is never re-created,
+  // which is what keeps the stream from restarting.
+  if(!mount.dataset.ytInited){
+    mount.dataset.ytInited='1';
+    mount.innerHTML=
+      '<div class="ytnews">'+
+        '<header class="ytnews-top">'+
+          '<div class="ytnews-meta">'+
+            '<span class="ytnews-live-dot" title="Live"></span>'+
+            '<span class="ytnews-kicker">LIVE</span>'+
+            '<strong class="ytnews-label"></strong>'+
+            '<span class="ytnews-name"></span>'+
+          '</div>'+
+          '<a class="ytnews-open btn-secondary btn-small" target="_blank" rel="noopener noreferrer">Open on YouTube</a>'+
+        '</header>'+
+        '<div class="ytnews-player">'+
+          '<iframe class="ytnews-frame" '+
+            'allow="autoplay; encrypted-media; picture-in-picture; web-share" '+
+            'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'+
+        '</div>'+
+        '<nav class="ytnews-chips"></nav>'+
+      '</div>';
+    var chipsNav=mount.querySelector('.ytnews-chips');
+    if(chipsNav){
+      chipsNav.addEventListener('click',function(e){
+        var btn=e.target.closest('[data-yt-id]');
+        if(btn)setYoutubeNewsChannel(btn.getAttribute('data-yt-id'));
+      });
+    }
+  }
+
+  var active=getActiveYoutubeNewsChannel();
+  var iframe=mount.querySelector('.ytnews-frame');
+  var labelEl=mount.querySelector('.ytnews-label');
+  var nameEl=mount.querySelector('.ytnews-name');
+  var openEl=mount.querySelector('.ytnews-open');
+  var chipsEl=mount.querySelector('.ytnews-chips');
+
+  if(labelEl)labelEl.textContent=active.label;
+  if(nameEl)nameEl.textContent=active.name;
+  if(iframe)iframe.title=active.name+' live stream';
+  if(openEl)openEl.href=active.url;
+
+  if(chipsEl){
+    chipsEl.innerHTML=youtubeNewsChannels.map(function(c){
+      return '<button type="button" class="ytnews-chip'+(c.id===active.id?' active':'')+'" data-yt-id="'+escapeHtml(c.id)+'" title="'+escapeHtml(c.name)+'">'+escapeHtml(c.label)+'</button>';
+    }).join('');
+  }
+
+  if(iframe){
+    var targetSrc=ytNewsEmbedUrl(active.videoId);
+    // Avoid reassigning the same src — some browsers treat it as a reload.
+    if(iframe.src!==targetSrc)iframe.src=targetSrc;
+  }
 }
 function renderImmerse(){renderImmerseCats();renderYoutubeNewsWidget();renderResources();renderDCProgress();}
 function renderImmerseCats(){var bar=document.getElementById('immerseCatBar');bar.innerHTML='';immerseCats.forEach(function(cat){var btn=document.createElement('button');btn.className='immerse-cat-btn'+(activeImmerseCat===cat.id?' active':'');btn.textContent=cat.label;btn.onclick=function(){activeImmerseCat=cat.id;renderImmerseCats();renderResources();};bar.appendChild(btn);});}
@@ -1929,6 +2238,153 @@ function newWordOfDay(){
   loadWordOfDay();
 }
 
+// ===== KAHOOT HSK MASTERY ("Climb the Mountain") =====
+// Tracks, per HSK level, the set of word.simplified forms answered correctly
+// in Kahoot. Persists to /api/mastery (upsert-per-level on the server) AND
+// mirrors to localStorage as a failsafe.
+var KAHOOT_MASTERY={};
+var KAHOOT_MASTERY_BACKUP_KEY='zhongwen-dash:kahoot-mastery';
+var kahootMasteryPersistTimer=null;
+
+function serializeKahootMastery(){
+  var out={};
+  Object.keys(KAHOOT_MASTERY).forEach(function(lvl){
+    out[lvl]=Object.keys(KAHOOT_MASTERY[lvl]||{});
+  });
+  return out;
+}
+
+function backupKahootMasteryLocal(){
+  try{localStorage.setItem(KAHOOT_MASTERY_BACKUP_KEY,JSON.stringify(serializeKahootMastery()));}catch(_e){}
+}
+
+function hydrateMasteryFrom(obj){
+  KAHOOT_MASTERY={};
+  if(!obj)return;
+  Object.keys(obj).forEach(function(lvl){
+    var set={};
+    (obj[lvl]||[]).forEach(function(cn){if(cn)set[cn]=true;});
+    KAHOOT_MASTERY[lvl]=set;
+  });
+}
+
+function loadKahootMastery(){
+  // Try server first, fall back to localStorage. If the server returns empty
+  // but the local backup has mastery data, restore from localStorage — this
+  // protects against a server wipe silently nuking recorded progress.
+  return fetch('/api/mastery').then(function(r){return r.json();}).then(function(data){
+    var serverMap=(data&&data.mastery)||{};
+    var serverCount=Object.keys(serverMap).reduce(function(n,lvl){return n+((serverMap[lvl]||[]).length);},0);
+    var localParsed=null;
+    try{var raw=localStorage.getItem(KAHOOT_MASTERY_BACKUP_KEY);if(raw)localParsed=JSON.parse(raw);}catch(_e){}
+    var localCount=localParsed?Object.keys(localParsed).reduce(function(n,lvl){return n+((localParsed[lvl]||[]).length);},0):0;
+    if(serverCount===0&&localCount>0){
+      console.warn('[mastery] Server empty but local backup has '+localCount+' mastered words — restoring and re-syncing.');
+      hydrateMasteryFrom(localParsed);
+      persistKahootMastery();
+    }else{
+      hydrateMasteryFrom(serverMap);
+      if(serverCount>0)backupKahootMasteryLocal();
+    }
+    renderKahootMountains();
+  }).catch(function(){
+    try{
+      var raw=localStorage.getItem(KAHOOT_MASTERY_BACKUP_KEY);
+      if(raw)hydrateMasteryFrom(JSON.parse(raw));
+    }catch(_e){}
+    renderKahootMountains();
+  });
+}
+
+function persistKahootMastery(){
+  backupKahootMasteryLocal();
+  clearTimeout(kahootMasteryPersistTimer);
+  kahootMasteryPersistTimer=setTimeout(function(){
+    fetch('/api/mastery',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({mastery:serializeKahootMastery()})
+    }).catch(function(err){console.error('Failed to persist Kahoot mastery.',err);});
+  },300);
+}
+
+function recordKahootMastery(level,simplified){
+  if(!level||!simplified)return;
+  var key=String(level);
+  if(!KAHOOT_MASTERY[key])KAHOOT_MASTERY[key]={};
+  if(KAHOOT_MASTERY[key][simplified])return;
+  KAHOOT_MASTERY[key][simplified]=true;
+  persistKahootMastery();
+  renderKahootMountains();
+}
+
+function kahootMasteryLevels(){
+  if(KAHOOT.levels&&KAHOOT.levels.length)return KAHOOT.levels;
+  return [
+    {id:'1',label:'HSK 1',count:0},
+    {id:'2',label:'HSK 2',count:0},
+    {id:'3',label:'HSK 3',count:0},
+    {id:'4',label:'HSK 4',count:0},
+    {id:'5',label:'HSK 5',count:0},
+    {id:'6',label:'HSK 6',count:0},
+    {id:'7-9',label:'HSK 7-9',count:0}
+  ];
+}
+
+function buildMountainCard(lvl){
+  var total=lvl.count||0;
+  var masteredMap=KAHOOT_MASTERY[lvl.id]||{};
+  var mastered=Object.keys(masteredMap).length;
+  var pct=total>0?Math.min(100,Math.round(100*mastered/total)):0;
+  // Mountain polygon: peak (50,10), base-left (10,90), base-right (90,90).
+  var yTop=90-pct/100*80;
+  var slopeRatio=(90-yTop)/80;
+  var xLeft=10+slopeRatio*40;
+  var xRight=90-slopeRatio*40;
+  var safeId=String(lvl.id).replace(/[^a-z0-9_-]/gi,'_');
+  var gradId='km-grad-'+safeId;
+  var fillPoly=pct>0
+    ? '<polygon points="'+xLeft.toFixed(2)+','+yTop.toFixed(2)+' '+xRight.toFixed(2)+','+yTop.toFixed(2)+' 90,90 10,90" fill="url(#'+gradId+')"/>'
+    :'';
+  var climberEmoji=pct>=100?'🏁':(pct>0?'🧗':'⛰️');
+  var climberLeft,climberTop;
+  if(pct>=100){climberLeft=50;climberTop=14;}
+  else if(pct>0){climberLeft=xLeft;climberTop=yTop;}
+  else{climberLeft=50;climberTop=88;}
+  var completeClass=pct>=100?' complete':'';
+  return '<div class="mountain-card'+completeClass+'">'+
+    '<div class="mountain-label">'+escapeHtml(lvl.label)+'</div>'+
+    '<div class="mountain-svg-wrap">'+
+      '<svg viewBox="0 0 100 100" class="mountain-svg" preserveAspectRatio="xMidYMid meet">'+
+        '<defs><linearGradient id="'+gradId+'" x1="0" y1="1" x2="0" y2="0">'+
+          '<stop offset="0%" stop-color="var(--accent)"/>'+
+          '<stop offset="100%" stop-color="var(--accent2)"/>'+
+        '</linearGradient></defs>'+
+        '<polygon points="50,10 10,90 90,90" fill="rgba(255,255,255,0.03)" stroke="var(--border)" stroke-width="1"/>'+
+        fillPoly+
+      '</svg>'+
+      '<span class="mountain-climber" style="left:'+climberLeft.toFixed(2)+'%;top:'+climberTop.toFixed(2)+'%;">'+climberEmoji+'</span>'+
+    '</div>'+
+    '<div class="mountain-stats">'+
+      '<div class="mountain-pct">'+pct+'%</div>'+
+      '<div class="mountain-counts">'+mastered+(total>0?' / '+total:'')+'</div>'+
+    '</div>'+
+    '</div>';
+}
+
+function renderKahootMountains(){
+  var mount=document.getElementById('kahootMountains');
+  if(!mount)return;
+  var levels=kahootMasteryLevels();
+  mount.innerHTML=levels.map(buildMountainCard).join('');
+  var totalLearned=0;
+  Object.keys(KAHOOT_MASTERY).forEach(function(lvl){
+    totalLearned+=Object.keys(KAHOOT_MASTERY[lvl]||{}).length;
+  });
+  var sum=document.getElementById('kahootMountainsSummary');
+  if(sum)sum.textContent=totalLearned+' word'+(totalLearned===1?'':'s')+' mastered';
+}
+
 // ===== KAHOOT =====
 var KAHOOT={
   level:'1',
@@ -1957,15 +2413,18 @@ function initKahootZone(){
   if(WORDS.levels&&WORDS.levels.length){
     KAHOOT.levels=WORDS.levels;
     renderKahootSetup();
+    renderKahootMountains();
   }else{
     fetchWordsForLevel('1').then(function(data){
       if(data&&data.ok){
         KAHOOT.levels=data.levels||[];
         KAHOOT.level=data.currentLevel||'1';
         renderKahootSetup();
+        renderKahootMountains();
       }
     });
   }
+  loadKahootMastery();
 }
 
 function renderKahootSetup(){
@@ -2128,6 +2587,7 @@ function handleKahootAnswer(choiceIdx,btn){
       KAHOOT.correctCount++;
       feedbackEl.innerHTML='<span style="color:var(--green);">✓ +'+timePoints+(bonus?' <span style="color:var(--orange);">+'+bonus+' streak!</span>':'')+'</span>';
     }
+    if(q&&q.simplified)recordKahootMastery(q.level||KAHOOT.level,q.simplified);
   }else{
     if(!isRetry)KAHOOT.streak=0;
     if(KAHOOT.lifebelt&&q){
@@ -2434,13 +2894,54 @@ function renderConnector(){
 }
 function nextConnector(){GRAMMAR_STATE.connector.idx=(GRAMMAR_STATE.connector.idx+1)%CONNECTOR_PAIRS.length;renderConnector();}
 
+// ===== READING PANE (unified News + Trending) =====
+var READING={mode:'news'};
+
+function setReadingMode(mode){
+  if(mode!=='news'&&mode!=='trending')return;
+  if(READING.mode===mode)return;
+  READING.mode=mode;
+  document.querySelectorAll('.reading-mode-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-reading-mode')===mode);
+  });
+  var newsFilter=document.getElementById('readingFilterNews');
+  var trendingFilter=document.getElementById('readingFilterTrending');
+  if(newsFilter)newsFilter.hidden=mode!=='news';
+  if(trendingFilter)trendingFilter.hidden=mode!=='trending';
+  var title=document.getElementById('readingHeaderTitle');
+  var icon=document.getElementById('readingHeaderIcon');
+  var sub=document.getElementById('readingHeaderSub');
+  var statusLabel=document.getElementById('readingStatusLabel');
+  var rssLast=document.getElementById('rssLastUpdate');
+  var count=document.getElementById('rssArticleCount');
+  if(mode==='news'){
+    if(title)title.textContent='Chinese Daily News · RSS Reader';
+    if(icon)icon.textContent='📡';
+    if(sub)sub.innerHTML='Vocab is <span style="color:var(--accent2);font-weight:600;">highlighted in article text</span> — hover to see details, click ➕ to save';
+    if(statusLabel)statusLabel.textContent='Auto-refresh';
+    renderRssList();
+    if(count)count.textContent=allRssArticles.length+' articles';
+  }else{
+    if(title)title.textContent='Trending Topics · tophub.today';
+    if(icon)icon.textContent='🔥';
+    if(sub)sub.innerHTML='Live headlines from 87 Chinese sources — <span style="color:var(--pink);font-weight:600;">click a topic</span> to segment, translate, and save vocab';
+    if(statusLabel)statusLabel.textContent='Live trending';
+    if(rssLast&&TRENDING.fetchedAt)rssLast.textContent=new Date(TRENDING.fetchedAt).toLocaleTimeString();
+    maybeLoadTrending();
+    renderTrending();
+  }
+  var detail=document.getElementById('rssDetail');
+  if(detail)detail.innerHTML='<div class="rss-detail-empty"><div class="rde-icon">'+(mode==='news'?'📰':'🔥')+'</div><div class="rde-text">Select '+(mode==='news'?'an article':'a trending topic')+' to '+(mode==='news'?'read':'dissect')+'<br><span style="font-size:0.7rem;color:#444;">Click any headline on the left</span></div></div>';
+  TRENDING.active=null;
+}
+
 // ===== TRENDING (tophub.today) =====
 var TRENDING={
   sources:[],
   fetchedAt:'',
   selected:'__all__',
   loading:false,
-  expanded:null,      // itemKey of currently expanded item
+  active:null,        // {key,title,url,sourceName} — currently-open topic
   dissections:{}      // cache by itemKey: {loading,error,words:[{cn,py,en}],translation}
 };
 
@@ -2448,11 +2949,30 @@ function trendingItemKey(sourceId,item){
   return sourceId+':'+(item.itemId||('r'+item.rank)||item.title);
 }
 
-function toggleTrendingItem(key,title){
-  if(TRENDING.expanded===key){TRENDING.expanded=null;renderTrending();return;}
-  TRENDING.expanded=key;
+function showTrendingDetail(key,title,url,sourceName,sourceIcon){
+  TRENDING.active={key:key,title:title,url:url,sourceName:sourceName||'',sourceIcon:sourceIcon||''};
+  document.querySelectorAll('#rssList .rss-item').forEach(function(i){i.classList.remove('active');});
+  var row=document.querySelector('#rssList .rss-item[data-reading-key="'+cssAttrEscape(key)+'"]');
+  if(row)row.classList.add('active');
   if(!TRENDING.dissections[key])loadTrendingDissection(key,title);
-  renderTrending();
+  renderTrendingActiveDetail();
+}
+
+function cssAttrEscape(value){
+  return String(value).replace(/["\\]/g,'\\$&');
+}
+
+function renderTrendingActiveDetail(){
+  if(READING.mode!=='trending')return;
+  if(!TRENDING.active)return;
+  var detail=document.getElementById('rssDetail');
+  if(!detail)return;
+  var a=TRENDING.active;
+  var srcChip='<span class="rds-name" style="background:rgba(244,114,182,0.13);color:var(--pink);display:inline-flex;gap:6px;align-items:center;">'+
+    (a.sourceIcon?'<img src="'+escapeHtml(a.sourceIcon)+'" style="width:14px;height:14px;border-radius:3px;" onerror="this.style.display=\'none\'">':'🔥')+
+    escapeHtml(a.sourceName||'Trending')+
+    '</span>';
+  detail.innerHTML='<div class="rss-detail-header"><div class="rss-detail-source">'+srcChip+'</div></div>'+renderTrendingDetailHtml(a.key,a.title,a.url);
 }
 
 function loadTrendingDissection(key,title){
@@ -2471,7 +2991,7 @@ function loadTrendingDissection(key,title){
     });
     if(!unique.length){
       TRENDING.dissections[key].loading=false;
-      renderTrending();
+      renderTrendingActiveDetail();
       return null;
     }
     return Promise.all(unique.map(function(w){
@@ -2488,7 +3008,7 @@ function loadTrendingDissection(key,title){
       // Keep only entries with at least a pinyin or definition.
       TRENDING.dissections[key].words=vocab.filter(function(v){return v&&(v.py||v.en);});
       TRENDING.dissections[key].loading=false;
-      renderTrending();
+      renderTrendingActiveDetail();
       // Fetch translation in background — don't block dissection UI on it.
       fetch('/api/language/translate',{
         method:'POST',
@@ -2499,7 +3019,7 @@ function loadTrendingDissection(key,title){
         if(tr&&tr.ok&&Array.isArray(tr.translations)&&tr.translations[0]){
           var first=tr.translations[0];
           TRENDING.dissections[key].translation=typeof first==='string'?first:(first.text||'');
-          if(TRENDING.expanded===key)renderTrending();
+          if(TRENDING.active&&TRENDING.active.key===key)renderTrendingActiveDetail();
         }
       }).catch(function(){});
     });
@@ -2507,14 +3027,14 @@ function loadTrendingDissection(key,title){
     if(!TRENDING.dissections[key])TRENDING.dissections[key]={};
     TRENDING.dissections[key].loading=false;
     TRENDING.dissections[key].error='Could not dissect this title.';
-    renderTrending();
+    renderTrendingActiveDetail();
   });
 }
 
 function addWordFromTrending(cn,py,en,sourceTitle){
-  if(isWordSaved(cn)){removeWord(cn);showToast(cn,py,en,true);renderTrending();renderWordlistContent();return;}
+  if(isWordSaved(cn)){removeWord(cn);showToast(cn,py,en,true);renderTrendingActiveDetail();renderWordlistContent();return;}
   var added=addWord({cn:cn,py:py,en:en,source:'trending',sourceArticle:sourceTitle||''});
-  if(added){addSavedWordToFlashcards({cn:cn,py:py,en:en});showToast(cn,py,en,false);renderTrending();renderWordlistContent();}
+  if(added){addSavedWordToFlashcards({cn:cn,py:py,en:en});showToast(cn,py,en,false);renderTrendingActiveDetail();renderWordlistContent();}
 }
 
 function addAllTrendingVocab(key,title){
@@ -2527,7 +3047,7 @@ function addAllTrendingVocab(key,title){
     addSavedWordToFlashcards({cn:v.cn,py:v.py||'',en:v.en||''});
     count++;
   });
-  if(count>0){showToast(count+' words','','added to word list & flashcards',false);renderTrending();renderCard();renderWordlistContent();}
+  if(count>0){showToast(count+' words','','added to word list & flashcards',false);renderTrendingActiveDetail();renderCard();renderWordlistContent();}
 }
 
 function renderTrendingDetailHtml(key,title,url){
@@ -2665,50 +3185,56 @@ function selectTrendingSource(id){
 })();
 
 function renderTrending(){
-  var c=document.getElementById('trendingList');
   var meta=document.getElementById('trendingMeta');
-  if(!c)return;
+  var rssLast=document.getElementById('rssLastUpdate');
   if(meta){
     if(TRENDING.loading)meta.textContent='Loading…';
     else if(!TRENDING.fetchedAt)meta.textContent='Not loaded';
     else meta.textContent='Updated '+new Date(TRENDING.fetchedAt).toLocaleTimeString();
   }
+  // Only paint the list when trending mode is active — avoid stomping RSS render.
+  if(READING.mode!=='trending')return;
+  var c=document.getElementById('rssList');
+  if(!c)return;
+  if(rssLast&&TRENDING.fetchedAt)rssLast.textContent=new Date(TRENDING.fetchedAt).toLocaleTimeString();
   if(TRENDING.loading&&!TRENDING.sources.length){
-    c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.8rem;"><span class="spinner"></span> Fetching trending topics…</div>';
+    c.innerHTML='<div class="rss-loading"><span class="spinner"></span> Fetching trending topics…</div>';
     return;
   }
   if(!TRENDING.sources.length){
-    c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.8rem;">Could not load trending topics. Try ↻ to retry.</div>';
+    c.innerHTML='<div class="rss-loading" style="color:var(--muted);">Could not load trending topics. Try ↻ to retry.</div>';
     return;
   }
   var sources=TRENDING.selected==='__all__'?TRENDING.sources:TRENDING.sources.filter(function(s){return s.sourceId===TRENDING.selected;});
-  if(!sources.length){
-    c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.8rem;">No items for this source.</div>';
-    return;
-  }
-  var maxPerSource=TRENDING.selected==='__all__'?10:50;
+  if(!sources.length){c.innerHTML='<div class="rss-loading" style="color:var(--muted);">No items for this source.</div>';return;}
+  var maxPerSource=TRENDING.selected==='__all__'?6:50;
+  var totalItems=0;
+  var activeKey=TRENDING.active?TRENDING.active.key:'';
   c.innerHTML=sources.map(function(s){
-    var header='<div style="display:flex;align-items:center;gap:8px;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">'+
-      (s.icon?'<img src="'+escapeHtml(s.icon)+'" style="width:18px;height:18px;border-radius:4px;" onerror="this.style.display=\'none\'">':'')+
-      '<strong style="font-size:0.85rem;color:var(--text);">'+escapeHtml(s.name)+'</strong>'+
-      (s.subtitle?'<span style="font-size:0.65rem;color:var(--muted);">'+escapeHtml(s.subtitle)+'</span>':'')+
-      '<span style="font-size:0.65rem;color:var(--muted);margin-left:auto;">'+s.items.length+' items</span>'+
+    var header='<div class="trending-group-header">'+
+      (s.icon?'<img src="'+escapeHtml(s.icon)+'" onerror="this.style.display=\'none\'">':'<span class="tgh-dot"></span>')+
+      '<strong>'+escapeHtml(s.name)+'</strong>'+
+      (s.subtitle?'<span class="subtitle">'+escapeHtml(s.subtitle)+'</span>':'')+
+      '<span class="count">'+s.items.length+'</span>'+
       '</div>';
     var items=s.items.slice(0,maxPerSource).map(function(it){
+      totalItems++;
       var key=trendingItemKey(s.sourceId,it);
       var keyEsc=key.replace(/'/g,"\\'");
       var titleJs=it.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      var isOpen=TRENDING.expanded===key;
-      var row='<div class="trending-item-row'+(isOpen?' open':'')+'" onclick="toggleTrendingItem(\''+keyEsc+'\',\''+titleJs+'\')">'+
-        '<span class="trend-rank">'+it.rank+'</span>'+
-        '<span class="trend-title cn">'+escapeHtml(it.title)+'</span>'+
-        '<span class="trend-caret">'+(isOpen?'▴':'▾')+'</span>'+
+      var urlJs=(it.url||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var srcNameJs=s.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var srcIconJs=(s.icon||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var isActive=key===activeKey;
+      return '<div class="rss-item trending-row'+(isActive?' active':'')+'" data-reading-key="'+escapeHtml(key)+'" onclick="showTrendingDetail(\''+keyEsc+'\',\''+titleJs+'\',\''+urlJs+'\',\''+srcNameJs+'\',\''+srcIconJs+'\')">'+
+        '<div class="rss-item-source"><span class="trend-rank">#'+it.rank+'</span><span class="src-name">'+escapeHtml(s.name)+'</span></div>'+
+        '<div class="rss-item-title cn">'+escapeHtml(it.title)+'</div>'+
         '</div>';
-      var detail=isOpen?'<div class="trending-item-detail">'+renderTrendingDetailHtml(key,it.title,it.url)+'</div>':'';
-      return '<div class="trending-item">'+row+detail+'</div>';
     }).join('');
     return header+items;
   }).join('');
+  var count=document.getElementById('rssArticleCount');
+  if(count)count.textContent=totalItems+' topics';
 }
 
 // Load only when the Immerse tab is actually opened. Client-side throttle so

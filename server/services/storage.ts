@@ -28,8 +28,18 @@ const ChallengeSchema = new mongoose.Schema(
   { strict: false, versionKey: false },
 );
 
+const MasterySchema = new mongoose.Schema(
+  {
+    level: { type: String, required: true, unique: true, index: true },
+    words: [String],
+    updatedAt: String,
+  },
+  { strict: false, versionKey: false },
+);
+
 export const SavedWord = mongoose.model("SavedWord", SavedWordSchema);
 export const Challenge = mongoose.model("Challenge", ChallengeSchema);
+export const Mastery = mongoose.model("Mastery", MasterySchema);
 
 const PROJECTION = { _id: 0 };
 
@@ -44,6 +54,46 @@ export async function setSavedWords(savedWords: unknown[]): Promise<unknown[]> {
     await SavedWord.insertMany(items, { ordered: false });
   }
   return getSavedWords();
+}
+
+export async function getMastery(): Promise<Record<string, string[]>> {
+  const rows = await Mastery.find({}, PROJECTION).lean();
+  const out: Record<string, string[]> = {};
+  for (const row of rows as Array<{ level?: string; words?: unknown }>) {
+    if (!row || typeof row.level !== "string") continue;
+    out[row.level] = Array.isArray(row.words) ? (row.words as string[]) : [];
+  }
+  return out;
+}
+
+// Upsert-per-level. Intentionally does NOT delete levels that are missing from
+// the payload — mastery is additive and this makes a buggy client incapable of
+// wiping the store.
+export async function setMastery(
+  mastery: Record<string, unknown>,
+): Promise<Record<string, string[]>> {
+  const entries = Object.entries(mastery || {});
+  if (!entries.length) return getMastery();
+  const ops = entries
+    .filter(([level]) => typeof level === "string" && level.length > 0)
+    .map(([level, words]) => {
+      const cleanWords = Array.isArray(words)
+        ? (words as unknown[]).filter((w): w is string => typeof w === "string" && w.length > 0)
+        : [];
+      return {
+        updateOne: {
+          filter: { level },
+          update: {
+            $set: { level, words: cleanWords, updatedAt: new Date().toISOString() },
+          },
+          upsert: true,
+        },
+      };
+    });
+  if (ops.length) {
+    await Mastery.bulkWrite(ops, { ordered: false });
+  }
+  return getMastery();
 }
 
 export async function getChallenges(): Promise<unknown[]> {

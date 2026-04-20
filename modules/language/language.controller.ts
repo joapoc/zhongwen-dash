@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import {
+  annotateChineseText,
   getCharacterDetails,
   getCharacterReadings,
   getHandwritingAudioPath,
@@ -115,6 +116,27 @@ export async function segmentLanguageText(req: Request, res: Response) {
     route: "/api/language/segment",
     text,
     ...result,
+  });
+}
+
+export async function annotateLanguageText(req: Request, res: Response) {
+  const text = typeof req.body?.text === "string" ? req.body.text : "";
+
+  if (!text.trim()) {
+    return res.status(400).json({
+      ok: false,
+      route: "/api/language/annotate",
+      message: "text is required.",
+    });
+  }
+
+  const words = await annotateChineseText(text);
+
+  return res.status(200).json({
+    ok: true,
+    route: "/api/language/annotate",
+    count: words.length,
+    words,
   });
 }
 

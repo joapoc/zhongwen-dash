@@ -32,7 +32,24 @@
       "Bash(curl -s -X POST http://localhost:3456/api/language/segment -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_seg.json\")",
       "Bash(curl -sG --data-urlencode \"query=经济\" --data-urlencode \"limit=1\" http://localhost:3456/api/language/dictionary/search)",
       "Bash(curl -s \"http://localhost:3456/api/language/dictionary/search?query=%E7%BB%8F%E6%B5%8E&limit=1\")",
-      "Bash(curl -s \"http://localhost:3456/api/trending\")"
+      "Bash(curl -s \"http://localhost:3456/api/trending\")",
+      "Bash(curl -s -X PUT http://localhost:3461/api/words -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_clear.json\")",
+      "Bash(PORT=3462 npx tsx server/index.ts)",
+      "Bash(curl -s -X PUT http://localhost:3462/api/words -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/data/cache.json.migrated\")",
+      "Bash(curl -s http://localhost:3462/api/words)",
+      "Bash(PORT=3463 npx tsx server/index.ts)",
+      "Bash(curl -s http://localhost:3463/api/words)",
+      "Bash(curl -s http://localhost:3463/)",
+      "Bash(PORT=3464 npx tsx server/index.ts)",
+      "Bash(curl -s http://localhost:3464/api/words)",
+      "Bash(python -c \"import json,sys;d=json.load\\(sys.stdin\\);print\\(len\\(d.get\\('savedWords',[]\\)\\)\\)\")",
+      "Read(//c/Users/fjn46/Desktop/zhongwen-dash/**)",
+      "Bash(python -c \"import json; d=json.load\\(open\\(r'c:\\\\Users\\\\fjn46\\\\Desktop\\\\zhongwen-dash\\\\data\\\\cache.json.migrated',encoding='utf-8'\\)\\); print\\('words in backup:', len\\(d.get\\('savedWords',[]\\)\\)\\)\")",
+      "Bash(PORT=3465 npx tsx server/index.ts)",
+      "Bash(curl -s -X PUT http://localhost:3465/api/mastery -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_mastery.json\")",
+      "Bash(curl -s http://localhost:3465/api/mastery)",
+      "Bash(curl -s http://localhost:3465/api/words)",
+      "Bash(python -c \"import json,sys;d=json.load\\(sys.stdin\\);print\\(len\\(d['savedWords']\\),'words'\\)\")"
     ]
   }
 }

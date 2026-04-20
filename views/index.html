@@ -144,7 +144,7 @@
     <div class="grid">
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🧱</div>Common Radicals</div></div><div class="radical-grid" id="radicalGrid"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">📘</div>HSK Vocabulary</div><div style="display:flex;gap:4px;"><button class="btn-secondary btn-small hsk-btn" onclick="showHSK(1,this)" style="border-color:var(--accent);color:var(--accent);">HSK1</button><button class="btn-secondary btn-small hsk-btn" onclick="showHSK(2,this)">HSK2</button><button class="btn-secondary btn-small hsk-btn" onclick="showHSK(3,this)">HSK3</button></div></div><div class="phrase-grid" id="hskList"></div></div>
-      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">📐</div>Grammar Patterns</div></div><div class="grammar-list" id="grammarList"></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">📐</div>Grammar Patterns</div></div><div class="grammar-list" id="grammarListMini"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🀄</div>Idioms 成语</div></div><div class="idiom-list" id="idiomList"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">💬</div>Common Phrases</div></div><div class="phrase-grid" id="phraseList"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🏮</div>Cultural Notes</div></div><div id="cultureList" style="max-height:280px;overflow-y:auto;scrollbar-width:thin;"></div></div>
@@ -326,6 +326,17 @@
         <p>Fast-paced HSK vocabulary quiz. 15 seconds per question, faster answers score more — consecutive correct answers add a +50 streak bonus.</p>
       </div>
       <div class="grid">
+        <div class="widget span-2" data-keywords="kahoot progress mountain hsk climb mastery progression">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">🏔️</div>
+              HSK Climb · Kahoot Mastery
+            </div>
+            <span id="kahootMountainsSummary" style="font-size:0.7rem;color:var(--muted);">0 words mastered</span>
+          </div>
+          <div class="kahoot-mountains" id="kahootMountains"></div>
+          <div style="font-size:0.65rem;color:var(--muted);margin-top:8px;line-height:1.5;">Each mountain fills as you get words right in Kahoot — climber 🧗 shows your position, 🏁 when you summit. Progress is saved per HSK level and persists across sessions.</div>
+        </div>
         <div class="widget span-2" data-keywords="kahoot quiz game hsk vocabulary timed">
           <div class="widget-header">
             <div class="widget-title">
@@ -468,17 +479,43 @@
     </div>
     -->
     <span id="immerseWordCount" hidden>0</span>
-    <div class="rss-section">
+    <div class="rss-section" data-keywords="news trending tophub rss baidu weibo zhihu hot search topics bbc rfi dw voa zaobao nyt reading">
       <div class="rss-container">
         <div class="rss-header">
-          <div class="rss-header-left"><div class="rss-icon">📡</div><div><h3>Chinese Daily News · RSS Reader</h3><div class="rss-sub">Vocab words are <span style="color:var(--accent2);font-weight:600;">highlighted in article text</span> — hover to see details, click ➕ to save</div></div></div>
-          <div class="rss-controls" id="rssFeedBtns"></div>
+          <div class="rss-header-left">
+            <div class="rss-icon" id="readingHeaderIcon">📡</div>
+            <div>
+              <h3 id="readingHeaderTitle">Chinese Daily News · RSS Reader</h3>
+              <div class="rss-sub" id="readingHeaderSub">Vocab is <span style="color:var(--accent2);font-weight:600;">highlighted in article text</span> — hover to see details, click ➕ to save</div>
+            </div>
+          </div>
+          <div class="reading-mode-tabs">
+            <button type="button" class="reading-mode-btn active" data-reading-mode="news" onclick="setReadingMode('news')">📡 News</button>
+            <button type="button" class="reading-mode-btn" data-reading-mode="trending" onclick="setReadingMode('trending')">🔥 Trending</button>
+          </div>
+        </div>
+        <div class="reading-filter-row">
+          <div class="reading-filter-group" id="readingFilterNews">
+            <div class="rss-controls" id="rssFeedBtns"></div>
+          </div>
+          <div class="reading-filter-group" id="readingFilterTrending" hidden>
+            <div class="trending-source-picker" id="trendingSourcePicker">
+              <button type="button" class="trending-source-trigger" id="trendingSourceTrigger" onclick="toggleTrendingPicker(event)">
+                <img class="logo" alt="" style="display:none;">
+                <span class="label">All sources</span>
+                <span class="caret">▾</span>
+              </button>
+              <div class="trending-source-menu" id="trendingSourceMenu" hidden></div>
+            </div>
+            <span id="trendingMeta" style="font-size:0.65rem;color:var(--muted);">—</span>
+            <button class="btn-secondary btn-small" onclick="refreshTrending()" title="Refresh trending feed">↻</button>
+          </div>
         </div>
         <div class="rss-body">
           <div class="rss-list" id="rssList"><div class="rss-loading" id="rssLoading"><span class="spinner"></span> Loading feeds…</div></div>
           <div class="rss-detail" id="rssDetail"><div class="rss-detail-empty"><div class="rde-icon">📰</div><div class="rde-text">Select an article to read<br><span style="font-size:0.7rem;color:#444;">Click any headline on the left</span></div></div></div>
         </div>
-        <div class="rss-status-bar"><span><span class="rss-live-dot"></span> Auto-refresh · <span id="rssLastUpdate">—</span></span><span id="rssArticleCount">0 articles</span></div>
+        <div class="rss-status-bar"><span><span class="rss-live-dot"></span> <span id="readingStatusLabel">Auto-refresh</span> · <span id="rssLastUpdate">—</span></span><span id="rssArticleCount">0 articles</span></div>
       </div>
     </div>
     <div class="daily-challenge" style="margin-bottom:18px;">
@@ -488,27 +525,6 @@
     </div>
     <div class="widget youtube-news-widget" data-keywords="youtube news live video tv stream immersive">
       <div class="youtube-news-shell" id="youtubeNewsWidget"></div>
-    </div>
-    <div class="widget trending-widget" data-keywords="trending tophub baidu weibo zhihu hot search topics">
-      <div class="widget-header">
-        <div class="widget-title">
-          <div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🔥</div>
-          Trending · tophub.today
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <div class="trending-source-picker" id="trendingSourcePicker">
-            <button type="button" class="trending-source-trigger" id="trendingSourceTrigger" onclick="toggleTrendingPicker(event)">
-              <img class="logo" alt="" style="display:none;">
-              <span class="label">All sources</span>
-              <span class="caret">▾</span>
-            </button>
-            <div class="trending-source-menu" id="trendingSourceMenu" hidden></div>
-          </div>
-          <span id="trendingMeta" style="font-size:0.65rem;color:var(--muted);">—</span>
-          <button class="btn-secondary btn-small" onclick="refreshTrending()" title="Refresh trending feed">↻</button>
-        </div>
-      </div>
-      <div id="trendingList" style="max-height:540px;overflow-y:auto;scrollbar-width:thin;"></div>
     </div>
     <div class="immerse-cat-bar" id="immerseCatBar"></div>
     <div class="resource-grid" id="resourceGrid"></div>
@@ -627,9 +643,13 @@
     <div class="wl-filter-row" id="wlFilterRow"></div>
     <div id="wlContent"></div>
     <div class="wl-export-row">
-      <button class="btn-secondary btn-small" onclick="exportWordlist()">📋 Copy as Text</button>
-      <button class="btn-secondary btn-small" onclick="clearWordlist()">🗑 Clear All</button>
-      <button class="btn-primary btn-small" onclick="addAllToFlashcards()" style="margin-left:auto;">🃏 Sync All → Flashcards</button>
+      <button class="btn-secondary btn-small" onclick="exportWordlist()" title="Copy TSV to clipboard">📋 Copy</button>
+      <button class="btn-secondary btn-small" onclick="downloadWordsCsv()" title="Download as CSV">⬇️ CSV</button>
+      <button class="btn-secondary btn-small" onclick="downloadWordsJson()" title="Download full JSON snapshot">📄 JSON</button>
+      <button class="btn-secondary btn-small" onclick="importWordsCsv()" title="Import words from a CSV file">📥 Import CSV</button>
+      <button class="btn-secondary btn-small" onclick="restoreWordsFromLocalBackup()" title="Restore from browser-local backup">♻️ Restore</button>
+      <button class="btn-secondary btn-small" onclick="clearWordlist()">🗑 Clear</button>
+      <button class="btn-primary btn-small" onclick="addAllToFlashcards()" style="margin-left:auto;">🃏 Sync → Flashcards</button>
     </div>
   </div>
 </div>

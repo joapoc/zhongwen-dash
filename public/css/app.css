@@ -33,6 +33,7 @@ body {
 #tab-genz { --tab-accent: var(--purple); }
 #tab-academia { --tab-accent: var(--blue); }
 #tab-dropship { --tab-accent: var(--accent2); }
+#tab-reading { --tab-accent: var(--cyan); }
 
 /* =====================================================================
  *  Handwriting Lab — visual polish (CSS-only, no DOM changes)

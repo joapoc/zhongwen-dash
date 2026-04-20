@@ -34,6 +34,182 @@ body {
 #tab-academia { --tab-accent: var(--blue); }
 #tab-dropship { --tab-accent: var(--accent2); }
 
+/* =====================================================================
+ *  Handwriting Lab — visual polish (CSS-only, no DOM changes)
+ *  Scoped under #tab-handwriting so existing selectors elsewhere are safe.
+ * ===================================================================== */
+
+#tab-handwriting {
+  --tab-accent: var(--cyan);
+  /* Medium is the default; S/L override via [data-hw-size] below */
+  --hw-canvas-max: 320px;
+  --hw-target-size: 4rem;
+  --hw-block-padding: 12px;
+  --hw-section-gap: 12px;
+}
+#tab-handwriting[data-hw-size="sm"] {
+  --hw-canvas-max: 240px;
+  --hw-target-size: 3.2rem;
+  --hw-block-padding: 10px;
+  --hw-section-gap: 8px;
+}
+#tab-handwriting[data-hw-size="lg"] {
+  --hw-canvas-max: 440px;
+  --hw-target-size: 5.2rem;
+  --hw-block-padding: 14px;
+  --hw-section-gap: 14px;
+}
+
+/* The level switcher + progress strip are direct children of the outer .grid
+ * container. Without these overrides the grid default of align-self: stretch
+ * yanks them to the full row height and the HSK pills visually become huge
+ * empty columns. Force both to span the full row width and stay at content
+ * height so the layout only has actual widgets left to size by. */
+#widgets-handwriting > .hsk-tabs,
+#widgets-handwriting > div:not(.widget):not(.widget-restore-chip):not(.widget-reset-chip):not(.widget-layout-bar) {
+  grid-column: 1 / -1;
+  align-self: start;
+  height: auto;
+}
+
+/* Level switcher — more prominent, filled-pill active state */
+#tab-handwriting .hsk-tabs {
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+#tab-handwriting .hsk-tab {
+  padding: 6px 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;    /* never stretch; always hug content */
+  align-self: auto;
+}
+#tab-handwriting .hsk-tab.active { box-shadow: 0 4px 14px rgba(34, 211, 238, 0.2); }
+
+/* Thicker, higher-contrast progress bar above the practice grid */
+#tab-handwriting .hw-progress { height: 8px; border-radius: 5px; background: var(--bg); border: 1px solid var(--border); margin-top: 6px; }
+#tab-handwriting .hw-progress-fill { border-radius: 4px; box-shadow: 0 0 10px rgba(34, 211, 238, 0.32); }
+
+/* Character-target block: cleaner vertical hierarchy — scales with --hw-target-size */
+#tab-handwriting .hw-target {
+  font-size: var(--hw-target-size);
+  text-shadow: 0 2px 14px rgba(34, 211, 238, 0.06);
+  padding: 2px 0;
+  transition: font-size 0.18s;
+}
+#tab-handwriting .hw-pinyin { font-size: 1rem; font-weight: 600; letter-spacing: 0.02em; margin-top: 4px; }
+#tab-handwriting .hw-meaning { font-size: 0.78rem; color: #bbb; margin-top: 2px; }
+#tab-handwriting .hw-meta { gap: 5px; margin-top: 8px; }
+#tab-handwriting .hw-meta-chip { padding: 3px 10px; border-radius: 999px; font-size: 0.6rem; font-weight: 600; }
+#tab-handwriting .hw-examples { margin-top: 8px; max-width: 460px; margin-left: auto; margin-right: auto; }
+
+/* Canvas — scales with --hw-canvas-max. Smooth transition when size changes. */
+#tab-handwriting .hw-canvas-outer { max-width: var(--hw-canvas-max); margin: 14px auto 4px; transition: max-width 0.18s; }
+#tab-handwriting .hw-canvas-wrap {
+  border-width: 1px;
+  border-color: var(--border);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), inset 0 0 28px rgba(0, 0, 0, 0.4);
+  background: #070910;
+}
+
+/* Size toggle buttons */
+#tab-handwriting .hw-size-btn { padding: 3px 10px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; }
+#tab-handwriting .hw-size-btn.active { background: var(--tab-accent); color: #000; border-color: var(--tab-accent); }
+#tab-handwriting .hw-controls-label { font-size: 0.56rem; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 2px; }
+#tab-handwriting .hw-controls-group { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+
+/* Toolbar — tighter grouping, clearer hover, better dividers */
+#tab-handwriting .hw-toolbar {
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 10px;
+  gap: 4px;
+}
+#tab-handwriting .hw-toolbar > div[style*="background:var(--border)"] {
+  opacity: 0.55;
+}
+#tab-handwriting .hw-tool-btn { width: 30px; height: 30px; border-radius: 7px; font-size: 0.82rem; }
+#tab-handwriting .hw-tool-btn:hover { transform: translateY(-1px); }
+#tab-handwriting .hw-brush-row { gap: 6px; padding-left: 4px; }
+#tab-handwriting .hw-brush-row input[type="range"] { width: 60px; }
+#tab-handwriting .hw-brush-row #hwBrushLabel { min-width: 28px; font-variant-numeric: tabular-nums; }
+
+/* Anim-speed row spacing */
+#tab-handwriting .hw-speed-row { margin-top: 6px; gap: 6px; }
+#tab-handwriting .hw-speed-btn { padding: 2px 10px; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.04em; }
+
+/* Controls row (grid mode + size + ghost) — cleaner groupings */
+#tab-handwriting .hw-controls-row {
+  margin-top: 10px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border-radius: 8px;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Navigation row */
+#tab-handwriting .hw-nav { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+#tab-handwriting .hw-counter { font-weight: 700; color: var(--text); }
+
+/* Assessment block — primary "rate your writing" CTA, but more compact */
+#tab-handwriting .hw-assess {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  gap: 6px;
+}
+#tab-handwriting .hw-assess-btn {
+  padding: 10px 5px;
+  font-size: 0.7rem;
+  border-radius: 8px;
+  max-width: none;
+  line-height: 1.35;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+#tab-handwriting .hw-assess-btn:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.32); }
+
+/* Session Stats */
+#tab-handwriting .hw-stat { padding: 10px 5px; border-radius: 10px; }
+#tab-handwriting .hw-stat-num { font-size: 1.3rem; }
+#tab-handwriting .hw-stat-label { font-size: 0.55rem; margin-top: 2px; }
+
+/* Character Browser */
+#tab-handwriting .hw-browser { gap: 4px; padding: 2px; }
+#tab-handwriting .hw-browse-ch { padding: 7px 2px; font-size: 0.95rem; border-radius: 7px; }
+#tab-handwriting .hw-browse-ch.current { box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.3); }
+
+/* Stroke order rules */
+#tab-handwriting .hw-rule { padding: 9px 10px; border-radius: 9px; }
+#tab-handwriting .hw-rule-num { width: 22px; height: 22px; font-size: 0.6rem; box-shadow: 0 0 10px rgba(34, 211, 238, 0.22); }
+#tab-handwriting .hw-rule-ex { font-size: 1rem; letter-spacing: 5px; }
+
+/* Basic strokes + radicals */
+#tab-handwriting .hw-stroke-card { padding: 9px 5px; }
+#tab-handwriting .hw-stroke-ch { font-size: 1.7rem; }
+#tab-handwriting .hw-rad-grid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 5px; }
+#tab-handwriting .hw-rad { padding: 8px 3px; }
+#tab-handwriting .hw-rad-ch { font-size: 1.2rem; }
+
+/* Stroke counter */
+#tab-handwriting .hw-stroke-count { font-size: 0.68rem; margin-top: 8px; }
+#tab-handwriting .hw-stroke-count b { font-size: 0.82rem; }
+
+/* Small screens — canvas goes full-width, target drops further */
+@media (max-width: 560px) {
+  #tab-handwriting .hw-canvas-outer { max-width: 100%; }
+  #tab-handwriting { --hw-target-size: 3.2rem; }
+  #tab-handwriting .hw-assess-btn { font-size: 0.64rem; padding: 8px 3px; }
+}
+
 /* Tourist-specific compactions */
 #tab-tourist .phrase-card { padding: 10px 12px; margin-bottom: 6px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
 #tab-tourist .phrase-card:hover { transform: translateY(-1px); }
@@ -77,6 +253,87 @@ body {
 @media (max-width: 700px) {
   #tab-food .food-spice-grid { grid-template-columns: repeat(2, 1fr); }
   #tab-food .food-decoder-grid { grid-template-columns: 1fr; }
+}
+
+/* Topic-tab glossary — filter + sort toolbar (Beauty, Cyber, GenZ, etc.) */
+.term-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.term-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.term-toolbar-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 44px;
+  flex-shrink: 0;
+}
+.term-chips, .term-sorts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.term-chip,
+.term-sort-btn {
+  appearance: none;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.term-chip:hover:not(.active),
+.term-sort-btn:hover:not(.active) {
+  border-color: var(--tab-accent);
+  color: var(--text);
+}
+.term-chip.active,
+.term-sort-btn.active {
+  background: var(--tab-accent);
+  color: #0b0d14;
+  border-color: var(--tab-accent);
+}
+.term-chip-count {
+  font-size: 0.56rem;
+  color: var(--muted);
+  padding: 1px 6px;
+  background: var(--bg);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+.term-chip.active .term-chip-count {
+  background: rgba(0, 0, 0, 0.18);
+  color: inherit;
+}
+.term-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.72rem;
 }
 
 /* Latest Videos grid (thumbnail feed from YouTube RSS — alt to the player widget) */
@@ -606,23 +863,44 @@ body {
   outline: 1px dashed rgba(230, 57, 70, 0.5);
 }
 
-.widget-restore-chip {
+.widget-layout-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.widget-restore-chip,
+.widget-reset-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  margin-bottom: 0.75rem;
   padding: 0.35rem 0.75rem;
-  border: 1px solid rgba(251, 191, 36, 0.35);
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
   border-radius: 999px;
   font-size: 0.72rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+  margin: 0;
 }
 
+.widget-restore-chip {
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
 .widget-restore-chip:hover {
   background: rgba(251, 191, 36, 0.2);
+}
+
+.widget-reset-chip {
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+}
+.widget-reset-chip:hover {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.6);
 }
 
 /* Trending source picker (tophub widget) */

@@ -1,9 +1,12 @@
 import { Router } from "express";
 
 import {
+  getAllLayouts,
   getChallenges,
   getMastery,
   getSavedWords,
+  resetLayout,
+  setAllLayouts,
   setChallenges,
   setMastery,
   setSavedWords,
@@ -32,6 +35,30 @@ router.put("/words", async (request, response) => {
     savedWords: nextSavedWords,
     count: nextSavedWords.length,
   });
+});
+
+router.get("/layout", async (_request, response) => {
+  const layouts = await getAllLayouts();
+  response.json({ ok: true, layouts });
+});
+
+router.put("/layout", async (request, response) => {
+  const payload =
+    request.body && typeof request.body.layouts === "object" && request.body.layouts !== null
+      ? (request.body.layouts as Record<string, unknown>)
+      : {};
+  const next = await setAllLayouts(payload);
+  response.json({ ok: true, layouts: next, tabCount: Object.keys(next).length });
+});
+
+router.delete("/layout/:tabId", async (request, response) => {
+  const tabId = typeof request.params.tabId === "string" ? request.params.tabId : "";
+  if (!tabId) {
+    response.status(400).json({ ok: false, message: "tabId is required." });
+    return;
+  }
+  await resetLayout(tabId);
+  response.json({ ok: true, tabId, reset: true });
 });
 
 router.get("/mastery", async (_request, response) => {

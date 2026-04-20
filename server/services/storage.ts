@@ -37,9 +37,20 @@ const MasterySchema = new mongoose.Schema(
   { strict: false, versionKey: false },
 );
 
+const LayoutSchema = new mongoose.Schema(
+  {
+    tabId: { type: String, required: true, unique: true, index: true },
+    hidden: [String],
+    order: [String],
+    updatedAt: String,
+  },
+  { strict: false, versionKey: false },
+);
+
 export const SavedWord = mongoose.model("SavedWord", SavedWordSchema);
 export const Challenge = mongoose.model("Challenge", ChallengeSchema);
 export const Mastery = mongoose.model("Mastery", MasterySchema);
+export const Layout = mongoose.model("Layout", LayoutSchema);
 
 const PROJECTION = { _id: 0 };
 
@@ -94,6 +105,63 @@ export async function setMastery(
     await Mastery.bulkWrite(ops, { ordered: false });
   }
   return getMastery();
+}
+
+type LayoutEntry = { hidden: string[]; order: string[] };
+
+export async function getAllLayouts(): Promise<Record<string, LayoutEntry>> {
+  const rows = await Layout.find({}, PROJECTION).lean();
+  const out: Record<string, LayoutEntry> = {};
+  for (const row of rows as Array<{ tabId?: string; hidden?: unknown; order?: unknown }>) {
+    if (!row || typeof row.tabId !== "string") continue;
+    out[row.tabId] = {
+      hidden: Array.isArray(row.hidden) ? (row.hidden as string[]).filter((s) => typeof s === "string") : [],
+      order: Array.isArray(row.order) ? (row.order as string[]).filter((s) => typeof s === "string") : [],
+    };
+  }
+  return out;
+}
+
+// Upsert-per-tabId — a buggy client that sends an empty object can never wipe
+// everything. Missing tabIds are untouched; only the tabIds in the payload are
+// written.
+export async function setAllLayouts(
+  layouts: Record<string, unknown>,
+): Promise<Record<string, LayoutEntry>> {
+  const entries = Object.entries(layouts || {});
+  if (!entries.length) return getAllLayouts();
+  const ops = entries
+    .filter(([tabId]) => typeof tabId === "string" && tabId.length > 0)
+    .map(([tabId, raw]) => {
+      const data = (raw && typeof raw === "object" ? raw : {}) as {
+        hidden?: unknown;
+        order?: unknown;
+      };
+      const hidden = Array.isArray(data.hidden)
+        ? (data.hidden as unknown[]).filter((v): v is string => typeof v === "string")
+        : [];
+      const order = Array.isArray(data.order)
+        ? (data.order as unknown[]).filter((v): v is string => typeof v === "string")
+        : [];
+      return {
+        updateOne: {
+          filter: { tabId },
+          update: {
+            $set: { tabId, hidden, order, updatedAt: new Date().toISOString() },
+          },
+          upsert: true,
+        },
+      };
+    });
+  if (ops.length) {
+    await Layout.bulkWrite(ops, { ordered: false });
+  }
+  return getAllLayouts();
+}
+
+export async function resetLayout(tabId: string): Promise<void> {
+  if (!tabId) return;
+  await Layout.deleteOne({ tabId });
 }
 
 export async function getChallenges(): Promise<unknown[]> {

@@ -21,6 +21,53 @@
     } catch (_) {
       /* quota/disabled — best-effort */
     }
+    queueServerSync(state);
+  }
+
+  // Debounced mirror to the server. Upsert-per-tab on the backend means a
+  // flurry of rapid writes collapses into one request and can't wipe anything
+  // not present in the payload.
+  var __syncTimer = null;
+  function queueServerSync(state) {
+    clearTimeout(__syncTimer);
+    __syncTimer = setTimeout(function () {
+      fetch('/api/layout', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layouts: state || {} }),
+        keepalive: true,
+      }).catch(function () {
+        /* Offline / server down — we already have localStorage as a failsafe. */
+      });
+    }, 300);
+  }
+
+  function hydrateFromServer() {
+    return fetch('/api/layout')
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (data) {
+        if (!data || !data.ok || !data.layouts) return false;
+        var serverTabs = Object.keys(data.layouts);
+        if (!serverTabs.length) return false;
+        var local = readState();
+        var merged = {};
+        // Server wins when it has an entry; any tab only in localStorage is kept.
+        Object.keys(local).forEach(function (t) {
+          merged[t] = local[t];
+        });
+        serverTabs.forEach(function (t) {
+          merged[t] = data.layouts[t];
+        });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        } catch (_) {}
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
   }
 
   function tabIdFor(container) {
@@ -168,36 +215,110 @@
     refreshRestoreBadge(tabId);
   }
 
+  function resetLayoutForTab(tabContent) {
+    var tabId = tabContent.id;
+    if (!window.confirm('Reset layout for this tab?\n\nShows all hidden widgets and clears your custom order. This cannot be undone.')) {
+      return;
+    }
+    // Drop local state for this tab, then tell the server to forget it too.
+    var state = readState();
+    if (state[tabId]) {
+      delete state[tabId];
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+    }
+    fetch('/api/layout/' + encodeURIComponent(tabId), { method: 'DELETE', keepalive: true }).catch(function () {});
+
+    // Unhide everything.
+    tabContent.querySelectorAll('.widget').forEach(function (w) {
+      w.style.display = '';
+    });
+
+    // Re-sort containers back to natural DOM order — i.e. the order the
+    // widgets were rendered by the app. We do that by sorting them alphabetically
+    // by an insertion-index we re-derive from the live DOM… but the simplest
+    // approach is: clear any saved order and re-attach children in insertion
+    // order, which the browser preserves. Since the widgets were moved by
+    // Sortable, we need a reference ordering: use `data-default-order` if set,
+    // otherwise snapshot current order as the new default (first reset wins).
+    tabContent.querySelectorAll('.grid, #widgets-textclipper').forEach(function (container) {
+      if (!container.querySelector(':scope > .widget')) return;
+      var widgets = Array.prototype.slice.call(container.querySelectorAll(':scope > .widget'));
+      widgets.sort(function (a, b) {
+        var aIdx = parseInt(a.getAttribute('data-default-order') || '-1', 10);
+        var bIdx = parseInt(b.getAttribute('data-default-order') || '-1', 10);
+        return aIdx - bIdx;
+      });
+      widgets.forEach(function (w) { container.appendChild(w); });
+    });
+
+    refreshRestoreBadge(tabId);
+  }
+
+  // Capture natural DOM order once per widget so we have something to reset to.
+  function stampDefaultOrder(container) {
+    var idx = 0;
+    container.querySelectorAll(':scope > .widget').forEach(function (w) {
+      if (!w.hasAttribute('data-default-order')) {
+        w.setAttribute('data-default-order', String(idx));
+      }
+      idx += 1;
+    });
+  }
+
   function ensureRestoreButton(tabContent) {
     var topicShell = tabContent.querySelector(':scope > .topic-shell');
     var target = topicShell || tabContent;
-    var existing = target.querySelector(':scope > .widget-restore-chip');
-    if (existing) return existing;
-    var chip = document.createElement('button');
-    chip.className = 'widget-restore-chip';
-    chip.type = 'button';
-    chip.setAttribute('data-for-tab', tabContent.id);
-    chip.style.display = 'none';
-    chip.addEventListener('click', function () {
-      restoreAllInTab(tabContent);
-    });
-    // Insert at the top so users notice it.
-    target.insertBefore(chip, target.firstChild);
-    return chip;
+    var bar = target.querySelector(':scope > .widget-layout-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'widget-layout-bar';
+      bar.setAttribute('data-for-tab', tabContent.id);
+      target.insertBefore(bar, target.firstChild);
+    }
+    var restore = bar.querySelector('.widget-restore-chip');
+    if (!restore) {
+      restore = document.createElement('button');
+      restore.className = 'widget-restore-chip';
+      restore.type = 'button';
+      restore.style.display = 'none';
+      restore.addEventListener('click', function () { restoreAllInTab(tabContent); });
+      bar.appendChild(restore);
+    }
+    var reset = bar.querySelector('.widget-reset-chip');
+    if (!reset) {
+      reset = document.createElement('button');
+      reset.className = 'widget-reset-chip';
+      reset.type = 'button';
+      reset.textContent = '⟲ Reset layout';
+      reset.title = 'Restore all widgets and default order for this tab';
+      reset.addEventListener('click', function () { resetLayoutForTab(tabContent); });
+      bar.appendChild(reset);
+    }
+    return restore;
   }
 
   function refreshRestoreBadge(tabId) {
     var tab = document.getElementById(tabId);
     if (!tab) return;
-    var chip = tab.querySelector(':scope > .topic-shell > .widget-restore-chip, :scope > .widget-restore-chip');
-    if (!chip) return;
+    var bar = tab.querySelector(':scope > .topic-shell > .widget-layout-bar, :scope > .widget-layout-bar');
+    if (!bar) return;
+    var restore = bar.querySelector('.widget-restore-chip');
+    var reset = bar.querySelector('.widget-reset-chip');
     var state = readState();
-    var hiddenCount = ((state[tabId] && state[tabId].hidden) || []).length;
-    if (hiddenCount > 0) {
-      chip.textContent = '↻ Restore hidden (' + hiddenCount + ')';
-      chip.style.display = '';
-    } else {
-      chip.style.display = 'none';
+    var entry = state[tabId] || {};
+    var hiddenCount = (entry.hidden || []).length;
+    if (restore) {
+      if (hiddenCount > 0) {
+        restore.textContent = '↻ Restore hidden (' + hiddenCount + ')';
+        restore.style.display = '';
+      } else {
+        restore.style.display = 'none';
+      }
+    }
+    // Reset chip: show only when the tab has any saved customization.
+    if (reset) {
+      var hasCustom = hiddenCount > 0 || ((entry.order || []).length > 0);
+      reset.style.display = hasCustom ? '' : 'none';
     }
   }
 
@@ -218,6 +339,7 @@
   function wireContainer(container) {
     if (!container) return;
     ensureWidgetIds(container);
+    stampDefaultOrder(container);
     applyOrder(container);
     applyHidden(container);
     var tabId = tabIdFor(container);
@@ -294,6 +416,23 @@
     }
     initAll();
     observeDynamic();
+
+    // Hydrate from server in the background. If server state differs, re-apply
+    // to every container so the user sees their saved layout across devices.
+    hydrateFromServer().then(function (changed) {
+      if (!changed) return;
+      findContainers().forEach(function (container) {
+        // Wipe existing DOM order signal so applyOrder re-sorts from fresh state.
+        container.querySelectorAll(':scope > .widget').forEach(function (w) {
+          w.style.display = '';
+        });
+        applyOrder(container);
+        applyHidden(container);
+      });
+      document.querySelectorAll('.tab-content').forEach(function (tab) {
+        refreshRestoreBadge(tab.id);
+      });
+    });
   }
 
   start();

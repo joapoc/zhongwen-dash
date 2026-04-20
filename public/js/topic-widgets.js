@@ -8,7 +8,95 @@ querySites:['baidu.com','bilibili.com','zhihu.com','github.com','xiaohongshu.com
 checklist:['Check Baidu 热搜 for cyber terms','Scan Bilibili 安全圈周报','Review anquanke.com headlines','Search GitHub for new POCs','Monitor 网信办 notices','Check FreeBuf weekly digest','Review 舆情 报告 PDFs']
 };
 TOPIC_WIDGET_DATA.political={
-terms:[{cn:'舆论场',py:'yúlùn chǎng',en:'public opinion sphere',cat:'media'},{cn:'引导舆论',py:'yǐndǎo yúlùn',en:'guide the narrative',cat:'media'},{cn:'统一口径',py:'tǒngyī kǒujìng',en:'unified talking points',cat:'media'},{cn:'维稳',py:'wéi wěn',en:'maintain stability',cat:'policy'},{cn:'反腐',py:'fǎn fǔ',en:'anti-corruption',cat:'policy'},{cn:'一带一路',py:'yī dài yī lù',en:'Belt and Road Initiative',cat:'foreign'},{cn:'战狼外交',py:'zhàn láng wàijiāo',en:'wolf-warrior diplomacy',cat:'foreign'},{cn:'共同富裕',py:'gòngtóng fùyù',en:'common prosperity',cat:'domestic'},{cn:'川建国',py:'Chuān Jiànguó',en:'Trump satirical nickname',cat:'meme'},{cn:'社会主义铁拳',py:'shèhuì zhǔyì tiě quán',en:'socialist iron fist',cat:'meme'},{cn:'内循环',py:'nèi xúnhuán',en:'internal circulation',cat:'domestic'},{cn:'两会',py:'liǎng huì',en:'Two Sessions',cat:'institution'},{cn:'新质生产力',py:'xīn zhì shēngchǎn lì',en:'new quality productive forces',cat:'domestic'},{cn:'敏感词',py:'mǐngǎn cí',en:'sensitive/censored words',cat:'media'},{cn:'清朗行动',py:'qīnglǎng xíngdòng',en:'Clean Cyberspace campaign',cat:'media'}],
+terms:[
+// institution
+{cn:'两会',py:'liǎng huì',en:'Two Sessions (NPC + CPPCC)',cat:'institution'},
+{cn:'人大',py:'Rén Dà',en:'National People\'s Congress (NPC)',cat:'institution'},
+{cn:'政协',py:'Zhèng Xié',en:'CPPCC consultative body',cat:'institution'},
+{cn:'中央政治局',py:'zhōngyāng zhèngzhìjú',en:'Politburo',cat:'institution'},
+{cn:'常委会',py:'chángwěi huì',en:'(Politburo) Standing Committee',cat:'institution'},
+{cn:'国务院',py:'Guówùyuàn',en:'State Council (cabinet)',cat:'institution'},
+{cn:'中央军委',py:'zhōngyāng jūnwěi',en:'Central Military Commission',cat:'institution'},
+{cn:'总书记',py:'zǒng shūjì',en:'General Secretary (party)',cat:'institution'},
+{cn:'国家主席',py:'guójiā zhǔxí',en:'President / State Chairman',cat:'institution'},
+{cn:'总理',py:'zǒnglǐ',en:'Premier',cat:'institution'},
+{cn:'中纪委',py:'Zhōng Jìwěi',en:'Central Discipline Commission',cat:'institution'},
+{cn:'外交部',py:'Wàijiāobù',en:'Ministry of Foreign Affairs',cat:'institution'},
+// ideology
+{cn:'马克思主义',py:'Mǎkèsī zhǔyì',en:'Marxism',cat:'ideology'},
+{cn:'习近平思想',py:'Xí Jìnpíng sīxiǎng',en:'Xi Jinping Thought',cat:'ideology'},
+{cn:'中国特色',py:'Zhōngguó tèsè',en:'with Chinese characteristics',cat:'ideology'},
+{cn:'核心价值观',py:'héxīn jiàzhíguān',en:'core socialist values',cat:'ideology'},
+{cn:'意识形态',py:'yìshí xíngtài',en:'ideology',cat:'ideology'},
+{cn:'新时代',py:'xīn shídài',en:'New Era (Xi-era framing)',cat:'ideology'},
+{cn:'中国梦',py:'Zhōngguó mèng',en:'China Dream',cat:'ideology'},
+// domestic
+{cn:'共同富裕',py:'gòngtóng fùyù',en:'common prosperity',cat:'domestic'},
+{cn:'内循环',py:'nèi xúnhuán',en:'internal circulation',cat:'domestic'},
+{cn:'双循环',py:'shuāng xúnhuán',en:'dual circulation (internal + external)',cat:'domestic'},
+{cn:'新质生产力',py:'xīn zhì shēngchǎn lì',en:'new quality productive forces',cat:'domestic'},
+{cn:'全过程民主',py:'quán guòchéng mínzhǔ',en:'whole-process democracy',cat:'domestic'},
+{cn:'三农问题',py:'sān nóng wèntí',en:'three rural issues (agriculture/village/farmer)',cat:'domestic'},
+{cn:'房住不炒',py:'fáng zhù bù chǎo',en:'houses for living, not speculation',cat:'domestic'},
+{cn:'双减',py:'shuāng jiǎn',en:'double reduction (homework + tutoring)',cat:'domestic'},
+{cn:'依法治国',py:'yī fǎ zhì guó',en:'rule by law',cat:'domestic'},
+// foreign
+{cn:'一带一路',py:'yī dài yī lù',en:'Belt and Road Initiative',cat:'foreign'},
+{cn:'战狼外交',py:'zhàn láng wàijiāo',en:'wolf-warrior diplomacy',cat:'foreign'},
+{cn:'人类命运共同体',py:'rénlèi mìngyùn gòngtóngtǐ',en:'community of shared future for humanity',cat:'foreign'},
+{cn:'多边主义',py:'duōbiān zhǔyì',en:'multilateralism',cat:'foreign'},
+{cn:'台海',py:'Tái hǎi',en:'Taiwan Strait',cat:'foreign'},
+{cn:'两岸',py:'liǎng\'àn',en:'cross-strait (PRC–Taiwan)',cat:'foreign'},
+{cn:'南海',py:'Nán Hǎi',en:'South China Sea',cat:'foreign'},
+{cn:'反制',py:'fǎn zhì',en:'countermeasures',cat:'foreign'},
+{cn:'经济制裁',py:'jīngjì zhìcái',en:'economic sanctions',cat:'foreign'},
+{cn:'脱钩',py:'tuōgōu',en:'decoupling (from US)',cat:'foreign'},
+// policy
+{cn:'维稳',py:'wéi wěn',en:'maintain stability',cat:'policy'},
+{cn:'反腐',py:'fǎn fǔ',en:'anti-corruption',cat:'policy'},
+{cn:'脱贫攻坚',py:'tuōpín gōngjiān',en:'poverty-alleviation battle',cat:'policy'},
+{cn:'精准扶贫',py:'jīngzhǔn fúpín',en:'targeted poverty relief',cat:'policy'},
+{cn:'碳达峰',py:'tàn dá fēng',en:'carbon peaking',cat:'policy'},
+{cn:'碳中和',py:'tàn zhōnghé',en:'carbon neutrality',cat:'policy'},
+{cn:'一国两制',py:'yī guó liǎng zhì',en:'one country, two systems',cat:'policy'},
+{cn:'三胎政策',py:'sān tāi zhèngcè',en:'three-child policy',cat:'policy'},
+{cn:'供给侧改革',py:'gōngjǐ cè gǎigé',en:'supply-side reform',cat:'policy'},
+// economy
+{cn:'供给侧',py:'gōngjǐ cè',en:'supply side',cat:'economy'},
+{cn:'去杠杆',py:'qù gànggǎn',en:'deleveraging',cat:'economy'},
+{cn:'灰犀牛',py:'huī xīniú',en:'grey rhino — obvious looming risk',cat:'economy'},
+{cn:'黑天鹅',py:'hēi tiān\'é',en:'black swan — rare disruptive event',cat:'economy'},
+{cn:'去美元化',py:'qù měiyuán huà',en:'de-dollarization',cat:'economy'},
+{cn:'产能过剩',py:'chǎnnéng guòshèng',en:'overcapacity',cat:'economy'},
+// media
+{cn:'舆论场',py:'yúlùn chǎng',en:'public opinion sphere',cat:'media'},
+{cn:'引导舆论',py:'yǐndǎo yúlùn',en:'guide the narrative',cat:'media'},
+{cn:'统一口径',py:'tǒngyī kǒujìng',en:'unified talking points',cat:'media'},
+{cn:'敏感词',py:'mǐngǎn cí',en:'sensitive/censored words',cat:'media'},
+{cn:'清朗行动',py:'qīnglǎng xíngdòng',en:'Clean Cyberspace campaign',cat:'media'},
+{cn:'防火长城',py:'fánghuǒ chángchéng',en:'Great Firewall',cat:'media'},
+{cn:'翻墙',py:'fān qiáng',en:'scale the wall — use VPN',cat:'media'},
+{cn:'官媒',py:'guān méi',en:'state media',cat:'media'},
+{cn:'自媒体',py:'zì méitǐ',en:'we-media / independent creators',cat:'media'},
+{cn:'发言人',py:'fāyán rén',en:'spokesperson',cat:'media'},
+{cn:'新闻发布会',py:'xīnwén fābù huì',en:'press conference',cat:'media'},
+{cn:'辟谣',py:'pì yáo',en:'debunk rumors (often official)',cat:'media'},
+{cn:'热搜',py:'rè sōu',en:'trending search topics',cat:'media'},
+{cn:'审查',py:'shěnchá',en:'censorship / review',cat:'media'},
+// slogan
+{cn:'不忘初心',py:'bú wàng chū xīn',en:'never forget the original mission',cat:'slogan'},
+{cn:'撸起袖子加油干',py:'lū qǐ xiùzi jiāyóu gàn',en:'roll up sleeves and work hard',cat:'slogan'},
+{cn:'绿水青山',py:'lǜ shuǐ qīng shān',en:'green waters, green mountains (ecology slogan)',cat:'slogan'},
+{cn:'人民至上',py:'rénmín zhì shàng',en:'people-first',cat:'slogan'},
+{cn:'中华民族伟大复兴',py:'Zhōnghuá mínzú wěidà fùxīng',en:'great rejuvenation of the Chinese nation',cat:'slogan'},
+// meme
+{cn:'川建国',py:'Chuān Jiànguó',en:'Trump satirical nickname (lit. Chuan Jianguo)',cat:'meme'},
+{cn:'社会主义铁拳',py:'shèhuì zhǔyì tiě quán',en:'socialist iron fist (crackdown meme)',cat:'meme'},
+{cn:'小粉红',py:'xiǎo fěnhóng',en:'little pinks — young online nationalists',cat:'meme'},
+{cn:'润学',py:'rùn xué',en:'runology — the art of emigrating',cat:'meme'},
+{cn:'厉害了我的国',py:'lìhài le wǒ de guó',en:'"Amazing China" — sarcastic patriot meme',cat:'meme'},
+{cn:'爱国生意',py:'àiguó shēngyì',en:'patriotism as a business model',cat:'meme'}
+],
 trumpNames:[{name:'川普',note:'Formal transliteration'},{name:'特朗普',note:'Standard media name'},{name:'川建国',note:'Satirical nickname'},{name:'老川',note:'Colloquial Old Trump'},{name:'川总',note:'Boss Trump'},{name:'川宝',note:'Mock-affectionate nickname'},{name:'橙总',note:'Orange Boss'}],
 memes:[{cn:'端起碗吃肉，放下筷子骂娘',en:'eat the meat then complain'},{cn:'学习强国',en:'party study app, often memed'},{cn:'精神资本家',en:'ironic corporation stanning'},{cn:'互联网嘴替',en:'someone who says what others feel'},{cn:'何不食肉糜',en:'tone-deaf advice from above'}],
 briClusters:[{label:'Projects 项目',kws:['一带一路 项目','清单/地图/进展','港口/铁路/电站/园区']},{label:'Finance 融资',kws:['政策性银行','亚投行','丝路基金','债务重组']},{label:'Risk 风险',kws:['债务可持续性','违约','政治风险','环保评估']},{label:'Regions 地区',kws:['中亚','东南亚','非洲','中东','拉美']}]
@@ -502,7 +590,98 @@ function topicRenderFoodLatestFeed(){
 function topicBuildFlashcards(id,cards){topicFcStates[id]={idx:0,flipped:false,cards:cards};var c=cards[0];return '<div class=\"fc-area\" onclick=\"topicFlipFC(\''+id+'\')\"><div class=\"fc-inner\" id=\"topic-fci-'+id+'\"><div class=\"fc-face fc-front cn\" id=\"topic-fcf-'+id+'\">'+c.cn+'<div class=\"fc-sub\">'+(c.py||'')+'</div></div><div class=\"fc-face fc-back\" id=\"topic-fcb-'+id+'\">'+c.en+'</div></div></div><div class=\"fc-nav\"><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"event.stopPropagation();topicNavFC(\''+id+'\',-1)\">← Prev</button><span class=\"fc-counter\" id=\"topic-fcc-'+id+'\">1/'+cards.length+'</span><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"event.stopPropagation();topicNavFC(\''+id+'\',1)\">Next →</button></div>';}
 function topicFlipFC(id){var s=topicFcStates[id],el=document.getElementById('topic-fci-'+id);if(!s||!el)return;s.flipped=!s.flipped;el.classList.toggle('flipped',s.flipped);}
 function topicNavFC(id,dir){var s=topicFcStates[id];if(!s)return;s.idx=(s.idx+dir+s.cards.length)%s.cards.length;s.flipped=false;var c=s.cards[s.idx],inner=document.getElementById('topic-fci-'+id),front=document.getElementById('topic-fcf-'+id),back=document.getElementById('topic-fcb-'+id),count=document.getElementById('topic-fcc-'+id);if(inner)inner.classList.remove('flipped');if(front)front.innerHTML=c.cn+'<div class=\"fc-sub\">'+(c.py||'')+'</div>';if(back)back.textContent=c.en;if(count)count.textContent=(s.idx+1)+'/'+s.cards.length;}
-function topicBuildTermList(terms,listId){return '<div class=\"term-list\" id=\"'+listId+'\">'+terms.map(function(t){var catCol=topicHashColor(t.cat||'misc');return '<div class=\"term-item\"><div><div class=\"term-cn cn\">'+t.cn+'</div><div class=\"term-py\">'+(t.py||'')+'</div></div><div style=\"flex:1;min-width:0\"><div class=\"term-en\">'+t.en+'</div><span class=\"term-tag\" style=\"background:'+catCol+'18;color:'+catCol+'\">'+(t.cat||'misc')+'</span></div></div>';}).join('')+'</div>';}
+// ===== Term list (shared by every topic-tab glossary) =====
+// Per-list state so each glossary's filter + sort are independent.
+var topicTermListState={};
+
+function topicTermItemHtml(t){
+  var cat=t.cat||'misc';
+  var catCol=topicHashColor(cat);
+  return '<div class=\"term-item\">'+
+    '<div><div class=\"term-cn cn\">'+t.cn+'</div><div class=\"term-py\">'+(t.py||'')+'</div></div>'+
+    '<div style=\"flex:1;min-width:0\"><div class=\"term-en\">'+t.en+'</div>'+
+    '<span class=\"term-tag\" style=\"background:'+catCol+'18;color:'+catCol+'\">'+cat+'</span></div>'+
+    '</div>';
+}
+
+function topicTermListRenderInner(listId){
+  var s=topicTermListState[listId];
+  if(!s)return '';
+  var terms=s.terms.slice();
+  if(s.cat&&s.cat!=='__all__'){
+    terms=terms.filter(function(t){return (t.cat||'misc')===s.cat;});
+  }
+  if(s.sort==='cat'){
+    terms.sort(function(a,b){
+      var aa=(a.cat||'misc'),bb=(b.cat||'misc');
+      if(aa!==bb)return aa.localeCompare(bb);
+      return (a.cn||'').localeCompare(b.cn||'','zh-Hans-CN');
+    });
+  }else if(s.sort==='cn'){
+    terms.sort(function(a,b){return (a.cn||'').localeCompare(b.cn||'','zh-Hans-CN');});
+  }else if(s.sort==='en'){
+    terms.sort(function(a,b){return (a.en||'').toLowerCase().localeCompare((b.en||'').toLowerCase());});
+  }
+  if(!terms.length){
+    return '<div class=\"term-empty\">No terms match this filter.</div>';
+  }
+  return terms.map(topicTermItemHtml).join('');
+}
+
+function topicTermListSetCat(listId,cat){
+  var s=topicTermListState[listId];if(!s)return;
+  s.cat=cat;
+  var list=document.getElementById(listId);
+  if(list)list.innerHTML=topicTermListRenderInner(listId);
+  var wrap=document.querySelector('[data-term-wrap=\"'+listId+'\"]');
+  if(wrap){
+    wrap.querySelectorAll('[data-term-cat]').forEach(function(btn){
+      btn.classList.toggle('active',btn.getAttribute('data-term-cat')===cat);
+    });
+  }
+}
+
+function topicTermListSetSort(listId,sort){
+  var s=topicTermListState[listId];if(!s)return;
+  s.sort=sort;
+  var list=document.getElementById(listId);
+  if(list)list.innerHTML=topicTermListRenderInner(listId);
+  var wrap=document.querySelector('[data-term-wrap=\"'+listId+'\"]');
+  if(wrap){
+    wrap.querySelectorAll('[data-term-sort]').forEach(function(btn){
+      btn.classList.toggle('active',btn.getAttribute('data-term-sort')===sort);
+    });
+  }
+}
+
+function topicBuildTermList(terms,listId){
+  topicTermListState[listId]={terms:terms||[],cat:'__all__',sort:'default'};
+  var counts={};
+  (terms||[]).forEach(function(t){var c=t.cat||'misc';counts[c]=(counts[c]||0)+1;});
+  var cats=Object.keys(counts).sort();
+  var total=(terms||[]).length;
+
+  var chipAll='<button type=\"button\" class=\"term-chip active\" data-term-cat=\"__all__\" onclick=\"topicTermListSetCat(\''+listId+'\',\'__all__\')\">All<span class=\"term-chip-count\">'+total+'</span></button>';
+  var catChips=cats.map(function(c){
+    var col=topicHashColor(c);
+    var safe=c.replace(/'/g,"\\'");
+    return '<button type=\"button\" class=\"term-chip\" data-term-cat=\"'+c+'\" style=\"--term-chip-accent:'+col+'\" onclick=\"topicTermListSetCat(\''+listId+'\',\''+safe+'\')\">'+c+'<span class=\"term-chip-count\">'+counts[c]+'</span></button>';
+  }).join('');
+  var sortBtns=[
+    {id:'default',label:'Default'},
+    {id:'cat',label:'By category'},
+    {id:'cn',label:'A→Z 中'},
+    {id:'en',label:'A→Z EN'}
+  ].map(function(opt){
+    return '<button type=\"button\" class=\"term-sort-btn'+(opt.id==='default'?' active':'')+'\" data-term-sort=\"'+opt.id+'\" onclick=\"topicTermListSetSort(\''+listId+'\',\''+opt.id+'\')\">'+opt.label+'</button>';
+  }).join('');
+
+  return '<div class=\"term-toolbar\" data-term-wrap=\"'+listId+'\">'+
+    '<div class=\"term-toolbar-row\"><span class=\"term-toolbar-label\">Filter</span><div class=\"term-chips\">'+chipAll+catChips+'</div></div>'+
+    '<div class=\"term-toolbar-row\"><span class=\"term-toolbar-label\">Sort</span><div class=\"term-sorts\">'+sortBtns+'</div></div>'+
+    '</div>'+
+    '<div class=\"term-list\" id=\"'+listId+'\">'+topicTermListRenderInner(listId)+'</div>';
+}
 function topicBuildChecklist(items,listId){return '<div id=\"'+listId+'\">'+items.map(function(item){return '<div class=\"check-item\" onclick=\"this.classList.toggle(\'done\')\"><div class=\"ck-box\">✓</div><span class=\"ck-label\">'+item+'</span></div>';}).join('')+'</div>';}
 function topicBuildQuiz(tabId){return '<div><div class=\"quiz-q cn\" id=\"topic-qq-'+tabId+'\"></div><div class=\"quiz-opts\" id=\"topic-qo-'+tabId+'\"></div><div style=\"display:flex;justify-content:space-between;align-items:center;margin-top:10px\"><span style=\"font-size:.7rem;color:var(--muted)\" id=\"topic-qs-'+tabId+'\">Score: 0/0</span><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"topicNextQuiz(\''+tabId+'\')\">Next →</button></div></div>';}
 function topicGetBaiduQuickSearches(tabId){var map={cyber:['网络安全','漏洞','APT','数据泄露','钓鱼'],political:['两会','共同富裕','清朗行动','一带一路','舆论场'],genz:['躺平','内卷','摆烂','情绪价值','电子榨菜'],academia:['交换生','考研','保研','推荐信','套磁'],tourist:['地铁站','咖啡店','不要辣','厕所','高铁票'],gossip:['吃瓜','塌房','实锤','爆料','反转'],makeup:['防晒','敏感肌','底妆','平替','烟酰胺'],food:['咖啡店','火锅','奶茶','川菜','菜单'],dropship:['一件代发','起订量','源头工厂','清关','质检']};return map[tabId]||['你好','学习','汉字','中国文化','成语故事'];}
@@ -672,6 +851,6 @@ function topicRenderHPOrder(){var el=document.getElementById('topic-hpOrder'),to
 function topicCalcProfit(){var cost=parseFloat((document.getElementById('topic-dsCost')||{}).value)||0,ship=parseFloat((document.getElementById('topic-dsShip')||{}).value)||0,sell=parseFloat((document.getElementById('topic-dsSell')||{}).value)||0,rate=parseFloat((document.getElementById('topic-dsRate')||{}).value)||7.25,totalCostUSD=(cost+ship)/rate,profit=sell-totalCostUSD,margin=sell>0?Math.round(profit/sell*100):0;document.getElementById('topic-dsProfit').textContent='$'+profit.toFixed(2);document.getElementById('topic-dsProfit').style.color=profit>=0?'var(--tab-accent)':'var(--red)';document.getElementById('topic-dsMargin').textContent='Profit per unit · '+margin+'% margin';}
 function topicInitSkinQuiz(){var el=document.getElementById('topic-skinQuiz');if(!el)return;var qs=TOPIC_WIDGET_DATA.makeup.skinQuiz,step=0,answers=[];function render(){if(step>=qs.length){var result=answers.indexOf('sensitive')>-1?'敏感肌 Sensitive':answers.indexOf('dry')>-1?'干皮 Dry':answers.indexOf('oily')>-1?'油皮 Oily':answers.indexOf('combo')>-1?'混合 Combo':'中性 Normal';el.innerHTML='<div style=\"text-align:center;padding:16px\"><div style=\"font-size:2rem;margin-bottom:8px\">✨</div><div style=\"font-size:1rem;font-weight:700;color:#eee\" class=\"cn\">'+result+'</div><div style=\"font-size:.72rem;color:var(--muted);margin-top:4px\">Search XHS for: \"'+result.split(' ')[0]+' 护肤 推荐\"</div><button class=\"btn-secondary btn-small\" type=\"button\" onclick=\"topicInitSkinQuiz()\" style=\"margin-top:10px\">↻ Retake</button></div>';return;}var q=qs[step];el.innerHTML='<div class=\"quiz-q\">'+q.q+'</div><div class=\"quiz-opts\">'+q.opts.map(function(o){return '<div class=\"quiz-opt\" data-score=\"'+o.s+'\">'+o.t+'</div>';}).join('')+'</div>';Array.prototype.forEach.call(el.querySelectorAll('.quiz-opt'),function(opt){opt.onclick=function(){answers.push(this.dataset.score);this.classList.add('correct');Array.prototype.forEach.call(el.querySelectorAll('.quiz-opt'),function(o){o.style.pointerEvents='none';});setTimeout(function(){step++;render();},400);};});}render();}
 function initTopicWidgets(){var renderers={cyber:renderCyberWidgets,political:renderPoliticalWidgets,genz:renderGenZWidgets,academia:renderAcademiaWidgets,tourist:renderTouristWidgets,gossip:renderGossipWidgets,makeup:renderMakeupWidgets,food:renderFoodWidgets,dropship:renderDropshipWidgets};Object.keys(renderers).forEach(function(tabId){var container=document.querySelector('[data-topic-widgets=\"'+tabId+'\"]');if(container)container.innerHTML=renderers[tabId]()+topicBuildFoundWordsWidget(tabId,'Per section');});['cyber','political','genz','academia','gossip','makeup','dropship'].forEach(function(tabId){var d=TOPIC_WIDGET_DATA[tabId];if(d&&d.terms)topicInitQuiz(tabId,d.terms);});setTimeout(function(){topicRenderMakeupYoutubeWidget();topicRenderFoodYoutubeWidget();topicRenderMakeupLatestFeed();topicRenderFoodLatestFeed();topicInitCyberTerminal();topicInitSkinQuiz();topicConvertGPA();topicConvertCurrency();topicCalcProfit();topicRenderHPOrder();topicMigrateFoundWordsToSavedWords();topicRefreshAllFoundWords();},50);}
-window.topicFlipFC=topicFlipFC;window.topicNavFC=topicNavFC;window.topicBuildCyberQuery=topicBuildCyberQuery;window.topicSetVibe=topicSetVibe;window.topicSetTea=topicSetTea;window.topicSetEmailTpl=topicSetEmailTpl;window.topicConvertGPA=topicConvertGPA;window.topicConvertCurrency=topicConvertCurrency;window.topicToggleHP=topicToggleHP;window.topicCalcProfit=topicCalcProfit;window.topicNextQuiz=topicNextQuiz;window.topicInitSkinQuiz=topicInitSkinQuiz;window.topicCopyText=topicCopyText;window.topicCopyElText=topicCopyElText;window.topicAddFoundWord=topicAddFoundWord;window.topicDeleteFoundWord=topicDeleteFoundWord;window.topicRefreshFoundWords=topicRefreshFoundWords;window.topicRefreshAllFoundWords=topicRefreshAllFoundWords;window.topicMigrateFoundWordsToSavedWords=topicMigrateFoundWordsToSavedWords;window.topicSetMakeupYoutubeChannel=topicSetMakeupYoutubeChannel;window.topicSetFoodYoutubeChannel=topicSetFoodYoutubeChannel;window.topicOpenBaiduSearch=topicOpenBaiduSearch;window.topicBaiduKeydown=topicBaiduKeydown;window.topicBaiduSearchFromInput=topicBaiduSearchFromInput;window.topicBaiduQuickSearch=topicBaiduQuickSearch;
+window.topicFlipFC=topicFlipFC;window.topicNavFC=topicNavFC;window.topicBuildCyberQuery=topicBuildCyberQuery;window.topicSetVibe=topicSetVibe;window.topicSetTea=topicSetTea;window.topicSetEmailTpl=topicSetEmailTpl;window.topicConvertGPA=topicConvertGPA;window.topicConvertCurrency=topicConvertCurrency;window.topicToggleHP=topicToggleHP;window.topicCalcProfit=topicCalcProfit;window.topicNextQuiz=topicNextQuiz;window.topicInitSkinQuiz=topicInitSkinQuiz;window.topicCopyText=topicCopyText;window.topicCopyElText=topicCopyElText;window.topicAddFoundWord=topicAddFoundWord;window.topicDeleteFoundWord=topicDeleteFoundWord;window.topicRefreshFoundWords=topicRefreshFoundWords;window.topicRefreshAllFoundWords=topicRefreshAllFoundWords;window.topicMigrateFoundWordsToSavedWords=topicMigrateFoundWordsToSavedWords;window.topicSetMakeupYoutubeChannel=topicSetMakeupYoutubeChannel;window.topicSetFoodYoutubeChannel=topicSetFoodYoutubeChannel;window.topicOpenBaiduSearch=topicOpenBaiduSearch;window.topicBaiduKeydown=topicBaiduKeydown;window.topicBaiduSearchFromInput=topicBaiduSearchFromInput;window.topicBaiduQuickSearch=topicBaiduQuickSearch;window.topicTermListSetCat=topicTermListSetCat;window.topicTermListSetSort=topicTermListSetSort;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initTopicWidgets);else initTopicWidgets();
 })();

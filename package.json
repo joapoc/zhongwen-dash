@@ -27,6 +27,7 @@
   "homepage": "https://github.com/joapoc/zhongwen-dash#readme",
   "dependencies": {
     "axios": "^1.15.0",
+    "cheerio": "^1.2.0",
     "chinese-lexicon": "^1.0.43",
     "cors": "^2.8.6",
     "deepl": "^1.0.13",

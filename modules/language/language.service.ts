@@ -40,8 +40,24 @@ type LexiconEntry = {
   };
 };
 
+type LexiconEtymologyComponent = {
+  type?: string;
+  char?: string;
+  definition?: string;
+  pinyin?: string;
+};
+
+type LexiconFullEntry = LexiconEntry & {
+  definitions?: string[];
+  simpEtymology?: {
+    components?: LexiconEtymologyComponent[];
+    notes?: string;
+    definition?: string;
+  };
+};
+
 const chineseLexicon = require("chinese-lexicon") as {
-  getEntries: (word: string) => LexiconEntry[];
+  getEntries: (word: string) => LexiconFullEntry[];
 };
 
 const hardcodedHskFallback: Record<string, HskLevel> = {
@@ -699,6 +715,51 @@ export async function searchDictionary(query: string, limit?: number) {
     .map((item) => item.entry);
 
   return Promise.all(topEntries.map((entry) => annotateCedictEntry(entry)));
+}
+
+export async function getCharacterDetails(character: string) {
+  const trimmed = character.trim();
+  if (!trimmed) return null;
+  const firstCodePoint = Array.from(trimmed)[0];
+  if (!firstCodePoint) return null;
+
+  const lexEntries = chineseLexicon.getEntries(firstCodePoint);
+  const lexEntry =
+    lexEntries.find((e) => e.simp === firstCodePoint || e.trad === firstCodePoint) ??
+    lexEntries[0] ??
+    null;
+
+  let strokes: number | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const data = require(`hanzi-writer-data/${firstCodePoint}.json`) as { strokes?: unknown[] };
+    if (Array.isArray(data.strokes)) strokes = data.strokes.length;
+  } catch {
+    // hanzi-writer-data lacks this glyph — leave strokes null
+  }
+
+  const components = lexEntry?.simpEtymology?.components ?? [];
+  const meaningComponent =
+    components.find((c) => c.type === "meaning") ?? components[0] ?? null;
+
+  const hsk = await resolveHskLevelForWord(firstCodePoint);
+
+  const meanings = lexEntry?.definitions
+    ? enrichDefinitions(lexEntry.definitions.slice(), 4)
+    : [];
+
+  return {
+    character: firstCodePoint,
+    simplified: lexEntry?.simp ?? firstCodePoint,
+    traditional: lexEntry?.trad ?? firstCodePoint,
+    pinyin: lexEntry?.pinyin ?? null,
+    meanings,
+    radical: meaningComponent?.char ?? null,
+    radicalMeaning: meaningComponent?.definition ?? null,
+    strokes,
+    hsk,
+    etymology: lexEntry?.simpEtymology?.notes ?? null,
+  };
 }
 
 export async function getCharacterReadings(character: string) {

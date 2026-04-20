@@ -52,6 +52,7 @@
   <button class="tab-btn" onclick="switchTab('tools',this)">🔧 Tools</button>
   <button class="tab-btn" onclick="switchTab('study',this)">📚 Study</button>
   <button class="tab-btn" onclick="switchTab('reference',this)">📖 Reference</button>
+  <button class="tab-btn" onclick="switchTab('grammar',this)">📝 Grammar</button>
   <button class="tab-btn" onclick="switchTab('practice',this)">✍️ Practice</button>
   <button class="tab-btn" onclick="switchTab('handwriting',this)">🖌️ Handwriting</button>
   <button class="tab-btn" onclick="switchTab('words',this)">📚 Words</button>
@@ -94,7 +95,23 @@
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">📅</div>Study Heatmap</div></div><div class="heatmap" id="heatmap"></div><div class="heatmap-legend"><span>Less</span><div class="hcell" style="background:var(--surface);"></div><div class="hcell" style="background:#3a1520;"></div><div class="hcell" style="background:#7a2030;"></div><div class="hcell" style="background:#c93040;"></div><div class="hcell" style="background:#e63946;"></div><span>More</span></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">📈</div>Weekly Activity</div></div><canvas class="weekly-chart" id="weeklyChart"></canvas></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🏆</div>Achievements</div></div><div class="badges"><div class="badge"><div class="badge-icon">🔥</div><div class="badge-name">7-Day</div></div><div class="badge"><div class="badge-icon">📝</div><div class="badge-name">100 Ch</div></div><div class="badge"><div class="badge-icon">🎯</div><div class="badge-name">Tones</div></div><div class="badge"><div class="badge-icon">🧠</div><div class="badge-name">Quiz</div></div><div class="badge"><div class="badge-icon">📖</div><div class="badge-name">HSK2</div></div><div class="badge"><div class="badge-icon">⚡</div><div class="badge-name">300 Ch</div></div><div class="badge locked"><div class="badge-icon">🌏</div><div class="badge-name">Immerse</div></div><div class="badge locked"><div class="badge-icon">📰</div><div class="badge-name">Reader</div></div></div></div>
-      <div class="widget span-2"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🌳</div>Component Tree</div></div><div class="topo-canvas"><canvas id="topoCanvas"></canvas></div><div class="topo-controls"><button class="btn-secondary btn-small" onclick="setTree('好')">好</button><button class="btn-secondary btn-small" onclick="setTree('明')">明</button><button class="btn-secondary btn-small" onclick="setTree('想')">想</button><button class="btn-secondary btn-small" onclick="setTree('谢')">谢</button><button class="btn-secondary btn-small" onclick="setTree('语')">语</button><button class="btn-secondary btn-small" onclick="setTree('休')">休</button></div></div>
+      <div class="widget span-2">
+        <div class="widget-header">
+          <div class="widget-title">
+            <div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🌳</div>
+            Component Tree
+          </div>
+          <span id="treeMeta" class="tag" style="background:rgba(56,189,248,0.13);color:var(--blue);font-size:0.7rem;">—</span>
+        </div>
+        <div class="topo-canvas"><canvas id="topoCanvas"></canvas></div>
+        <div class="topo-controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;">
+          <input type="text" id="treeSearchInput" maxlength="4" placeholder="Any character…" style="padding:6px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:0.9rem;width:150px;">
+          <button class="btn-secondary btn-small" onclick="submitTreeSearch()">Go</button>
+          <button class="btn-secondary btn-small" onclick="randomTree()">🎲 Random</button>
+          <span id="treeFeaturedChips" style="display:flex;gap:4px;flex-wrap:wrap;"></span>
+        </div>
+        <div id="treeCompoundWords" style="margin-top:10px;font-size:0.75rem;color:var(--muted);line-height:1.6;min-height:24px;"></div>
+      </div>
     </div>
   </div>
 
@@ -115,7 +132,7 @@
     <div class="grid">
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">🧠</div>Quick Quiz</div></div><div class="quiz-cat-btns" id="quizCats"></div><div id="quizArea"><div class="quiz-question cn" id="qText"></div><div class="quiz-options" id="qOpts"></div><div class="quiz-footer"><span class="quiz-score" id="qScore">Score: 0 / 0</span><button class="btn-secondary btn-small" onclick="nextQuestion()">Next →</button></div></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🃏</div>Flashcards</div><div style="display:flex;gap:4px;align-items:center;"><span class="tag" id="fcSourceTag" style="background:rgba(167,139,250,0.13);color:var(--purple);"></span><select id="fcDeckSelect" onchange="switchFCDeck(this.value)" style="font-size:0.68rem;padding:3px 8px;"><option value="default">Default Deck</option><option value="saved">📖 Saved Words</option><option value="all">All Combined</option></select></div></div><div class="flashcard-area" onclick="flipCard()"><div class="flashcard-inner" id="flashInner"><div class="flashcard-face flashcard-front cn" id="fcFront"></div><div class="flashcard-face flashcard-back" id="fcBack"></div></div></div><div class="flashcard-nav"><button class="btn-secondary btn-small" onclick="prevCard()">← Prev</button><span class="fc-counter" id="fcCounter"></span><button class="btn-secondary btn-small" onclick="nextCard()">Next →</button></div></div>
-      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">✏️</div>Fill in the Blank</div></div><div id="fibArea"></div><div style="margin-top:10px;"><button class="btn-secondary btn-small" onclick="nextFIB()">Next →</button></div></div>
+      <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">✏️</div>Fill in the Blank</div><select id="fibLevelSelect" style="font-size:0.7rem;padding:3px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);"><option value="1">HSK 1</option></select></div><div id="fibArea"></div><div style="margin-top:10px;"><button class="btn-secondary btn-small" onclick="nextFIB()">Next →</button></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(52,211,153,0.13);color:var(--green);">✅</div>Study Checklist</div><span class="tag" id="checkProgress" style="background:rgba(52,211,153,0.13);color:var(--green);">0%</span></div><div class="checklist" id="checklist"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">💡</div>Tip of the Day</div></div><div class="tip-box"><div class="tip-text cn" id="tipText"></div><button class="btn-secondary btn-small" onclick="newTip()" style="margin-top:10px;">🔄 New Tip</button></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">⌨️</div>Pinyin Typing</div><button class="btn-secondary btn-small" onclick="resetTyping()">↻ Reset</button></div><div class="typing-display" id="typingDisplay"></div><input class="text-input" id="typingInput" placeholder="Type the pinyin..." oninput="handleTyping()" autocomplete="off"><div class="typing-stats"><div class="typing-stat"><div class="ts-label">Speed</div><div class="ts-val" id="typSpeed">0</div></div><div class="typing-stat"><div class="ts-label">Accuracy</div><div class="ts-val" id="typAccuracy">100%</div></div><div class="typing-stat"><div class="ts-label">Progress</div><div class="ts-val" id="typProgress">0%</div></div></div></div>
@@ -367,6 +384,75 @@
     </div>
   </div>
 
+  <!-- GRAMMAR -->
+  <div class="tab-content" id="tab-grammar">
+    <div class="topic-shell">
+      <div class="topic-hero">
+        <h2>📝 Grammar</h2>
+        <p>Curated HSK grammar patterns, particle drills, measure words, and connector pairs. Pick an HSK level to scope the vocabulary used in the quizzes.</p>
+      </div>
+      <div class="grid">
+        <!-- Grammar Patterns Browser (span-2) -->
+        <div class="widget span-2" data-keywords="grammar patterns hsk 了 是的 把 被 比 structure">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">📚</div>
+              Grammar Patterns
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <select id="grammarLevelSelect" style="font-size:0.7rem;padding:3px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);">
+                <option value="all">All</option>
+                <option value="1">HSK 1</option><option value="2">HSK 2</option><option value="3">HSK 3</option>
+                <option value="4">HSK 4</option><option value="5">HSK 5</option><option value="6">HSK 6</option>
+              </select>
+              <input id="grammarSearch" type="text" placeholder="Search patterns..." style="font-size:0.75rem;padding:4px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);width:140px;">
+            </div>
+          </div>
+          <div id="grammarList" style="max-height:400px;overflow-y:auto;scrollbar-width:thin;"></div>
+        </div>
+
+        <!-- Particle Quiz -->
+        <div class="widget" data-keywords="grammar particle 了 过 着 的 地 得 quiz">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">🎯</div>
+              Particle Quiz
+            </div>
+            <span class="tag" id="particleScore" style="background:rgba(251,191,36,0.13);color:var(--accent2);font-size:0.7rem;">0 / 0</span>
+          </div>
+          <div id="particleArea"></div>
+          <button class="btn-secondary btn-small" onclick="nextParticle()" style="margin-top:10px;">Next →</button>
+        </div>
+
+        <!-- Measure Words Quiz -->
+        <div class="widget" data-keywords="grammar measure words 量词 一个 一本 quiz">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">🔢</div>
+              Measure Words
+            </div>
+            <span class="tag" id="measureScore" style="background:rgba(56,189,248,0.13);color:var(--blue);font-size:0.7rem;">0 / 0</span>
+          </div>
+          <div id="measureArea"></div>
+          <button class="btn-secondary btn-small" onclick="nextMeasure()" style="margin-top:10px;">Next →</button>
+        </div>
+
+        <!-- Connector Completion -->
+        <div class="widget" data-keywords="grammar connectors 虽然 因为 所以 不但 conjunctions">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🔗</div>
+              Connector Pairs
+            </div>
+            <span class="tag" id="connectorScore" style="background:rgba(167,139,250,0.13);color:var(--purple);font-size:0.7rem;">0 / 0</span>
+          </div>
+          <div id="connectorArea"></div>
+          <button class="btn-secondary btn-small" onclick="nextConnector()" style="margin-top:10px;">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- IMMERSE -->
   <div class="tab-content" id="tab-immerse">
     <!-- Deferred for later development:
@@ -402,6 +488,27 @@
     </div>
     <div class="widget youtube-news-widget" data-keywords="youtube news live video tv stream immersive">
       <div class="youtube-news-shell" id="youtubeNewsWidget"></div>
+    </div>
+    <div class="widget trending-widget" data-keywords="trending tophub baidu weibo zhihu hot search topics">
+      <div class="widget-header">
+        <div class="widget-title">
+          <div class="icon" style="background:rgba(244,114,182,0.13);color:var(--pink);">🔥</div>
+          Trending · tophub.today
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div class="trending-source-picker" id="trendingSourcePicker">
+            <button type="button" class="trending-source-trigger" id="trendingSourceTrigger" onclick="toggleTrendingPicker(event)">
+              <img class="logo" alt="" style="display:none;">
+              <span class="label">All sources</span>
+              <span class="caret">▾</span>
+            </button>
+            <div class="trending-source-menu" id="trendingSourceMenu" hidden></div>
+          </div>
+          <span id="trendingMeta" style="font-size:0.65rem;color:var(--muted);">—</span>
+          <button class="btn-secondary btn-small" onclick="refreshTrending()" title="Refresh trending feed">↻</button>
+        </div>
+      </div>
+      <div id="trendingList" style="max-height:540px;overflow-y:auto;scrollbar-width:thin;"></div>
     </div>
     <div class="immerse-cat-bar" id="immerseCatBar"></div>
     <div class="resource-grid" id="resourceGrid"></div>
@@ -541,9 +648,11 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" defer></script>
   <script defer src="/js/app.js"></script>
   <script defer src="/js/dashboard.js"></script>
   <script defer src="/js/text-clipper.js"></script>
   <script defer src="/js/topic-widgets.js"></script>
+  <script defer src="/js/widget-layout.js"></script>
 </body>
 </html>

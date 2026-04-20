@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import {
+  getCharacterDetails,
   getCharacterReadings,
   getHandwritingAudioPath,
   getHandwritingCharacters,
@@ -37,6 +38,34 @@ export async function searchLanguageDictionary(req: Request, res: Response) {
     query,
     count: results.length,
     results,
+  });
+}
+
+export async function getLanguageCharacter(req: Request, res: Response) {
+  const character = typeof req.params.character === "string" ? req.params.character : "";
+
+  if (!character.trim()) {
+    return res.status(400).json({
+      ok: false,
+      route: "/api/language/character/:character",
+      message: "character is required.",
+    });
+  }
+
+  const result = await getCharacterDetails(character);
+
+  if (!result) {
+    return res.status(404).json({
+      ok: false,
+      route: "/api/language/character/:character",
+      message: `No details found for "${character}".`,
+    });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    route: "/api/language/character/:character",
+    result,
   });
 }
 

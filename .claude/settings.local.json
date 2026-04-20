@@ -9,7 +9,30 @@
       "Bash(curl -s \"http://localhost:3000/api/language/words?level=1&count=2&random=true\")",
       "Bash(curl -s \"http://localhost:3000/api/language/hsk-words?level=1\" -o /dev/null -w \"old: %{http_code}\\\\n\")",
       "Bash(curl -s \"http://localhost:3000/api/language/words?level=1\" -o /dev/null -w \"new: %{http_code}\\\\n\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s http://localhost:3000/api/language/status)",
+      "Bash(netstat -ano)",
+      "Bash(curl -sL -A \"Mozilla/5.0\" https://tophub.today/)",
+      "Bash(grep -oP 'itemid=\"[^\"]*\"[^>]*>[^<]*<[^>]*>[^<]{5,60}')",
+      "Bash(npm install *)",
+      "Bash(npm audit *)",
+      "Bash(PORT=3099 node dist/server/index.js)",
+      "Bash(echo \"launched pid=$!\")",
+      "Bash(curl -s \"http://localhost:3099/api/trending\" -o /tmp/trend.json)",
+      "Bash(python -c \"import json;d=json.load\\(open\\('/tmp/trend.json'\\)\\);print\\('ok:',d.get\\('ok'\\)\\);print\\('sources:',d.get\\('sourceCount'\\),'items:',d.get\\('itemCount'\\)\\);print\\('first 3 sources:'\\);[print\\(' -',s['name'],'·',s['subtitle'],'\\('+str\\(len\\(s['items']\\)\\)+'\\)'\\) for s in \\(d.get\\('sources'\\) or []\\)[:3]];print\\('sample item:', \\(d.get\\('sources'\\) or [{}]\\)[0].get\\('items',[{}]\\)[0]\\)\")",
+      "Bash(pkill -f \"PORT=3099\")",
+      "Bash(pkill -f \"node dist/server/index.js\")",
+      "Bash(curl -s http://localhost:3099/api/health)",
+      "Bash(PORT=3456 npx tsx server/index.ts)",
+      "Bash(curl -s http://localhost:3456/api/health)",
+      "Bash(curl -s -X POST http://localhost:3456/api/language/segment -H \"Content-Type: application/json\" -d '{\"text\":\"中国经济增长引发全球关注\"}')",
+      "Bash(curl -s \"http://localhost:3456/api/language/dictionary/search?query=经济&limit=1\")",
+      "Bash(curl -s -X POST http://localhost:3456/api/language/segment -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_seg.json\")",
+      "Bash(curl -sG --data-urlencode \"query=经济\" --data-urlencode \"limit=1\" http://localhost:3456/api/language/dictionary/search)",
+      "Bash(curl -s \"http://localhost:3456/api/language/dictionary/search?query=%E7%BB%8F%E6%B5%8E&limit=1\")",
+      "Bash(curl -s \"http://localhost:3456/api/trending\")"
     ]
   }
 }

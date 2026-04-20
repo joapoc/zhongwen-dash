@@ -9,6 +9,7 @@
     "build:server": "tsc --project tsconfig.json",
     "build:frontend": "tsc --project tsconfig.frontend.json",
     "start": "node dist/server/index.js",
+    "icons:trending": "tsx scripts/download-trending-icons.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "node -e \"console.log('No automated tests configured yet.')\""

@@ -1,5 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import fs from "fs";
+import path from "path";
 
 import type { TrendingItem, TrendingSnapshot, TrendingSource } from "./trending.types";
 
@@ -9,6 +11,48 @@ const MIN_FETCH_INTERVAL_MS = 60 * 1000; // 1 minute hard floor on upstream requ
 const ERROR_BACKOFF_MS = 10 * 60 * 1000; // 10 minutes after upstream error
 const USER_AGENT =
   "Mozilla/5.0 (compatible; ZhongwenDash/1.0; language-learning client)";
+
+// Local asset dir for pre-downloaded source icons. Tophub's CDN blocks browser
+// hotlinks via Referer check, so we mirror icons into /public and rewrite.
+const LOCAL_ICON_DIR = path.join(process.cwd(), "public", "assets", "trending-icons");
+const LOCAL_ICON_URL_PREFIX = "/assets/trending-icons/";
+let localIconIndex: Set<string> | null = null;
+
+function getLocalIconIndex(): Set<string> {
+  if (localIconIndex) return localIconIndex;
+  try {
+    localIconIndex = new Set(fs.readdirSync(LOCAL_ICON_DIR));
+  } catch {
+    localIconIndex = new Set();
+  }
+  return localIconIndex;
+}
+
+export function iconFilenameFromUrl(remoteUrl: string): string | null {
+  try {
+    const url = new URL(remoteUrl);
+    const last = url.pathname.split("/").filter(Boolean).pop();
+    return last || null;
+  } catch {
+    return null;
+  }
+}
+
+function rewriteIconUrl(remoteUrl: string | null): string | null {
+  if (!remoteUrl) return null;
+  const filename = iconFilenameFromUrl(remoteUrl);
+  if (!filename) return remoteUrl;
+  if (getLocalIconIndex().has(filename)) {
+    return LOCAL_ICON_URL_PREFIX + filename;
+  }
+  // Fall back to the remote URL — the browser likely won't load it, but we
+  // preserve the pointer so downstream code sees a value.
+  return remoteUrl;
+}
+
+export function refreshLocalIconIndex(): void {
+  localIconIndex = null;
+}
 
 let cache: { data: TrendingSnapshot; expires: number } | null = null;
 let lastFetchAttempt = 0;
@@ -107,7 +151,7 @@ export async function fetchTrending(force = false): Promise<TrendingSnapshot> {
         sourceId: `${slugify(name, nodeId || String(sources.length))}${subtitle ? "-" + slugify(subtitle, "") : ""}`,
         name,
         subtitle,
-        icon,
+        icon: rewriteIconUrl(icon),
         items,
       });
     });

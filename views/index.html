@@ -326,13 +326,14 @@
                   <option value="1">HSK 1</option>
                 </select>
                 <label style="font-size:0.8rem;color:var(--muted);">Questions:</label>
-                <select id="kahootCountSelect" style="padding:6px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:0.85rem;">
-                  <option value="10">10</option>
-                  <option value="15">15</option>
-                  <option value="20">20</option>
-                </select>
+                <input type="number" id="kahootCountInput" min="10" max="10" value="10" style="padding:6px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:0.85rem;width:80px;">
+                <button class="btn-secondary btn-small" onclick="setKahootMax()" type="button">Max</button>
                 <span id="kahootLevelCount" style="font-size:0.75rem;color:var(--muted);">(0 words)</span>
               </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--muted);margin-bottom:12px;cursor:pointer;user-select:none;">
+                <input type="checkbox" id="kahootLifebeltInput" style="width:16px;height:16px;cursor:pointer;">
+                🛟 Lifebelt mode — wrong answers come back later until you get them right (retries give 0 points)
+              </label>
               <button class="btn-primary" onclick="startKahoot()" style="width:100%;">🎯 Start Kahoot</button>
             </div>
             <!-- Game -->

@@ -574,7 +574,7 @@ function renderDialogue() { var d = dialogues[dlgIdx]; document.getElementById('
 function nextDialogue() { dlgIdx = (dlgIdx + 1) % dialogues.length; renderDialogue(); }
 renderDialogue();
 var memCards = [], memFlipped = [], memMatched = 0, memMoves = 0, memLock = false;
-function initMemory() { var pool = charKeys.filter(function (k) { return charDB[k].str <= 8; }).sort(function () { return Math.random() - .5; }).slice(0, 8); var pairs = []; pool.forEach(function (ch) { pairs.push({ type: 'char', value: ch, id: ch }); pairs.push({ type: 'meaning', value: charDB[ch].en, id: ch }); }); memCards = pairs.sort(function () { return Math.random() - .5; }); memFlipped = []; memMatched = 0; memMoves = 0; memLock = false; document.getElementById('memScore').textContent = 'Moves: 0'; var g = document.getElementById('memGrid'); g.innerHTML = ''; memCards.forEach(function (c2, i) { var d = document.createElement('div'); d.className = 'mem-card'; d.textContent = c2.type === 'char' ? c2.value : c2.value; d.dataset.idx = i; d.onclick = function () { flipMem(i); }; g.appendChild(d); }); }
+function initMemory() { var pool = charKeys.filter(function (k) { return charDB[k].str <= 8; }).sort(function () { return Math.random() - .5; }).slice(0, 8); var pairs = []; pool.forEach(function (ch) { pairs.push({ type: 'char', value: ch, id: ch }); pairs.push({ type: 'meaning', value: charDB[ch].en, id: ch }); }); memCards = pairs.sort(function () { return Math.random() - .5; }); memFlipped = []; memMatched = 0; memMoves = 0; memLock = false; document.getElementById('memScore').textContent = 'Moves: 0'; var g = document.getElementById('memGrid'); g.innerHTML = ''; memCards.forEach(function (c2, i) { var d = document.createElement('div'); d.className = 'mem-card' + (c2.type === 'char' ? ' is-char' : ''); d.textContent = c2.value; d.dataset.idx = i; d.onclick = function () { flipMem(i); }; g.appendChild(d); }); }
 function flipMem(idx) { if (memLock)
     return; var cards = document.querySelectorAll('.mem-card'); var card = cards[idx]; if (card.classList.contains('flipped') || card.classList.contains('matched'))
     return; card.classList.add('flipped'); memFlipped.push(idx); if (memFlipped.length === 2) {
@@ -2140,6 +2140,8 @@ var KAHOOT = {
     correctCount: 0,
     streak: 0,
     longestStreak: 0,
+    lifebelt: false,
+    retriesRequeued: 0,
     kahootColors: ['#e21b3c', '#1368ce', '#d89e00', '#26890c'],
     kahootShapes: ['▲', '♦', '●', '■']
 };
@@ -2176,11 +2178,31 @@ function renderKahootSetup() {
     });
     sel.onchange = function () {
         KAHOOT.level = sel.value;
-        var lvl = KAHOOT.levels.find(function (l) { return l.id === KAHOOT.level; });
-        document.getElementById('kahootLevelCount').textContent = '(' + (lvl ? lvl.count : 0) + ' words)';
+        updateKahootLevelUI();
     };
+    updateKahootLevelUI();
+}
+function updateKahootLevelUI() {
     var lvl = KAHOOT.levels.find(function (l) { return l.id === KAHOOT.level; });
-    document.getElementById('kahootLevelCount').textContent = '(' + (lvl ? lvl.count : 0) + ' words)';
+    var count = lvl ? lvl.count : 0;
+    var input = document.getElementById('kahootCountInput');
+    if (input) {
+        var maxAllowed = Math.max(10, count);
+        input.max = String(maxAllowed);
+        var current = parseInt(input.value, 10);
+        if (!current || current < 10)
+            input.value = '10';
+        else if (current > maxAllowed)
+            input.value = String(maxAllowed);
+    }
+    document.getElementById('kahootLevelCount').textContent = '(' + count + ' words)';
+}
+function setKahootMax() {
+    var lvl = KAHOOT.levels.find(function (l) { return l.id === KAHOOT.level; });
+    var count = lvl ? lvl.count : 10;
+    var input = document.getElementById('kahootCountInput');
+    if (input)
+        input.value = String(Math.max(10, count));
 }
 function showKahootPhase(phase) {
     ['Setup', 'Game', 'Complete'].forEach(function (p) {
@@ -2190,9 +2212,15 @@ function showKahootPhase(phase) {
     });
 }
 function startKahoot() {
-    var count = parseInt(document.getElementById('kahootCountSelect').value, 10) || 10;
+    var input = document.getElementById('kahootCountInput');
+    var lvl = KAHOOT.levels.find(function (l) { return l.id === KAHOOT.level; });
+    var maxAllowed = lvl ? Math.max(10, lvl.count) : 10;
+    var raw = parseInt(input && input.value || '10', 10);
+    var count = Math.max(10, Math.min(isNaN(raw) ? 10 : raw, maxAllowed));
+    if (input)
+        input.value = String(count);
     document.getElementById('kahootPhase').textContent = 'Loading';
-    var poolSize = Math.max(count + 10, 20);
+    var poolSize = Math.min(maxAllowed, Math.max(count + 10, 20));
     fetchWordsForLevel(KAHOOT.level, poolSize, true).then(function (data) {
         var pool = (data && data.words) || [];
         if (pool.length < 4) {
@@ -2201,12 +2229,15 @@ function startKahoot() {
             return;
         }
         KAHOOT.pool = pool;
-        KAHOOT.questions = pool.slice(0, Math.min(count, pool.length));
+        KAHOOT.questions = pool.slice(0, Math.min(count, pool.length)).map(function (w) { return Object.assign({}, w, { isRetry: false }); });
         KAHOOT.questionIdx = 0;
         KAHOOT.score = 0;
         KAHOOT.correctCount = 0;
         KAHOOT.streak = 0;
         KAHOOT.longestStreak = 0;
+        KAHOOT.retriesRequeued = 0;
+        var lbInput = document.getElementById('kahootLifebeltInput');
+        KAHOOT.lifebelt = !!(lbInput && lbInput.checked);
         document.getElementById('kahootPhase').textContent = 'Playing';
         showKahootPhase('game');
         renderKahootQuestion();
@@ -2219,7 +2250,9 @@ function renderKahootQuestion() {
         return;
     }
     KAHOOT.answered = false;
-    document.getElementById('kahootProgress').textContent = 'Q ' + (KAHOOT.questionIdx + 1) + ' / ' + KAHOOT.questions.length;
+    var retryTag = q.isRetry ? ' <span style="color:var(--accent2);">🛟</span>' : '';
+    var progressSuffix = KAHOOT.retriesRequeued ? ' (+' + KAHOOT.retriesRequeued + ' 🛟)' : '';
+    document.getElementById('kahootProgress').innerHTML = 'Q ' + (KAHOOT.questionIdx + 1) + ' / ' + KAHOOT.questions.length + progressSuffix + retryTag;
     document.getElementById('kahootScore').textContent = 'Score: ' + KAHOOT.score;
     document.getElementById('kahootStreak').textContent = '🔥 Streak: ' + KAHOOT.streak;
     document.getElementById('kahootHanzi').textContent = q.simplified;
@@ -2280,6 +2313,8 @@ function handleKahootAnswer(choiceIdx, btn) {
     var elapsed = Date.now() - KAHOOT.questionStart;
     var remaining = Math.max(0, KAHOOT.timePerQuestion - elapsed);
     var correct = choiceIdx === KAHOOT.correctIdx;
+    var q = KAHOOT.questions[KAHOOT.questionIdx];
+    var isRetry = !!(q && q.isRetry);
     var feedbackEl = document.getElementById('kahootFeedback');
     var container = document.getElementById('kahootAnswers');
     Array.from(container.children).forEach(function (child, idx) {
@@ -2291,18 +2326,31 @@ function handleKahootAnswer(choiceIdx, btn) {
             child.style.opacity = '0.4';
     });
     if (correct) {
-        var timePoints = Math.round(1000 * (remaining / KAHOOT.timePerQuestion));
-        KAHOOT.streak++;
-        if (KAHOOT.streak > KAHOOT.longestStreak)
-            KAHOOT.longestStreak = KAHOOT.streak;
-        var bonus = KAHOOT.streak > 1 ? 50 : 0;
-        KAHOOT.score += timePoints + bonus;
-        KAHOOT.correctCount++;
-        feedbackEl.innerHTML = '<span style="color:var(--green);">✓ +' + timePoints + (bonus ? ' <span style="color:var(--orange);">+' + bonus + ' streak!</span>' : '') + '</span>';
+        if (isRetry) {
+            KAHOOT.correctCount++;
+            feedbackEl.innerHTML = '<span style="color:var(--green);">✓ Got it on retry — 0 pts</span>';
+        }
+        else {
+            var timePoints = Math.round(1000 * (remaining / KAHOOT.timePerQuestion));
+            KAHOOT.streak++;
+            if (KAHOOT.streak > KAHOOT.longestStreak)
+                KAHOOT.longestStreak = KAHOOT.streak;
+            var bonus = KAHOOT.streak > 1 ? 50 : 0;
+            KAHOOT.score += timePoints + bonus;
+            KAHOOT.correctCount++;
+            feedbackEl.innerHTML = '<span style="color:var(--green);">✓ +' + timePoints + (bonus ? ' <span style="color:var(--orange);">+' + bonus + ' streak!</span>' : '') + '</span>';
+        }
     }
     else {
-        KAHOOT.streak = 0;
-        feedbackEl.innerHTML = '<span style="color:var(--accent);">✗ ' + (choiceIdx < 0 ? 'Time up!' : 'Wrong') + '</span>';
+        if (!isRetry)
+            KAHOOT.streak = 0;
+        if (KAHOOT.lifebelt && q) {
+            requeueKahootQuestion(q);
+            feedbackEl.innerHTML = '<span style="color:var(--accent);">✗ ' + (choiceIdx < 0 ? 'Time up!' : 'Wrong') + ' — 🛟 requeued</span>';
+        }
+        else {
+            feedbackEl.innerHTML = '<span style="color:var(--accent);">✗ ' + (choiceIdx < 0 ? 'Time up!' : 'Wrong') + '</span>';
+        }
     }
     document.getElementById('kahootScore').textContent = 'Score: ' + KAHOOT.score;
     document.getElementById('kahootStreak').textContent = '🔥 Streak: ' + KAHOOT.streak;
@@ -2316,11 +2364,26 @@ function handleKahootAnswer(choiceIdx, btn) {
         }
     }, 1600);
 }
+function requeueKahootQuestion(q) {
+    var retry = Object.assign({}, q, { isRetry: true });
+    var remaining = KAHOOT.questions.length - KAHOOT.questionIdx - 1;
+    if (remaining <= 1) {
+        KAHOOT.questions.push(retry);
+    }
+    else {
+        var offset = 3 + Math.floor(Math.random() * 3);
+        var insertAt = Math.min(KAHOOT.questionIdx + offset, KAHOOT.questions.length);
+        KAHOOT.questions.splice(insertAt, 0, retry);
+    }
+    KAHOOT.retriesRequeued++;
+}
 function finishKahoot() {
     clearInterval(KAHOOT.timer);
     document.getElementById('kahootPhase').textContent = 'Complete';
     document.getElementById('kahootFinalScore').textContent = 'Score: ' + KAHOOT.score;
-    document.getElementById('kahootFinalStats').textContent = KAHOOT.correctCount + ' / ' + KAHOOT.questions.length + ' correct · longest streak ' + KAHOOT.longestStreak;
+    var initialCount = KAHOOT.questions.length - KAHOOT.retriesRequeued;
+    var retriesStr = KAHOOT.retriesRequeued ? ' · ' + KAHOOT.retriesRequeued + ' 🛟 retries' : '';
+    document.getElementById('kahootFinalStats').textContent = KAHOOT.correctCount + ' / ' + KAHOOT.questions.length + ' correct (' + initialCount + ' unique words) · longest streak ' + KAHOOT.longestStreak + retriesStr;
     showKahootPhase('complete');
 }
 function resetKahoot() {

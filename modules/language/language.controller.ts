@@ -5,6 +5,7 @@ import {
   getHandwritingAudioPath,
   getHandwritingCharacters,
   getLanguageResourceStatus,
+  getWordsByLevel,
   searchDictionary,
   searchTatoebaSentences,
   segmentChineseText,
@@ -189,4 +190,18 @@ export async function translateLanguageText(req: Request, res: Response) {
       message: error instanceof Error ? error.message : "DeepL translation failed.",
     });
   }
+}
+
+export async function getLanguageWords(req: Request, res: Response) {
+  const level = typeof req.query.level === "string" ? req.query.level : undefined;
+  const count = typeof req.query.count === "string" ? Number(req.query.count) : undefined;
+  const random = req.query.random === "true" || req.query.random === "1";
+
+  const result = await getWordsByLevel(level, count, random);
+
+  return res.status(200).json({
+    ok: true,
+    route: "/api/language/words",
+    ...result,
+  });
 }

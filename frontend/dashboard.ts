@@ -191,7 +191,7 @@ function clearWordlist(){
   updateWordCountDisplays();renderWordlistContent();renderCard();showToast('🗑','','All words cleared',true);
 }
 
-function switchTab(tab,btn){document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});document.getElementById('tab-'+tab).classList.add('active');btn.classList.add('active');if(tab==='overview'){drawTree();drawWeeklyChart();}if(tab==='practice')initWritingCanvas();if(tab==='handwriting')initHandwritingZone();if(tab==='games')initMemory();if(tab==='immerse'){renderImmerse();loadAllFeeds();}}
+function switchTab(tab,btn){document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});document.getElementById('tab-'+tab).classList.add('active');btn.classList.add('active');if(tab==='overview'){drawTree();drawWeeklyChart();}if(tab==='practice')initWritingCanvas();if(tab==='handwriting')initHandwritingZone();if(tab==='games')initMemory();if(tab==='immerse'){renderImmerse();loadAllFeeds();}if(tab==='words')initWordsZone();}
 function filterWidgets(q){q=q.toLowerCase();document.querySelectorAll('.widget,.resource-card').forEach(function(w){var kw=(w.getAttribute('data-keywords')||'')+' '+w.textContent.toLowerCase();w.style.display=q===''||kw.includes(q)?'':'none';});}
 function toggleNotifs(){document.getElementById('notifModal').classList.toggle('show');}
 (function(){var h=new Date().getHours();var g=h<6?'夜好':h<12?'早上好':h<18?'下午好':'晚上好';var greetingText=document.getElementById('greetingText');if(greetingText)greetingText.innerHTML=g+', Alex 👋';})();
@@ -938,6 +938,497 @@ function initSelectionLookup(){
     if(lookupPopup&&!lookupPopup.classList.contains('hidden')&&!lookupPopup.contains(event.target)){hideLookupPopup();}
   });
   window.addEventListener('scroll',hideLookupPopup,true);
+}
+
+// ===== WORDS TAB =====
+var WORDS={
+  level:'1',
+  levels:[],
+  allWords:[],
+  loading:false,
+  error:'',
+  learn10:{
+    words:[],
+    currentIdx:0,
+    learned:{},
+    phase:'setup',
+    readingText:'',
+    quizIdx:0,
+    quizScore:0,
+    quizTotal:0,
+    quizAnswered:false
+  },
+  browser:{
+    words:[],
+    filteredWords:[],
+    page:0,
+    search:'',
+    pageSize:20
+  },
+  flashcard:{
+    deck:[],
+    idx:0,
+    flipped:false
+  },
+  wod:null
+};
+
+function fetchWordsForLevel(level,count,random){
+  var url='/api/language/words?level='+encodeURIComponent(level||'1');
+  if(count)url+='&count='+count;
+  if(random)url+='&random=true';
+  return fetch(url).then(function(r){return r.json();});
+}
+
+function initWordsZone(){
+  WORDS.loading=true;
+  fetchWordsForLevel(WORDS.level).then(function(data){
+    WORDS.loading=false;
+    if(!data.ok){WORDS.error='Failed to load words';return;}
+    WORDS.levels=data.levels||[];
+    WORDS.level=data.currentLevel||'1';
+    WORDS.allWords=data.words||[];
+    renderLearn10Setup();
+    renderHskBrowserLevels();
+    loadHskBrowserWords();
+    loadWordsFlashcardDeck();
+    loadWordOfDay();
+  }).catch(function(err){
+    WORDS.loading=false;
+    WORDS.error='Failed to load words: '+err.message;
+  });
+}
+
+// Learn 10 + Read Widget
+function renderLearn10Setup(){
+  var select=document.getElementById('learn10LevelSelect');
+  if(!select)return;
+  select.innerHTML='';
+  WORDS.levels.forEach(function(lvl){
+    var opt=document.createElement('option');
+    opt.value=lvl.id;
+    opt.textContent=lvl.label;
+    if(lvl.id===WORDS.level)opt.selected=true;
+    select.appendChild(opt);
+  });
+  select.onchange=function(){
+    WORDS.level=select.value;
+    var lvl=WORDS.levels.find(function(l){return l.id===WORDS.level;});
+    document.getElementById('learn10LevelCount').textContent='('+(lvl?lvl.count:0)+' words)';
+  };
+  var lvl=WORDS.levels.find(function(l){return l.id===WORDS.level;});
+  document.getElementById('learn10LevelCount').textContent='('+(lvl?lvl.count:0)+' words)';
+}
+
+function startLearn10(){
+  WORDS.learn10.phase='learn';
+  WORDS.learn10.currentIdx=0;
+  WORDS.learn10.learned={};
+  WORDS.learn10.quizIdx=0;
+  WORDS.learn10.quizScore=0;
+  WORDS.learn10.quizTotal=0;
+  document.getElementById('learn10Phase').textContent='Learning';
+  fetchWordsForLevel(WORDS.level,10,true).then(function(data){
+    WORDS.learn10.words=data.words||[];
+    showLearn10Phase('learn');
+    renderLearn10Card();
+  });
+}
+
+function showLearn10Phase(phase){
+  ['Setup','Learn','Read','Quiz','Complete'].forEach(function(p){
+    var el=document.getElementById('learn10'+p);
+    if(el)el.style.display=p.toLowerCase()===phase?'block':'none';
+  });
+}
+
+function renderLearn10Card(){
+  var words=WORDS.learn10.words;
+  var idx=WORDS.learn10.currentIdx;
+  if(!words.length)return;
+  var w=words[idx];
+  document.getElementById('learn10Chinese').textContent=w.simplified;
+  document.getElementById('learn10Pinyin').textContent=w.pinyin;
+  document.getElementById('learn10English').textContent=w.english;
+  document.getElementById('learn10Counter').textContent=(idx+1)+' / '+words.length;
+  var prog=document.getElementById('learn10Progress');
+  prog.innerHTML='';
+  words.forEach(function(_w,i){
+    var dot=document.createElement('div');
+    dot.style.cssText='width:10px;height:10px;border-radius:50%;background:'+(WORDS.learn10.learned[i]?'var(--green)':i===idx?'var(--accent)':'var(--surface)')+';border:1px solid var(--border);';
+    prog.appendChild(dot);
+  });
+  var btn=document.getElementById('learn10LearnedBtn');
+  if(WORDS.learn10.learned[idx]){
+    btn.textContent='✓ Learned';
+    btn.style.background='var(--green)';
+  }else{
+    btn.textContent='✓ I Know This Word';
+    btn.style.background='';
+  }
+}
+
+function prevLearn10Word(){
+  if(WORDS.learn10.currentIdx>0){
+    WORDS.learn10.currentIdx--;
+    renderLearn10Card();
+  }
+}
+
+function nextLearn10Word(){
+  if(WORDS.learn10.currentIdx<WORDS.learn10.words.length-1){
+    WORDS.learn10.currentIdx++;
+    renderLearn10Card();
+  }else{
+    var allLearned=Object.keys(WORDS.learn10.learned).length>=WORDS.learn10.words.length;
+    if(allLearned){
+      startLearn10Read();
+    }
+  }
+}
+
+function markLearn10Learned(){
+  WORDS.learn10.learned[WORDS.learn10.currentIdx]=true;
+  renderLearn10Card();
+  var allLearned=Object.keys(WORDS.learn10.learned).length>=WORDS.learn10.words.length;
+  if(allLearned&&WORDS.learn10.currentIdx===WORDS.learn10.words.length-1){
+    setTimeout(startLearn10Read,500);
+  }else if(WORDS.learn10.currentIdx<WORDS.learn10.words.length-1){
+    setTimeout(nextLearn10Word,300);
+  }
+}
+
+// Reading passage generation using templates
+var readingTemplates=[
+  {template:'今天我去{place}。我看见{person}在{verb}。',slots:['place','person','verb']},
+  {template:'{person}说："我们一起{verb}吧！"我觉得很{adj}。',slots:['person','verb','adj']},
+  {template:'这个{noun}是我的。我很{adverb}{verb}它。',slots:['noun','adverb','verb']},
+  {template:'我{time}{verb}了。现在我想{verb2}。',slots:['time','verb','verb2']},
+  {template:'{person}每天都{verb}。他们很{adj}。',slots:['person','verb','adj']},
+  {template:'在{place}，有很多{noun}。我喜欢{verb}。',slots:['place','noun','verb']}
+];
+
+function categorizeWord(word){
+  var en=(word.english||'').toLowerCase();
+  if(/\b(to|do|make|go|come|eat|drink|see|look|read|write|speak|say|want|like|love|study|learn|work|play|run|walk|sit|stand|sleep|buy|sell|give|take|put|get|know|think|feel|hear|listen|use|open|close|start|stop|begin|end|try|need|can|will|would|should|must)\b/.test(en))return 'verb';
+  if(/\b(big|small|good|bad|new|old|young|fast|slow|high|low|long|short|hot|cold|happy|sad|easy|hard|beautiful|ugly|clean|dirty|rich|poor|strong|weak|busy|free|full|empty|right|wrong|early|late|important|interesting)\b/.test(en))return 'adj';
+  if(/\b(very|really|quite|too|more|most|less|least|always|never|often|sometimes|usually|already|still|just|only|also|again|together|quickly|slowly)\b/.test(en))return 'adverb';
+  if(/\b(person|people|man|woman|child|children|friend|family|father|mother|teacher|student|doctor|worker)\b/.test(en))return 'person';
+  if(/\b(place|school|home|house|room|store|shop|restaurant|hotel|hospital|airport|station|park|city|country|road|street)\b/.test(en))return 'place';
+  if(/\b(day|time|year|month|week|hour|minute|morning|afternoon|evening|night|today|tomorrow|yesterday)\b/.test(en))return 'time';
+  if(/\b(thing|book|pen|paper|table|chair|door|window|car|phone|computer|food|water|clothes|money|work|word|name|number)\b/.test(en))return 'noun';
+  return 'noun';
+}
+
+function generateReadingPassage(words){
+  var categorized={verb:[],adj:[],adverb:[],person:[],place:[],time:[],noun:[]};
+  words.forEach(function(w){
+    var cat=categorizeWord(w);
+    categorized[cat].push(w.simplified);
+  });
+  Object.keys(categorized).forEach(function(cat){
+    if(!categorized[cat].length){
+      var fallbacks={verb:['学习','工作'],adj:['好','高兴'],adverb:['很'],person:['我','他'],place:['学校','家'],time:['今天'],noun:['东西','书']};
+      categorized[cat]=fallbacks[cat]||['这个'];
+    }
+  });
+  var template=readingTemplates[Math.floor(Math.random()*readingTemplates.length)];
+  var sentence=template.template;
+  template.slots.forEach(function(slot){
+    var cat=slot==='verb2'?'verb':slot;
+    var pool=categorized[cat]||categorized.noun;
+    var word=pool[Math.floor(Math.random()*pool.length)];
+    sentence=sentence.replace('{'+slot+'}',word);
+  });
+  return sentence;
+}
+
+function startLearn10Read(){
+  WORDS.learn10.phase='read';
+  document.getElementById('learn10Phase').textContent='Reading';
+  var passage=generateReadingPassage(WORDS.learn10.words);
+  WORDS.learn10.readingText=passage;
+  var passageEl=document.getElementById('learn10Passage');
+  var html=passage;
+  WORDS.learn10.words.forEach(function(w){
+    var re=new RegExp('('+w.simplified+')','g');
+    html=html.replace(re,'<span class="learn10-highlight" title="'+w.pinyin+' — '+escapeHtml(w.english)+'" style="background:rgba(230,57,70,0.15);padding:2px 4px;border-radius:4px;cursor:help;">$1</span>');
+  });
+  passageEl.innerHTML=html;
+  showLearn10Phase('read');
+}
+
+function startLearn10Quiz(){
+  WORDS.learn10.phase='quiz';
+  WORDS.learn10.quizIdx=0;
+  WORDS.learn10.quizScore=0;
+  WORDS.learn10.quizTotal=WORDS.learn10.words.length;
+  WORDS.learn10.quizAnswered=false;
+  document.getElementById('learn10Phase').textContent='Quiz';
+  showLearn10Phase('quiz');
+  renderLearn10QuizQuestion();
+}
+
+function renderLearn10QuizQuestion(){
+  var words=WORDS.learn10.words;
+  var idx=WORDS.learn10.quizIdx;
+  if(idx>=words.length){
+    finishLearn10();
+    return;
+  }
+  var w=words[idx];
+  WORDS.learn10.quizAnswered=false;
+  document.getElementById('learn10QuizQuestion').textContent=w.simplified;
+  var opts=document.getElementById('learn10QuizOptions');
+  opts.innerHTML='';
+  var choices=[w.english];
+  var otherWords=words.filter(function(_,i){return i!==idx;});
+  while(choices.length<4&&otherWords.length){
+    var rIdx=Math.floor(Math.random()*otherWords.length);
+    var other=otherWords.splice(rIdx,1)[0];
+    if(choices.indexOf(other.english)===-1)choices.push(other.english);
+  }
+  while(choices.length<4)choices.push('(no match)');
+  for(var i=choices.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=choices[i];choices[i]=choices[j];choices[j]=tmp;
+  }
+  choices.forEach(function(ch){
+    var btn=document.createElement('div');
+    btn.className='quiz-opt';
+    btn.textContent=ch;
+    btn.onclick=function(){
+      if(WORDS.learn10.quizAnswered)return;
+      WORDS.learn10.quizAnswered=true;
+      if(ch===w.english){
+        btn.classList.add('correct');
+        WORDS.learn10.quizScore++;
+      }else{
+        btn.classList.add('wrong');
+        Array.from(opts.children).forEach(function(b){
+          if(b.textContent===w.english)b.classList.add('correct');
+        });
+      }
+      document.getElementById('learn10QuizScore').textContent='Score: '+WORDS.learn10.quizScore+' / '+(idx+1);
+      setTimeout(function(){
+        WORDS.learn10.quizIdx++;
+        renderLearn10QuizQuestion();
+      },1000);
+    };
+    opts.appendChild(btn);
+  });
+  document.getElementById('learn10QuizScore').textContent='Question '+(idx+1)+' of '+words.length;
+}
+
+function finishLearn10(){
+  WORDS.learn10.phase='complete';
+  document.getElementById('learn10Phase').textContent='Complete';
+  document.getElementById('learn10FinalScore').textContent='Score: '+WORDS.learn10.quizScore+' / '+WORDS.learn10.quizTotal;
+  showLearn10Phase('complete');
+}
+
+function resetLearn10(){
+  WORDS.learn10.phase='setup';
+  WORDS.learn10.words=[];
+  WORDS.learn10.currentIdx=0;
+  WORDS.learn10.learned={};
+  document.getElementById('learn10Phase').textContent='Setup';
+  showLearn10Phase('setup');
+}
+
+// HSK Browser Widget
+function renderHskBrowserLevels(){
+  var c=document.getElementById('hskBrowserLevels');
+  if(!c)return;
+  c.innerHTML='';
+  WORDS.levels.forEach(function(lvl){
+    var btn=document.createElement('button');
+    btn.className='btn-secondary btn-small'+(lvl.id===WORDS.browser.level?' active':'');
+    btn.textContent=lvl.label;
+    btn.style.cssText=lvl.id===WORDS.level?'border-color:var(--accent);color:var(--accent);':'';
+    btn.onclick=function(){
+      WORDS.level=lvl.id;
+      c.querySelectorAll('button').forEach(function(b){b.style.cssText='';});
+      btn.style.cssText='border-color:var(--accent);color:var(--accent);';
+      loadHskBrowserWords();
+    };
+    c.appendChild(btn);
+  });
+}
+
+function loadHskBrowserWords(){
+  fetchWordsForLevel(WORDS.level).then(function(data){
+    WORDS.browser.words=data.words||[];
+    WORDS.browser.filteredWords=WORDS.browser.words;
+    WORDS.browser.page=0;
+    WORDS.browser.search='';
+    document.getElementById('hskBrowserSearch').value='';
+    renderHskBrowserList();
+  });
+}
+
+function filterHskBrowser(){
+  var q=(document.getElementById('hskBrowserSearch').value||'').toLowerCase().trim();
+  WORDS.browser.search=q;
+  WORDS.browser.page=0;
+  if(!q){
+    WORDS.browser.filteredWords=WORDS.browser.words;
+  }else{
+    WORDS.browser.filteredWords=WORDS.browser.words.filter(function(w){
+      return w.simplified.includes(q)||w.traditional.includes(q)||w.pinyin.toLowerCase().includes(q)||w.english.toLowerCase().includes(q);
+    });
+  }
+  renderHskBrowserList();
+}
+
+function renderHskBrowserList(){
+  var c=document.getElementById('hskBrowserList');
+  var words=WORDS.browser.filteredWords;
+  var page=WORDS.browser.page;
+  var pageSize=WORDS.browser.pageSize;
+  var start=page*pageSize;
+  var pageWords=words.slice(start,start+pageSize);
+  if(!pageWords.length){
+    c.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;">No words found</div>';
+    renderHskBrowserPagination();
+    return;
+  }
+  var html='';
+  pageWords.forEach(function(w){
+    html+='<div class="phrase-item" style="cursor:pointer;" onclick="showBrowserWordDetail(\''+escapeHtml(w.simplified).replace(/'/g,"\\'")+'\')"><span class="phrase-cn">'+w.simplified+'</span><span class="phrase-py">'+w.pinyin+'</span><span class="phrase-en" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(w.english.substring(0,40))+'</span></div>';
+  });
+  c.innerHTML=html;
+  renderHskBrowserPagination();
+}
+
+function renderHskBrowserPagination(){
+  var c=document.getElementById('hskBrowserPagination');
+  var total=WORDS.browser.filteredWords.length;
+  var pageSize=WORDS.browser.pageSize;
+  var pages=Math.ceil(total/pageSize);
+  var page=WORDS.browser.page;
+  if(pages<=1){c.innerHTML='';return;}
+  var html='';
+  if(page>0)html+='<button class="btn-secondary btn-small" onclick="hskBrowserPage('+(page-1)+')">←</button>';
+  html+='<span style="font-size:0.75rem;color:var(--muted);">'+(page+1)+'/'+pages+'</span>';
+  if(page<pages-1)html+='<button class="btn-secondary btn-small" onclick="hskBrowserPage('+(page+1)+')">→</button>';
+  c.innerHTML=html;
+}
+
+function hskBrowserPage(p){
+  WORDS.browser.page=p;
+  renderHskBrowserList();
+}
+
+function showBrowserWordDetail(simplified){
+  var w=WORDS.browser.words.find(function(w){return w.simplified===simplified;});
+  if(!w)return;
+  var saved=isWordSaved(w.simplified);
+  var html='<div style="text-align:center;"><div class="cn" style="font-size:2rem;color:var(--accent);">'+w.simplified+'</div><div style="color:var(--accent2);">'+w.pinyin+'</div><div style="font-size:0.85rem;color:var(--muted);margin:8px 0;">'+escapeHtml(w.english)+'</div><button class="btn-secondary btn-small" onclick="'+(saved?'removeWord':'addWordFromBrowser')+'(\''+escapeHtml(w.simplified).replace(/'/g,"\\'")+'\',\''+escapeHtml(w.pinyin).replace(/'/g,"\\'")+'\',\''+escapeHtml(w.english).replace(/'/g,"\\'")+'\')">'+(saved?'✓ Saved':'➕ Save Word')+'</button></div>';
+  var list=document.getElementById('hskBrowserList');
+  var detail=document.createElement('div');
+  detail.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg);padding:20px;z-index:10;';
+  detail.innerHTML='<button class="btn-secondary btn-small" onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:8px;">✕</button>'+html;
+  list.style.position='relative';
+  list.appendChild(detail);
+}
+
+function addWordFromBrowser(cn,py,en){
+  addWord({cn:cn,py:py,en:en,source:'manual',sourceArticle:'HSK Browser'});
+  addSavedWordToFlashcards({cn:cn,py:py,en:en});
+  showToast(cn,py,en,false);
+  renderWordlistContent();
+  loadHskBrowserWords();
+}
+
+// Quick Flashcards Widget
+function loadWordsFlashcardDeck(){
+  fetchWordsForLevel(WORDS.level,20,true).then(function(data){
+    WORDS.flashcard.deck=data.words||[];
+    WORDS.flashcard.idx=0;
+    WORDS.flashcard.flipped=false;
+    renderWordsFlashcard();
+  });
+}
+
+function renderWordsFlashcard(){
+  var deck=WORDS.flashcard.deck;
+  var idx=WORDS.flashcard.idx;
+  document.getElementById('wordsFlashInner').classList.remove('flipped');
+  if(!deck.length){
+    document.getElementById('wordsFlashFront').textContent='No cards';
+    document.getElementById('wordsFlashBack').textContent='Load words first';
+    document.getElementById('wordsFlashCounter').textContent='0/0';
+    document.getElementById('wordsFlashcardStats').textContent='0/0';
+    return;
+  }
+  var w=deck[idx];
+  document.getElementById('wordsFlashFront').textContent=w.simplified;
+  document.getElementById('wordsFlashBack').textContent=w.pinyin+' — '+w.english;
+  document.getElementById('wordsFlashCounter').textContent=(idx+1)+'/'+deck.length;
+  document.getElementById('wordsFlashcardStats').textContent=(idx+1)+'/'+deck.length;
+}
+
+function flipWordsFlashcard(){
+  document.getElementById('wordsFlashInner').classList.toggle('flipped');
+  WORDS.flashcard.flipped=!WORDS.flashcard.flipped;
+}
+
+function nextWordsFlashcard(){
+  var deck=WORDS.flashcard.deck;
+  if(!deck.length)return;
+  WORDS.flashcard.idx=(WORDS.flashcard.idx+1)%deck.length;
+  WORDS.flashcard.flipped=false;
+  renderWordsFlashcard();
+}
+
+function prevWordsFlashcard(){
+  var deck=WORDS.flashcard.deck;
+  if(!deck.length)return;
+  WORDS.flashcard.idx=(WORDS.flashcard.idx-1+deck.length)%deck.length;
+  WORDS.flashcard.flipped=false;
+  renderWordsFlashcard();
+}
+
+function shuffleWordsFlashcards(){
+  var deck=WORDS.flashcard.deck;
+  for(var i=deck.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=deck[i];deck[i]=deck[j];deck[j]=tmp;
+  }
+  WORDS.flashcard.idx=0;
+  WORDS.flashcard.flipped=false;
+  renderWordsFlashcard();
+}
+
+// Word of the Day Widget
+function loadWordOfDay(){
+  fetchWordsForLevel(WORDS.level,1,true).then(function(data){
+    var words=data.words||[];
+    if(words.length){
+      WORDS.wod=words[0];
+      renderWordOfDay();
+    }
+  });
+}
+
+function renderWordOfDay(){
+  var w=WORDS.wod;
+  if(!w){
+    document.getElementById('wodChinese').textContent='—';
+    document.getElementById('wodPinyin').textContent='—';
+    document.getElementById('wodEnglish').textContent='—';
+    document.getElementById('wodLevel').textContent='—';
+    return;
+  }
+  document.getElementById('wodChinese').textContent=w.simplified;
+  document.getElementById('wodPinyin').textContent=w.pinyin;
+  document.getElementById('wodEnglish').textContent=w.english;
+  document.getElementById('wodLevel').textContent='HSK '+w.level;
+}
+
+function newWordOfDay(){
+  loadWordOfDay();
 }
 
 renderImmerse();updateWordCountDisplays();

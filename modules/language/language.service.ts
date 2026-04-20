@@ -7,6 +7,7 @@ import {
   getHandwritingAudio2025FilePath,
   getHandwritingWords2025Dataset,
   getHsk30Dataset,
+  getHsk30WordsDataset,
   getLanguageDataDirectory,
   getPinyinDbDataset,
 } from "./language.data";
@@ -15,6 +16,7 @@ import type {
   HandwritingCharacterEntry,
   HandwritingLevel,
   HskLevel,
+  HskWord,
   PinyinReadingEntry,
   ResourceStatus,
   TatoebaSentence,
@@ -880,4 +882,78 @@ export async function translateChineseSentences(sentences: string[]) {
   }
 
   return results;
+}
+
+function getHskLevelWeight(level: HskLevel) {
+  return level === "7-9" ? 7 : level;
+}
+
+function formatHskLevel(level: HskLevel) {
+  return `HSK ${level}`;
+}
+
+function normalizeHskLevel(value: string | undefined, levels: HskLevel[]): HskLevel | null {
+  if (!levels.length) {
+    return null;
+  }
+
+  if (!value?.trim()) {
+    return levels[0];
+  }
+
+  const trimmed = value.trim();
+
+  return levels.find((level) => String(level) === trimmed) ?? levels[0];
+}
+
+export async function getWordsByLevel(level?: string, count?: number, random?: boolean) {
+  const dataset = await getHsk30WordsDataset();
+
+  const availableLevels = Array.from(dataset.entries.keys()).sort(
+    (left, right) => getHskLevelWeight(left) - getHskLevelWeight(right),
+  );
+
+  const currentLevel = normalizeHskLevel(level, availableLevels);
+
+  if (!currentLevel) {
+    return {
+      available: false,
+      levels: [] as Array<{ id: string; label: string; count: number }>,
+      currentLevel: null,
+      words: [] as HskWord[],
+      totalCount: 0,
+    };
+  }
+
+  const allWords = dataset.entries.get(currentLevel) ?? [];
+  let words = allWords.map((word) => ({
+    ...word,
+    level: currentLevel,
+  }));
+
+  if (random && words.length > 0) {
+    // Fisher-Yates shuffle
+    const shuffled = [...words];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    words = shuffled;
+  }
+
+  if (count && count > 0) {
+    words = words.slice(0, count);
+  }
+
+  return {
+    available: true,
+    levels: availableLevels.map((entryLevel) => ({
+      id: String(entryLevel),
+      label: formatHskLevel(entryLevel),
+      count: dataset.counts.get(entryLevel) ?? 0,
+    })),
+    currentLevel: String(currentLevel),
+    words,
+    totalCount: words.length,
+  };
 }

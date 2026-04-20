@@ -54,6 +54,7 @@
   <button class="tab-btn" onclick="switchTab('reference',this)">📖 Reference</button>
   <button class="tab-btn" onclick="switchTab('practice',this)">✍️ Practice</button>
   <button class="tab-btn" onclick="switchTab('handwriting',this)">🖌️ Handwriting</button>
+  <button class="tab-btn" onclick="switchTab('words',this)">📚 Words</button>
   <button class="tab-btn" onclick="switchTab('textclipper',this)">📎 Text Reader/Clipper</button>
   <button class="tab-btn" onclick="switchTab('games',this)">🎮 Games</button>
   <button class="tab-btn" onclick="switchTab('immerse',this)">🌏 Immerse</button>
@@ -149,6 +150,132 @@
         <p>Practice full characters on a rice grid, review stroke order, browse radicals, and score each rep as you work through HSK sets.</p>
       </div>
       <div class="grid" id="widgets-handwriting"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-words">
+    <div class="topic-shell">
+      <div class="topic-hero">
+        <h2>📚 HSK Word Learning</h2>
+        <p>Learn HSK vocabulary with interactive widgets. Master 10 words at a time, then read a passage using them.</p>
+      </div>
+      <div class="grid" id="widgets-words">
+        <!-- Learn 10 + Read Widget (span-2) -->
+        <div class="widget span-2" data-keywords="learn read hsk vocabulary words study">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🎯</div>
+              Learn 10 + Read
+            </div>
+            <span class="tag" id="learn10Phase" style="background:rgba(230,57,70,0.13);color:var(--accent);">Setup</span>
+          </div>
+          <div id="learn10Content">
+            <!-- Setup phase -->
+            <div id="learn10Setup">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+                <label style="font-size:0.8rem;color:var(--muted);">HSK Level:</label>
+                <select id="learn10LevelSelect" style="padding:6px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:0.85rem;">
+                  <option value="1">HSK 1</option>
+                </select>
+                <span id="learn10LevelCount" style="font-size:0.75rem;color:var(--muted);">(0 words)</span>
+              </div>
+              <button class="btn-primary" onclick="startLearn10()" style="width:100%;">🚀 Start Learning 10 Words</button>
+            </div>
+            <!-- Learn phase -->
+            <div id="learn10Learn" style="display:none;">
+              <div class="learn10-card" style="background:var(--surface);border-radius:12px;padding:24px;text-align:center;margin-bottom:16px;">
+                <div class="learn10-chinese cn" id="learn10Chinese" style="font-size:2.5rem;font-weight:700;margin-bottom:8px;color:var(--accent);">学习</div>
+                <div class="learn10-pinyin" id="learn10Pinyin" style="font-size:1.1rem;color:var(--accent2);margin-bottom:6px;">xuéxí</div>
+                <div class="learn10-english" id="learn10English" style="font-size:0.9rem;color:var(--muted);">to study</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <button class="btn-secondary btn-small" onclick="prevLearn10Word()">← Prev</button>
+                <span id="learn10Counter" style="font-size:0.8rem;color:var(--muted);">1 / 10</span>
+                <button class="btn-secondary btn-small" onclick="nextLearn10Word()">Next →</button>
+              </div>
+              <div id="learn10Progress" style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;"></div>
+              <button class="btn-primary" onclick="markLearn10Learned()" id="learn10LearnedBtn" style="width:100%;">✓ I Know This Word</button>
+            </div>
+            <!-- Read phase -->
+            <div id="learn10Read" style="display:none;">
+              <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px;">Read the passage below. Hover over highlighted words to review.</div>
+              <div id="learn10Passage" class="cn" style="background:var(--surface);border-radius:12px;padding:20px;font-size:1.1rem;line-height:1.8;margin-bottom:16px;"></div>
+              <button class="btn-primary" onclick="startLearn10Quiz()" style="width:100%;">📝 Take Quiz</button>
+            </div>
+            <!-- Quiz phase -->
+            <div id="learn10Quiz" style="display:none;">
+              <div id="learn10QuizQuestion" class="cn" style="font-size:1.5rem;text-align:center;margin-bottom:16px;color:var(--accent);"></div>
+              <div id="learn10QuizOptions" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+              <div id="learn10QuizScore" style="text-align:center;font-size:0.85rem;color:var(--muted);"></div>
+            </div>
+            <!-- Complete phase -->
+            <div id="learn10Complete" style="display:none;text-align:center;">
+              <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
+              <div style="font-size:1.2rem;font-weight:600;margin-bottom:8px;">Session Complete!</div>
+              <div id="learn10FinalScore" style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">Score: 10/10</div>
+              <button class="btn-primary" onclick="resetLearn10()" style="width:100%;">🔄 Learn 10 More</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HSK Vocabulary Browser -->
+        <div class="widget" data-keywords="hsk vocabulary browse search words">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(56,189,248,0.13);color:var(--blue);">📖</div>
+              HSK Browser
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;" id="hskBrowserLevels"></div>
+          <div style="margin-bottom:12px;">
+            <input type="text" class="text-input" id="hskBrowserSearch" placeholder="Search words..." oninput="filterHskBrowser()" style="width:100%;">
+          </div>
+          <div id="hskBrowserList" style="max-height:260px;overflow-y:auto;scrollbar-width:thin;"></div>
+          <div id="hskBrowserPagination" style="display:flex;justify-content:center;gap:8px;margin-top:12px;"></div>
+        </div>
+
+        <!-- Quick Flashcards -->
+        <div class="widget" data-keywords="flashcards quick review study">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🃏</div>
+              Quick Flashcards
+            </div>
+            <span class="tag" id="wordsFlashcardStats" style="background:rgba(167,139,250,0.13);color:var(--purple);">0/0</span>
+          </div>
+          <div class="flashcard-area" onclick="flipWordsFlashcard()" style="min-height:140px;">
+            <div class="flashcard-inner" id="wordsFlashInner">
+              <div class="flashcard-face flashcard-front cn" id="wordsFlashFront" style="font-size:2rem;">—</div>
+              <div class="flashcard-face flashcard-back" id="wordsFlashBack">—</div>
+            </div>
+          </div>
+          <div class="flashcard-nav" style="margin-top:12px;">
+            <button class="btn-secondary btn-small" onclick="prevWordsFlashcard()">← Prev</button>
+            <span id="wordsFlashCounter" style="font-size:0.8rem;color:var(--muted);">0/0</span>
+            <button class="btn-secondary btn-small" onclick="nextWordsFlashcard()">Next →</button>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-secondary btn-small" onclick="shuffleWordsFlashcards()" style="width:100%;">🔀 Shuffle</button>
+          </div>
+        </div>
+
+        <!-- Word of the Day -->
+        <div class="widget" data-keywords="word day daily vocabulary">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(251,191,36,0.13);color:var(--accent2);">⭐</div>
+              Word of the Day
+            </div>
+          </div>
+          <div style="text-align:center;padding:12px 0;">
+            <div class="cn" id="wodChinese" style="font-size:2.2rem;font-weight:700;color:var(--accent);margin-bottom:6px;">—</div>
+            <div id="wodPinyin" style="font-size:1rem;color:var(--accent2);margin-bottom:4px;">—</div>
+            <div id="wodEnglish" style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">—</div>
+            <div id="wodLevel" style="font-size:0.7rem;color:var(--text);background:var(--surface);display:inline-block;padding:3px 10px;border-radius:12px;">—</div>
+          </div>
+          <button class="btn-secondary btn-small" onclick="newWordOfDay()" style="width:100%;margin-top:8px;">🔄 New Word</button>
+        </div>
+      </div>
     </div>
   </div>
 

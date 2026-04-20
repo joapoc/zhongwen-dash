@@ -47,3 +47,12 @@ export type HandwritingCharacterEntry = {
   sourceLevel: HandwritingLevel;
   sourceLevelLabel: string;
 };
+
+export type HskWord = {
+  simplified: string;
+  traditional: string;
+  pinyin: string;
+  english: string;
+  pinyinNumbered: string;
+  level: HskLevel;
+};

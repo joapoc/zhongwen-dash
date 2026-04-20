@@ -654,3 +654,122 @@ export async function getHandwritingAudio2025FilePath(term: string) {
 export function getLanguageDataDirectory() {
   return languageDataDir;
 }
+
+type Hsk30WordEntry = {
+  simplified: string;
+  traditional: string;
+  pinyin: string;
+  english: string;
+  pinyinNumbered: string;
+};
+
+type Hsk30WordsDatasetCacheEntry = {
+  directoryPath: string | null;
+  stamp: string;
+  entries: Map<HskLevel, Hsk30WordEntry[]>;
+  counts: Map<HskLevel, number>;
+};
+
+const hsk30WordsDatasetCache: Hsk30WordsDatasetCacheEntry = {
+  directoryPath: null,
+  stamp: "",
+  entries: new Map<HskLevel, Hsk30WordEntry[]>(),
+  counts: new Map<HskLevel, number>(),
+};
+
+export async function getHsk30WordsDataset() {
+  const stats = await Promise.all(
+    hsk30Candidates.map(async ({ filename, level }) => {
+      const filePath = path.join(hsk30DataDir, filename);
+      try {
+        const fileStats = await fs.stat(filePath);
+        if (!fileStats.isFile()) {
+          return null;
+        }
+
+        return {
+          filePath,
+          level,
+          mtimeMs: fileStats.mtimeMs,
+        };
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  const availableFiles: Array<{ filePath: string; level: HskLevel; mtimeMs: number }> = [];
+
+  for (const item of stats) {
+    if (item) {
+      availableFiles.push(item);
+    }
+  }
+
+  if (!availableFiles.length) {
+    return {
+      available: false,
+      directoryPath: hsk30DataDir,
+      entries: new Map<HskLevel, Hsk30WordEntry[]>(),
+      counts: new Map<HskLevel, number>(),
+    };
+  }
+
+  const stamp = availableFiles
+    .map((item) => `${item.filePath}:${item.mtimeMs}`)
+    .sort()
+    .join("|");
+
+  if (hsk30WordsDatasetCache.directoryPath === hsk30DataDir && hsk30WordsDatasetCache.stamp === stamp) {
+    return {
+      available: true,
+      directoryPath: hsk30WordsDatasetCache.directoryPath,
+      entries: hsk30WordsDatasetCache.entries,
+      counts: hsk30WordsDatasetCache.counts,
+    };
+  }
+
+  const entries = new Map<HskLevel, Hsk30WordEntry[]>();
+  const counts = new Map<HskLevel, number>();
+
+  for (const file of availableFiles) {
+    const text = await fs.readFile(file.filePath, "utf8");
+    const parsed = JSON.parse(text) as {
+      words?: Array<{
+        simplified?: string;
+        traditional?: string;
+        pinyin?: string;
+        english?: string;
+        pinyinNumbered?: string;
+      }>;
+    };
+
+    const words: Hsk30WordEntry[] = [];
+    for (const word of parsed.words ?? []) {
+      if (word.simplified?.trim()) {
+        words.push({
+          simplified: word.simplified.trim(),
+          traditional: word.traditional?.trim() ?? word.simplified.trim(),
+          pinyin: word.pinyin?.trim() ?? "",
+          english: word.english?.trim() ?? "",
+          pinyinNumbered: word.pinyinNumbered?.trim() ?? "",
+        });
+      }
+    }
+
+    entries.set(file.level, words);
+    counts.set(file.level, words.length);
+  }
+
+  hsk30WordsDatasetCache.directoryPath = hsk30DataDir;
+  hsk30WordsDatasetCache.stamp = stamp;
+  hsk30WordsDatasetCache.entries = entries;
+  hsk30WordsDatasetCache.counts = counts;
+
+  return {
+    available: true,
+    directoryPath: hsk30WordsDatasetCache.directoryPath,
+    entries: hsk30WordsDatasetCache.entries,
+    counts: hsk30WordsDatasetCache.counts,
+  };
+}

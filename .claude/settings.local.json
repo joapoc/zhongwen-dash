@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:server:*)"
+      "Bash(npm run build:server:*)",
+      "Bash(node:*)",
+      "Bash(powershell -Command \"Start-Process node -ArgumentList ''dist/server/index.js'' -NoNewWindow; Start-Sleep -Seconds 5; Invoke-WebRequest -Uri ''http://localhost:3000/api/language/hsk-words?level=1'' -UseBasicParsing | Select-Object -ExpandProperty Content | Out-String -Stream | Select-Object -First 1; Stop-Process -Name node -Force -ErrorAction SilentlyContinue\")"
     ]
   }
 }

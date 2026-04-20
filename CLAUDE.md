@@ -16,7 +16,10 @@ npm run build:frontend # Build frontend only (to public/js/)
 npm start             # Run compiled server from dist/
 npm run lint          # Run ESLint
 npm run lint:fix      # Auto-fix ESLint issues
+npm test              # Placeholder — no automated tests configured yet
 ```
+
+There is no test runner wired up. Verify changes by running `npm run dev` and exercising the affected endpoint/UI.
 
 ## Architecture
 

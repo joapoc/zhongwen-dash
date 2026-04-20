@@ -306,6 +306,7 @@ select{background:var(--surface);border:1px solid var(--border);border-radius:9p
 .topic-pager-info{font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.3px;text-align:center;flex:1}
 .topic-pager-controls button[disabled]{opacity:.35;cursor:not-allowed}
 .baidu-preview{background:linear-gradient(135deg,rgba(34,211,238,.06),rgba(34,211,238,.02));border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;position:sticky;top:0;z-index:2;backdrop-filter:blur(4px)}
+.baidu-preview-standalone{position:static;margin-bottom:0;backdrop-filter:none}
 .baidu-preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 .baidu-preview-label{font-size:.62rem;font-weight:700;letter-spacing:.8px;color:var(--cyan)}
 .baidu-preview-actions{display:flex;gap:6px}
@@ -703,7 +704,10 @@ select{background:var(--surface);border:1px solid var(--border);border-radius:9p
 .add-all-btn{display:flex;align-items:center;gap:4px;margin-top:8px;padding:6px 12px;background:rgba(34,211,238,0.08);border:1px solid var(--border);border-radius:8px;color:var(--cyan);font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;}
 .add-all-btn:hover{border-color:var(--cyan);background:rgba(34,211,238,0.15);}
 /* ===== Reading tab ===== */
-.reading-feeds{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.reading-feeds{display:flex;flex-direction:column;gap:10px}
+.reading-feed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.reading-tag-toolbar{padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.reading-tag-toolbar .term-chips{flex-wrap:wrap}
 .reading-feed-chip{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:.15s;text-align:left;color:#ddd}
 .reading-feed-chip:hover{border-color:var(--cyan);background:#1d2438}
 .reading-feed-chip.active{border-color:var(--cyan);background:rgba(34,211,238,.12);box-shadow:0 0 0 1px var(--cyan) inset}

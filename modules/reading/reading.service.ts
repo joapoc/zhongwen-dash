@@ -191,6 +191,49 @@ function normalizeUrl(url: string): string {
   }
 }
 
+// Google News RSS items link to redirect stubs that return a JS-driven
+// landing page rather than a real HTTP redirect. We fetch the stub once and
+// scrape the target URL from the response HTML so Readability can then pull
+// the actual article.
+async function resolveGoogleNewsUrl(url: string): Promise<string> {
+  if (!/^https?:\/\/news\.google\.com\//i.test(url)) return url;
+  const res = await axios.get<string>(url, {
+    timeout: FETCH_TIMEOUT_MS,
+    responseType: "text",
+    headers: {
+      "User-Agent": USER_AGENT,
+      Accept: "text/html,application/xhtml+xml,*/*;q=0.8",
+      "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    },
+    validateStatus: (s) => s >= 200 && s < 400,
+    maxRedirects: 5,
+  });
+  const html = res.data || "";
+  // 1. Meta refresh (happens on some mobile UA flows).
+  const meta = html.match(
+    /<meta[^>]*http-equiv=["']?refresh["']?[^>]*content=["'][^"']*?url=([^"'>\s]+)/i,
+  );
+  if (meta && meta[1]) return meta[1];
+  // 2. data-n-au attribute (Google News landing page markup).
+  const dataAu = html.match(/data-n-au=["']([^"']+)["']/);
+  if (dataAu && dataAu[1]) return dataAu[1];
+  // 3. First https URL in the HTML that's not on a Google/ad/tracking host.
+  const urlMatches = html.match(/https?:\/\/[^\s"'<>\\]+/g) || [];
+  for (const candidate of urlMatches) {
+    if (
+      !/^https?:\/\/(?:[a-z0-9-]+\.)*(?:google|gstatic|googleusercontent|googleapis|googleadservices|doubleclick|youtube|ytimg|goo\.gl)\.com/i.test(
+        candidate,
+      ) &&
+      !/^https?:\/\/(?:[a-z0-9-]+\.)*schema\.org/i.test(candidate)
+    ) {
+      return candidate;
+    }
+  }
+  throw new Error(
+    "Could not resolve the Google News redirect to the original article URL.",
+  );
+}
+
 export async function getArticle(
   rawUrl: string,
   refresh: boolean,
@@ -205,7 +248,9 @@ export async function getArticle(
     return { ...cached, cached: true };
   }
 
-  const res = await axios.get<string>(url, {
+  const fetchUrl = await resolveGoogleNewsUrl(url);
+
+  const res = await axios.get<string>(fetchUrl, {
     timeout: FETCH_TIMEOUT_MS,
     responseType: "text",
     headers: {
@@ -218,12 +263,17 @@ export async function getArticle(
     maxRedirects: 5,
   });
 
-  const dom = new JSDOM(res.data, { url });
+  const dom = new JSDOM(res.data, { url: fetchUrl });
   const reader = new Readability(dom.window.document);
   const parsed = reader.parse();
 
   if (!parsed || !parsed.content) {
-    throw new Error("Could not extract article content — the page may require JS or be paywalled.");
+    const wasGoogleNews = url !== fetchUrl;
+    throw new Error(
+      wasGoogleNews
+        ? `Readability could not extract content from the resolved article (${new URL(fetchUrl).hostname}). The site may require JavaScript or block scrapers.`
+        : "Could not extract article content — the page may require JS or be paywalled.",
+    );
   }
 
   const wordCount =

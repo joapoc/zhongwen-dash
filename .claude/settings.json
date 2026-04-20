@@ -5,7 +5,19 @@
       "Bash(curl -sI \"http://localhost:3459/css/app.css\")",
       "Bash(curl -s \"http://localhost:3459/css/app.css\")",
       "Bash(PORT=3460 npx tsx server/index.ts)",
-      "Bash(curl -s -X POST http://localhost:3460/api/language/annotate -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_annotate.json\")"
+      "Bash(curl -s -X POST http://localhost:3460/api/language/annotate -H \"Content-Type: application/json\" --data-binary \"@c:/Users/fjn46/Desktop/zhongwen-dash/_tmp_annotate.json\")",
+      "Bash(curl -s http://localhost:3999/api/reading/feed/bbc-zh)",
+      "Bash(curl -s \"http://localhost:3999/api/reading/article?url=https://www.bbc.com/zhongwen/articles/c4g638jp6n6o/trad\")",
+      "Bash(taskkill /F /FI \"WINDOWTITLE ne *\" /IM node.exe)",
+      "Bash(pkill -f \"node dist/server\")",
+      "Bash(curl -s http://localhost:3999/api/reading/feed/gn-cyber)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(len\\(d['feeds']\\), 'feeds:'\\); [print\\(' -', f['id']\\) for f in d['feeds']]\")",
+      "Bash(cat \"C:\\\\\\\\Users\\\\\\\\fjn46\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-fjn46-Desktop-zhongwen-dash\\\\\\\\d2b122ab-fd1a-4fe2-975d-ef6f7ef7a96b\\\\\\\\tasks\\\\\\\\bpxf9csbo.output\")",
+      "Bash(powershell \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime\")",
+      "Bash(powershell \"Stop-Process -Id 41708 -Force -ErrorAction SilentlyContinue; Stop-Process -Id 4020 -Force -ErrorAction SilentlyContinue\")",
+      "Bash(curl -s --max-time 3 http://localhost:3999/api/health)",
+      "Bash(curl -s --max-time 3 http://localhost:3999/api/reading/feeds)"
     ]
   }
 }

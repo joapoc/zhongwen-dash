@@ -2506,7 +2506,9 @@ function openLookupLink(kind) {
     var urls = {
         grammar: 'https://resources.allsetlearning.com/chinese/grammar/index.php?search=' + query,
         tatoeba: 'https://tatoeba.org/en/sentences/search?from=cmn&query=' + query,
-        mdbg: 'https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb=' + query
+        mdbg: 'https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb=' + query,
+        gtranslate: 'https://translate.google.com/?sl=zh-CN&tl=en&op=translate&text=' + query,
+        deepl: 'https://www.deepl.com/translator#zh/en/' + query
     };
     var url = urls[kind];
     if (url)
@@ -2521,7 +2523,7 @@ function renderLookupPopup(rect) {
         return '<div class="lookup-entry"><div class="lookup-wordline"><div class="lookup-word cn">' + escapeHtml(entry.simplified || lookupState.query) + '</div>' + trad + '</div><div class="lookup-pinyin">' + renderTonePinyinHtml(entry.pinyin || '') + '</div><div class="lookup-glosses">' + glosses + '</div></div>';
     }).join('') : '<div class="lookup-empty">No exact local dictionary entry found yet. Add CC-CEDICT under <code>data/language</code> for fuller results.</div>';
     var readingsHtml = lookupState.readings && lookupState.readings.length ? '<div class="lookup-reading-list">' + lookupState.readings.map(function (reading) { return '<span class="lookup-reading-chip">' + escapeHtml(convertNumberedPinyinText(reading)) + '</span>'; }).join('') + '</div>' : '';
-    popup.innerHTML = '<div class="lookup-head"><div class="lookup-meta"><div class="lookup-sub">Selection Lookup</div><div class="lookup-word cn">' + escapeHtml(lookupState.query) + '</div></div><button class="lookup-close" type="button" onclick="hideLookupPopup()">×</button></div>' + entriesHtml + readingsHtml + '<div class="lookup-actions"><button class="lookup-action" type="button" onclick="saveLookupEntry()">Save</button><button class="lookup-action" type="button" onclick="copyLookupEntry()">Copy</button><button class="lookup-action" type="button" onclick="openLookupLink(\'grammar\')">Grammar</button><button class="lookup-action" type="button" onclick="openLookupLink(\'tatoeba\')">Tatoeba</button><button class="lookup-action" type="button" onclick="openLookupLink(\'mdbg\')">MDBG</button></div><div class="lookup-foot">Select Chinese text anywhere in the dashboard. Shortcuts while open: r save, c copy, g grammar, t examples, Esc close.</div>';
+    popup.innerHTML = '<div class="lookup-head"><div class="lookup-meta"><div class="lookup-sub">Selection Lookup</div><div class="lookup-word cn">' + escapeHtml(lookupState.query) + '</div></div><button class="lookup-close" type="button" onclick="hideLookupPopup()">×</button></div>' + entriesHtml + readingsHtml + '<div class="lookup-actions"><button class="lookup-action" type="button" onclick="saveLookupEntry()">Save</button><button class="lookup-action" type="button" onclick="copyLookupEntry()">Copy</button><button class="lookup-action" type="button" onclick="openLookupLink(\'grammar\')">Grammar</button><button class="lookup-action" type="button" onclick="openLookupLink(\'tatoeba\')">Tatoeba</button><button class="lookup-action" type="button" onclick="openLookupLink(\'mdbg\')">MDBG</button><button class="lookup-action" type="button" onclick="openLookupLink(\'gtranslate\')" title="Open in Google Translate">Google ↗</button><button class="lookup-action" type="button" onclick="openLookupLink(\'deepl\')" title="Open in DeepL">DeepL ↗</button></div><div class="lookup-foot">Select Chinese text anywhere in the dashboard. Shortcuts while open: r save, c copy, g grammar, t examples, Esc close.</div>';
     popup.classList.remove('hidden');
     lookupState.visible = true;
     var left = Math.min(window.innerWidth - popup.offsetWidth - 16, Math.max(16, rect.left));

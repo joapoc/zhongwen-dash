@@ -201,7 +201,7 @@ Response headers: `Cache-Control: public, max-age=86400`.
 
 404 if the file doesn't exist.
 
-### `GET /api/language/hsk-words`
+### `GET /api/language/words`
 
 HSK 3.0 vocabulary browse endpoint. Query params: `level`, `count`, `random` (`true`/`1`).
 
@@ -227,8 +227,6 @@ HSK 3.0 vocabulary browse endpoint. Query params: `level`, `count`, `random` (`t
 ```
 
 When `random=true`, the list is Fisher-Yates shuffled before `count` slicing.
-
-> **Note:** the route path in [language.routes.ts](../modules/language/language.routes.ts) is `/hsk-words`, but the controller writes `route: "/api/language/words"` in the response payload. That's a cosmetic discrepancy in the response, not the URL.
 
 ## Anki (`/api/anki/*`)
 

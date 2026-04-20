@@ -88,7 +88,6 @@ The `interview/` directory is a placeholder for exactly this kind of expansion.
 - **Cache invalidates on mtime, not content.** Touching a data file (even without changes) triggers a reparse.
 - **Anki-Connect is IPv4/IPv6 sensitive.** The controller tries `127.0.0.1:8765` and `localhost:8765` in that order. If both fail, confirm Anki is running and the add-on is enabled.
 - **DeepL free vs pro detection.** If your free key doesn't end in `:fx`, set `DEEPL_FREE_API=1` explicitly or you'll hit the pro endpoint and get 403s.
-- **Two `route` field values in one response.** `/api/language/hsk-words` writes `route: "/api/language/words"` in the body. Cosmetic; safe to ignore but worth knowing when grepping logs.
 - **Surname rule is global.** Any new dictionary-returning endpoint should run definitions through `enrichDefinitions` / `formatDefinitionsForDisplay` to stay consistent. See [modules/language.md](./modules/language.md#surname-global-rule).
 
 ## Editor setup

@@ -19,7 +19,7 @@ router.get("/dictionary/search", searchLanguageDictionary);
 router.get("/handwriting", getLanguageHandwriting);
 router.get("/audio/:term", streamLanguageAudio);
 router.get("/readings/:character", getLanguageReadings);
-router.get("/hsk-words", getLanguageWords);
+router.get("/words", getLanguageWords);
 router.post("/segment", segmentLanguageText);
 router.post("/translate", translateLanguageText);
 router.get("/sentences/search", searchLanguageSentences);

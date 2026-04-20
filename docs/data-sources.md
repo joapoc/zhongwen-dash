@@ -33,7 +33,7 @@ The repo ships with `cedict_ts.u8` already in place. Drop a newer version with t
 
 ## HSK 3.0 JSON
 
-**Used for:** HSK level tagging on dictionary entries, and the `/api/language/hsk-words` browse endpoint.
+**Used for:** HSK level tagging on dictionary entries, and the `/api/language/words` browse endpoint.
 
 | Property | Value |
 |---|---|

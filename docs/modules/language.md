@@ -141,7 +141,7 @@ Reads HSK 3.0 vocabulary for a single level, optionally Fisher-Yates shuffles, o
 
 Each controller validates minimally (empty string → 400) and delegates to the service. Controllers don't own error wrapping — they catch and convert upstream failures to 502 (Tatoeba) / 503 (DeepL).
 
-One quirk: `getLanguageWords` writes `route: "/api/language/words"` in the response but the actual URL is `/api/language/hsk-words`. See [api-reference.md](../api-reference.md#get-apilanguagehsk-words).
+`getLanguageWords` is the handler for `/api/language/words`. See [api-reference.md](../api-reference.md#get-apilanguagewords).
 
 ## How to add a new language feature
 

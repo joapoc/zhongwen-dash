@@ -7,9 +7,13 @@ All env vars are optional unless noted. Loaded via `dotenv/config` in [server/in
 | Variable | Default | Used by | Notes |
 |---|---|---|---|
 | `PORT` | `3000` | [server/index.ts](../server/index.ts) | Coerced with `Number()`, falls back to 3000 on `NaN`. |
+| `MONGODB_URI` | — | [server/services/mongo.ts](../server/services/mongo.ts) | **Required.** Connection string (e.g., `mongodb+srv://user:pass@cluster/`). Startup aborts if missing or unreachable. |
+| `MONGODB_DB` | — (uses URI default) | [server/services/mongo.ts](../server/services/mongo.ts) | Optional database name. When set, overrides whatever database is encoded in the URI. |
 | `DEEPL_AUTH_KEY` | — | [language.service.ts](../modules/language/language.service.ts) | Required for `/api/language/translate`. Without it, that route returns 503. |
 | `DEEPL_TARGET_LANG` | `EN-US` | [language.service.ts](../modules/language/language.service.ts) | Upper-cased at load time. Accepted: `EN`, `EN-US`, `EN-GB`. |
 | `DEEPL_FREE_API` | — | [language.service.ts](../modules/language/language.service.ts) | Set to `1` to force the DeepL free-tier endpoint (`api-free.deepl.com`). Auto-detected when the key ends with `:fx`. |
+
+**`.env` comment syntax:** use `#`, not `//`. dotenv silently skips `//`-prefixed lines (they don't match the `KEY=VALUE` pattern), so they work as no-ops today — but it's not standard.
 
 ## TypeScript configs
 
@@ -108,7 +112,7 @@ npm run lint:fix  # auto-fix
 
 ## Git ignore and data
 
-The `data/` tree is committed so the app works out of the box (CC-CEDICT, HSK JSON, handwriting lists, audio). `data/cache.json` is user-writable runtime state; it stays in the repo as a default-empty file so the file-cache service has somewhere to write on first boot.
+The `data/` tree is committed so the app works out of the box (CC-CEDICT, HSK JSON, handwriting lists, audio). User-writable persistence (saved words, challenges) now lives in MongoDB — see [caching-and-storage.md](./caching-and-storage.md). A legacy `data/cache.json.migrated` may exist after the first Mongo-enabled boot; it's safe to delete once you've verified the data migrated.
 
 ## Runtime directory expectations
 

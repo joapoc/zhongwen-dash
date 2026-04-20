@@ -49,11 +49,15 @@ npm start             # node dist/server/index.js
 Create a `.env` in the repo root. Only variables you need:
 
 ```
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/      # required
+MONGODB_DB=ZhongwenDB                                         # optional database name override
 DEEPL_AUTH_KEY=your-deepl-key-here
 DEEPL_TARGET_LANG=EN-US      # default, also accepts EN or EN-GB
 DEEPL_FREE_API=1             # optional, forces the free-tier DeepL endpoint
 PORT=3000                    # default
 ```
+
+**`MONGODB_URI` is required.** The server refuses to start without a working Mongo connection — saved words and challenges persistence is backed by Mongo (see [caching-and-storage.md](./caching-and-storage.md)). Atlas or local `mongod` both work. Use `#` for comments in `.env` (not `//`).
 
 Notes:
 

@@ -259,7 +259,8 @@ function switchTab(tab, btn) { document.querySelectorAll('.tab-content').forEach
     renderImmerse();
     loadAllFeeds();
 } if (tab === 'words')
-    initWordsZone(); }
+    initWordsZone(); if (tab === 'kahoot')
+    initKahootZone(); }
 function filterWidgets(q) { q = q.toLowerCase(); document.querySelectorAll('.widget,.resource-card').forEach(function (w) { var kw = (w.getAttribute('data-keywords') || '') + ' ' + w.textContent.toLowerCase(); w.style.display = q === '' || kw.includes(q) ? '' : 'none'; }); }
 function toggleNotifs() { document.getElementById('notifModal').classList.toggle('show'); }
 (function () { var h = new Date().getHours(); var g = h < 6 ? '夜好' : h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'; var greetingText = document.getElementById('greetingText'); if (greetingText)
@@ -1603,7 +1604,8 @@ var WORDS = {
         idx: 0,
         flipped: false
     },
-    wod: null
+    wod: null,
+    challenges: []
 };
 function fetchWordsForLevel(level, count, random) {
     var url = '/api/language/words?level=' + encodeURIComponent(level || '1');
@@ -1629,6 +1631,7 @@ function initWordsZone() {
         loadHskBrowserWords();
         loadWordsFlashcardDeck();
         loadWordOfDay();
+        loadChallengesCache();
     }).catch(function (err) {
         WORDS.loading = false;
         WORDS.error = 'Failed to load words: ' + err.message;
@@ -1868,6 +1871,60 @@ function finishLearn10() {
     document.getElementById('learn10Phase').textContent = 'Complete';
     document.getElementById('learn10FinalScore').textContent = 'Score: ' + WORDS.learn10.quizScore + ' / ' + WORDS.learn10.quizTotal;
     showLearn10Phase('complete');
+    if (!WORDS.learn10.replayId) {
+        saveChallenge({
+            id: 'ch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+            createdAt: new Date().toISOString(),
+            level: WORDS.level,
+            words: WORDS.learn10.words,
+            quizScore: WORDS.learn10.quizScore,
+            quizTotal: WORDS.learn10.quizTotal
+        });
+    }
+    WORDS.learn10.replayId = null;
+}
+// Challenge history
+function loadChallengesCache() {
+    return fetch('/api/challenges').then(function (r) { return r.json(); }).then(function (data) {
+        WORDS.challenges = Array.isArray(data.challenges) ? data.challenges : [];
+        renderChallengeHistory();
+    }).catch(function () { WORDS.challenges = []; renderChallengeHistory(); });
+}
+function saveChallenge(challenge) {
+    WORDS.challenges.unshift(challenge);
+    if (WORDS.challenges.length > 50)
+        WORDS.challenges = WORDS.challenges.slice(0, 50);
+    fetch('/api/challenges', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challenges: WORDS.challenges }) }).catch(function (err) { console.error('Failed to persist challenges.', err); });
+    renderChallengeHistory();
+}
+function renderChallengeHistory() {
+    var c = document.getElementById('learn10History');
+    if (!c)
+        return;
+    if (!WORDS.challenges.length) {
+        c.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);text-align:center;padding:10px 0;">No past challenges yet. Complete one to see it here.</div>';
+        return;
+    }
+    var html = '<div style="font-size:0.72rem;color:var(--muted);margin:12px 0 6px;">Past challenges (' + WORDS.challenges.length + ')</div>';
+    WORDS.challenges.slice(0, 10).forEach(function (ch) {
+        var d = new Date(ch.createdAt);
+        var dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        var safeId = String(ch.id).replace(/'/g, "\\'");
+        html += '<div class="phrase-item" style="cursor:pointer;" onclick="replayChallenge(\'' + safeId + '\')" title="Replay quiz with these 10 words"><span class="phrase-cn" style="font-size:0.85rem;">HSK ' + ch.level + '</span><span class="phrase-py">' + ch.quizScore + '/' + ch.quizTotal + '</span><span class="phrase-en" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.7rem;">' + dateStr + '</span><span style="font-size:0.7rem;color:var(--accent);">↻ Replay</span></div>';
+    });
+    c.innerHTML = html;
+}
+function replayChallenge(id) {
+    var ch = WORDS.challenges.find(function (c) { return c.id === id; });
+    if (!ch || !ch.words || !ch.words.length)
+        return;
+    WORDS.learn10.words = ch.words.slice();
+    WORDS.learn10.currentIdx = 0;
+    WORDS.learn10.learned = {};
+    WORDS.learn10.replayId = ch.id;
+    WORDS.level = ch.level;
+    document.getElementById('learn10Phase').textContent = 'Replay';
+    startLearn10Quiz();
 }
 function resetLearn10() {
     WORDS.learn10.phase = 'setup';
@@ -2066,6 +2123,210 @@ function renderWordOfDay() {
 }
 function newWordOfDay() {
     loadWordOfDay();
+}
+// ===== KAHOOT =====
+var KAHOOT = {
+    level: '1',
+    levels: [],
+    pool: [],
+    questions: [],
+    questionIdx: 0,
+    correctIdx: 0,
+    answered: false,
+    questionStart: 0,
+    timer: null,
+    timePerQuestion: 15000,
+    score: 0,
+    correctCount: 0,
+    streak: 0,
+    longestStreak: 0,
+    kahootColors: ['#e21b3c', '#1368ce', '#d89e00', '#26890c'],
+    kahootShapes: ['▲', '♦', '●', '■']
+};
+function initKahootZone() {
+    var lvlSel = document.getElementById('kahootLevelSelect');
+    if (!lvlSel)
+        return;
+    if (WORDS.levels && WORDS.levels.length) {
+        KAHOOT.levels = WORDS.levels;
+        renderKahootSetup();
+    }
+    else {
+        fetchWordsForLevel('1').then(function (data) {
+            if (data && data.ok) {
+                KAHOOT.levels = data.levels || [];
+                KAHOOT.level = data.currentLevel || '1';
+                renderKahootSetup();
+            }
+        });
+    }
+}
+function renderKahootSetup() {
+    var sel = document.getElementById('kahootLevelSelect');
+    if (!sel)
+        return;
+    sel.innerHTML = '';
+    KAHOOT.levels.forEach(function (lvl) {
+        var opt = document.createElement('option');
+        opt.value = lvl.id;
+        opt.textContent = lvl.label;
+        if (lvl.id === KAHOOT.level)
+            opt.selected = true;
+        sel.appendChild(opt);
+    });
+    sel.onchange = function () {
+        KAHOOT.level = sel.value;
+        var lvl = KAHOOT.levels.find(function (l) { return l.id === KAHOOT.level; });
+        document.getElementById('kahootLevelCount').textContent = '(' + (lvl ? lvl.count : 0) + ' words)';
+    };
+    var lvl = KAHOOT.levels.find(function (l) { return l.id === KAHOOT.level; });
+    document.getElementById('kahootLevelCount').textContent = '(' + (lvl ? lvl.count : 0) + ' words)';
+}
+function showKahootPhase(phase) {
+    ['Setup', 'Game', 'Complete'].forEach(function (p) {
+        var el = document.getElementById('kahoot' + p);
+        if (el)
+            el.style.display = p.toLowerCase() === phase ? 'block' : 'none';
+    });
+}
+function startKahoot() {
+    var count = parseInt(document.getElementById('kahootCountSelect').value, 10) || 10;
+    document.getElementById('kahootPhase').textContent = 'Loading';
+    var poolSize = Math.max(count + 10, 20);
+    fetchWordsForLevel(KAHOOT.level, poolSize, true).then(function (data) {
+        var pool = (data && data.words) || [];
+        if (pool.length < 4) {
+            alert('Not enough words at this level to start a Kahoot.');
+            document.getElementById('kahootPhase').textContent = 'Setup';
+            return;
+        }
+        KAHOOT.pool = pool;
+        KAHOOT.questions = pool.slice(0, Math.min(count, pool.length));
+        KAHOOT.questionIdx = 0;
+        KAHOOT.score = 0;
+        KAHOOT.correctCount = 0;
+        KAHOOT.streak = 0;
+        KAHOOT.longestStreak = 0;
+        document.getElementById('kahootPhase').textContent = 'Playing';
+        showKahootPhase('game');
+        renderKahootQuestion();
+    });
+}
+function renderKahootQuestion() {
+    var q = KAHOOT.questions[KAHOOT.questionIdx];
+    if (!q) {
+        finishKahoot();
+        return;
+    }
+    KAHOOT.answered = false;
+    document.getElementById('kahootProgress').textContent = 'Q ' + (KAHOOT.questionIdx + 1) + ' / ' + KAHOOT.questions.length;
+    document.getElementById('kahootScore').textContent = 'Score: ' + KAHOOT.score;
+    document.getElementById('kahootStreak').textContent = '🔥 Streak: ' + KAHOOT.streak;
+    document.getElementById('kahootHanzi').textContent = q.simplified;
+    document.getElementById('kahootPinyin').textContent = q.pinyin;
+    document.getElementById('kahootFeedback').textContent = '';
+    var choices = [q.english];
+    var others = KAHOOT.pool.filter(function (w) { return w.simplified !== q.simplified && w.english && w.english !== q.english; });
+    while (choices.length < 4 && others.length) {
+        var rIdx = Math.floor(Math.random() * others.length);
+        var picked = others.splice(rIdx, 1)[0];
+        if (choices.indexOf(picked.english) === -1)
+            choices.push(picked.english);
+    }
+    while (choices.length < 4)
+        choices.push('(no match)');
+    for (var i = choices.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = choices[i];
+        choices[i] = choices[j];
+        choices[j] = tmp;
+    }
+    KAHOOT.correctIdx = choices.indexOf(q.english);
+    var container = document.getElementById('kahootAnswers');
+    container.innerHTML = '';
+    choices.forEach(function (ch, idx) {
+        var btn = document.createElement('div');
+        btn.style.cssText = 'cursor:pointer;padding:18px 14px;border-radius:10px;color:#fff;font-weight:600;font-size:0.95rem;display:flex;align-items:center;gap:10px;background:' + KAHOOT.kahootColors[idx] + ';transition:transform 0.1s, opacity 0.2s;user-select:none;';
+        btn.innerHTML = '<span style="font-size:1.3rem;">' + KAHOOT.kahootShapes[idx] + '</span><span style="flex:1;">' + escapeHtml(ch) + '</span>';
+        btn.onmouseenter = function () { btn.style.transform = 'scale(1.02)'; };
+        btn.onmouseleave = function () { btn.style.transform = ''; };
+        btn.onclick = function () { handleKahootAnswer(idx, btn); };
+        container.appendChild(btn);
+    });
+    startKahootTimer();
+}
+function startKahootTimer() {
+    clearInterval(KAHOOT.timer);
+    KAHOOT.questionStart = Date.now();
+    var bar = document.getElementById('kahootTimerBar');
+    KAHOOT.timer = setInterval(function () {
+        var elapsed = Date.now() - KAHOOT.questionStart;
+        var remaining = Math.max(0, KAHOOT.timePerQuestion - elapsed);
+        var pct = (remaining / KAHOOT.timePerQuestion) * 100;
+        if (bar)
+            bar.style.width = pct + '%';
+        if (remaining <= 0) {
+            clearInterval(KAHOOT.timer);
+            if (!KAHOOT.answered)
+                handleKahootAnswer(-1, null);
+        }
+    }, 50);
+}
+function handleKahootAnswer(choiceIdx, btn) {
+    if (KAHOOT.answered)
+        return;
+    KAHOOT.answered = true;
+    clearInterval(KAHOOT.timer);
+    var elapsed = Date.now() - KAHOOT.questionStart;
+    var remaining = Math.max(0, KAHOOT.timePerQuestion - elapsed);
+    var correct = choiceIdx === KAHOOT.correctIdx;
+    var feedbackEl = document.getElementById('kahootFeedback');
+    var container = document.getElementById('kahootAnswers');
+    Array.from(container.children).forEach(function (child, idx) {
+        if (idx === KAHOOT.correctIdx) {
+            child.style.outline = '3px solid #fff';
+            child.style.opacity = '1';
+        }
+        else
+            child.style.opacity = '0.4';
+    });
+    if (correct) {
+        var timePoints = Math.round(1000 * (remaining / KAHOOT.timePerQuestion));
+        KAHOOT.streak++;
+        if (KAHOOT.streak > KAHOOT.longestStreak)
+            KAHOOT.longestStreak = KAHOOT.streak;
+        var bonus = KAHOOT.streak > 1 ? 50 : 0;
+        KAHOOT.score += timePoints + bonus;
+        KAHOOT.correctCount++;
+        feedbackEl.innerHTML = '<span style="color:var(--green);">✓ +' + timePoints + (bonus ? ' <span style="color:var(--orange);">+' + bonus + ' streak!</span>' : '') + '</span>';
+    }
+    else {
+        KAHOOT.streak = 0;
+        feedbackEl.innerHTML = '<span style="color:var(--accent);">✗ ' + (choiceIdx < 0 ? 'Time up!' : 'Wrong') + '</span>';
+    }
+    document.getElementById('kahootScore').textContent = 'Score: ' + KAHOOT.score;
+    document.getElementById('kahootStreak').textContent = '🔥 Streak: ' + KAHOOT.streak;
+    setTimeout(function () {
+        KAHOOT.questionIdx++;
+        if (KAHOOT.questionIdx >= KAHOOT.questions.length) {
+            finishKahoot();
+        }
+        else {
+            renderKahootQuestion();
+        }
+    }, 1600);
+}
+function finishKahoot() {
+    clearInterval(KAHOOT.timer);
+    document.getElementById('kahootPhase').textContent = 'Complete';
+    document.getElementById('kahootFinalScore').textContent = 'Score: ' + KAHOOT.score;
+    document.getElementById('kahootFinalStats').textContent = KAHOOT.correctCount + ' / ' + KAHOOT.questions.length + ' correct · longest streak ' + KAHOOT.longestStreak;
+    showKahootPhase('complete');
+}
+function resetKahoot() {
+    clearInterval(KAHOOT.timer);
+    document.getElementById('kahootPhase').textContent = 'Setup';
+    showKahootPhase('setup');
 }
 renderImmerse();
 updateWordCountDisplays();

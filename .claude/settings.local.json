@@ -8,7 +8,8 @@
       "Bash(curl -s \"http://localhost:3000/api/language/hsk-words?level=1\" -o /dev/null -w \"%{http_code}\\\\n\")",
       "Bash(curl -s \"http://localhost:3000/api/language/words?level=1&count=2&random=true\")",
       "Bash(curl -s \"http://localhost:3000/api/language/hsk-words?level=1\" -o /dev/null -w \"old: %{http_code}\\\\n\")",
-      "Bash(curl -s \"http://localhost:3000/api/language/words?level=1\" -o /dev/null -w \"new: %{http_code}\\\\n\")"
+      "Bash(curl -s \"http://localhost:3000/api/language/words?level=1\" -o /dev/null -w \"new: %{http_code}\\\\n\")",
+      "Bash(npm run *)"
     ]
   }
 }

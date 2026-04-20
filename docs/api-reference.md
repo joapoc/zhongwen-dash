@@ -18,7 +18,7 @@ Health check. Wired in [server/routes/api.ts](../server/routes/api.ts).
 
 ### `GET /api/words`
 
-Returns the user's saved-words list from [data/cache.json](../data/cache.json).
+Returns the user's saved-words list from MongoDB (`savedwords` collection).
 
 ```json
 { "savedWords": [ ... ] }

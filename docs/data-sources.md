@@ -133,9 +133,9 @@ A literal `Record<string, HskLevel>` inside [language.service.ts](../modules/lan
 
 | Property | Value |
 |---|---|
-| File | [data/cache.json](../data/cache.json) |
+| Store | MongoDB `savedwords` collection (legacy: [data/cache.json](../data/) migrated on first boot) |
 | Shape | `{ "savedWords": [...] }` |
-| Writer | [server/services/file-cache.ts](../server/services/file-cache.ts) |
+| Writer | [server/services/storage.ts](../server/services/storage.ts) |
 
 See [caching-and-storage.md](./caching-and-storage.md) for the full write model.
 

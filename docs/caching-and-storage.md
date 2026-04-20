@@ -1,71 +1,55 @@
 # Caching & storage
 
-Two distinct caches live in the app: the user's saved-words persistence file (`data/cache.json`) and the in-memory dataset caches inside the language data layer. They have very different semantics — this doc covers both.
+Two distinct layers: MongoDB for user-facing persistence (saved words, completed challenges) and in-memory dataset caches inside the language data layer.
 
-## Saved-words persistence ([server/services/file-cache.ts](../server/services/file-cache.ts))
+## MongoDB persistence ([server/services/storage.ts](../server/services/storage.ts))
 
-User-facing durable storage. Backs `GET /api/words` and `PUT /api/words`.
+User-facing durable storage. Backs `GET`/`PUT /api/words` and `GET`/`PUT /api/challenges`.
 
-### File layout
+### Connection ([server/services/mongo.ts](../server/services/mongo.ts))
 
-- **Path:** `data/cache.json` (relative to the repo root, resolved from `__dirname + "../../data"`).
-- **Shape:** `{ "savedWords": [...] }`.
-- **Default:** `{ "savedWords": [] }`.
+`connectMongo()` is a memoized singleton — the first caller triggers `mongoose.connect(MONGODB_URI, { dbName: MONGODB_DB })`; subsequent callers reuse the same promise. A failed connection clears the cached promise so retries are possible.
 
-### Boot
+[server/index.ts](../server/index.ts) awaits this on boot before calling `app.listen`. If the URI is missing or the server can't reach MongoDB, the process exits with a clear message rather than starting in a broken state.
 
-`server/app.ts` calls [`ensureCacheFile()`](../server/services/file-cache.ts) at startup. That function:
+### Collections
 
-1. Creates the `data/` directory if missing (`fs.mkdir(..., { recursive: true })`).
-2. Checks whether `cache.json` exists; if not, writes the default shape.
+| Collection | Model | Unique index |
+|---|---|---|
+| `savedwords` | `SavedWord` | `cn` |
+| `challenges` | `Challenge` | `id` |
 
-The boot call intentionally swallows errors — the server still serves the UI if the cache init fails. Failures surface later when `/api/words` is hit.
-
-### Reads ([`readCache`](../server/services/file-cache.ts))
-
-1. `ensureCacheFile()` (so the file exists).
-2. Parse `cache.json`. On any parse error, return the default shape.
-3. Coerce `savedWords` to `[]` if the parsed field isn't an array.
-
-The result is merged over `defaultCache`, so unknown future fields are preserved on round-trips (add, serialize, write).
-
-### Writes ([`writeCache`](../server/services/file-cache.ts))
-
-Two safety mechanisms:
-
-**1. Atomic write-then-rename.** Every write goes to `cache.json.tmp` first, then `fs.rename`'s over the real file. Rename is atomic on every POSIX filesystem and on modern NTFS, so readers never see a partially-written JSON file.
-
-**2. Serialized write queue.** A module-level `writeQueue: Promise<void>` chains each write to the previous one:
-
-```ts
-let writeQueue: Promise<void> = Promise.resolve();
-
-function writeCache(nextCache) {
-  writeQueue = writeQueue.then(async () => { ...atomic write... });
-  return writeQueue;
-}
-```
-
-This means parallel `PUT /api/words` requests execute in order, one after another. Without it, two concurrent writes could race on the tmp file and lose data. Every caller awaits the queue, so each write sees the completion of all prior writes.
+Both schemas are declared with `strict: false` so extra fields round-trip cleanly — the frontend's word normalizer can evolve without a migration.
 
 ### Public API
-
-Two exports, both `async`:
 
 ```ts
 getSavedWords(): Promise<unknown[]>
 setSavedWords(savedWords: unknown[]): Promise<unknown[]>
+getChallenges(): Promise<unknown[]>
+setChallenges(challenges: unknown[]): Promise<unknown[]>
 ```
 
-`setSavedWords` coerces non-arrays to `[]`, writes, and returns the saved value. Callers never interact with the raw file.
+The `set*` functions implement replace-all semantics (`deleteMany({})` + `insertMany(items, { ordered: false })`). This matches the frontend's "send the whole list" PUT pattern and keeps the controllers unchanged from the old file-cache days.
+
+`getChallenges` sorts by `createdAt` descending — newest first.
+
+### One-time migration ([`migrateFileCacheIfNeeded`](../server/services/storage.ts))
+
+If `data/cache.json` exists on boot AND the target collection is empty, `insertMany` copies the legacy array in. Afterwards the file is renamed to `cache.json.migrated` so the next boot doesn't re-run the migration. Triggered from [server/index.ts](../server/index.ts) after `connectMongo`.
+
+This is one-way and opportunistic — it's only there to smooth the transition from the old file-cache era. You can delete `cache.json.migrated` once you're sure the data made it.
 
 ### Frontend write pattern
 
-[frontend/dashboard.ts](../frontend/dashboard.ts) debounces persistence: `queuePersistSavedWords` sets a 120 ms timeout; rapid edits collapse into one PUT.
+[frontend/dashboard.ts](../frontend/dashboard.ts) debounces saved-words persistence (`queuePersistSavedWords`, 120 ms) and writes challenges eagerly on each completed session. Both end up as `PUT` requests with the full current list.
 
-### When to replace this
+### Environment
 
-`mongoose` is already declared as a dependency — the intent is to swap the file cache for MongoDB when the user base or data shape outgrows JSON-on-disk. When that happens, keep `getSavedWords`/`setSavedWords` as the public surface and replace only the internals.
+- `MONGODB_URI` — required. Mongo Atlas connection string or local `mongodb://...`.
+- `MONGODB_DB` — optional database name. When set, overrides whatever database is encoded in the URI.
+
+See [configuration.md](./configuration.md).
 
 ## Language dataset caches ([modules/language/language.data.ts](../modules/language/language.data.ts))
 

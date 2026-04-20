@@ -57,6 +57,7 @@
   <button class="tab-btn" onclick="switchTab('words',this)">📚 Words</button>
   <button class="tab-btn" onclick="switchTab('textclipper',this)">📎 Text Reader/Clipper</button>
   <button class="tab-btn" onclick="switchTab('games',this)">🎮 Games</button>
+  <button class="tab-btn" onclick="switchTab('kahoot',this)">🎯 Kahoot</button>
   <button class="tab-btn" onclick="switchTab('immerse',this)">🌏 Immerse</button>
   <button class="tab-btn" onclick="switchTab('cybersec',this)">🛡️ Cybersec</button>
   <button class="tab-btn" onclick="switchTab('political',this)">🏛️ Political</button>
@@ -180,6 +181,7 @@
                 <span id="learn10LevelCount" style="font-size:0.75rem;color:var(--muted);">(0 words)</span>
               </div>
               <button class="btn-primary" onclick="startLearn10()" style="width:100%;">🚀 Start Learning 10 Words</button>
+              <div id="learn10History" style="margin-top:4px;"></div>
             </div>
             <!-- Learn phase -->
             <div id="learn10Learn" style="display:none;">
@@ -296,6 +298,71 @@
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(248,113,113,0.13);color:var(--red);">📊</div>Char Frequency</div></div><div class="traffic-bars" id="charFreqBars"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(167,139,250,0.13);color:var(--purple);">🎵</div>Tone Guess</div><span class="tag" id="toneGameScore" style="background:rgba(167,139,250,0.13);color:var(--purple);">Score: 0</span></div><div id="toneGameArea" style="text-align:center;"></div></div>
       <div class="widget"><div class="widget-header"><div class="widget-title"><div class="icon" style="background:rgba(240,160,64,0.13);color:var(--orange);">🔀</div>Word Scramble</div><span class="tag" id="scrambleScore" style="background:rgba(240,160,64,0.13);color:var(--orange);">Score: 0</span></div><div id="scrambleArea"></div></div>
+    </div>
+  </div>
+
+  <!-- KAHOOT -->
+  <div class="tab-content" id="tab-kahoot">
+    <div class="topic-shell">
+      <div class="topic-hero">
+        <h2>🎯 Kahoot Quiz</h2>
+        <p>Fast-paced HSK vocabulary quiz. 15 seconds per question, faster answers score more — consecutive correct answers add a +50 streak bonus.</p>
+      </div>
+      <div class="grid">
+        <div class="widget span-2" data-keywords="kahoot quiz game hsk vocabulary timed">
+          <div class="widget-header">
+            <div class="widget-title">
+              <div class="icon" style="background:rgba(230,57,70,0.13);color:var(--accent);">🎯</div>
+              Kahoot Quiz
+            </div>
+            <span class="tag" id="kahootPhase" style="background:rgba(230,57,70,0.13);color:var(--accent);">Setup</span>
+          </div>
+          <div id="kahootContent">
+            <!-- Setup -->
+            <div id="kahootSetup">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+                <label style="font-size:0.8rem;color:var(--muted);">HSK Level:</label>
+                <select id="kahootLevelSelect" style="padding:6px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:0.85rem;">
+                  <option value="1">HSK 1</option>
+                </select>
+                <label style="font-size:0.8rem;color:var(--muted);">Questions:</label>
+                <select id="kahootCountSelect" style="padding:6px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:0.85rem;">
+                  <option value="10">10</option>
+                  <option value="15">15</option>
+                  <option value="20">20</option>
+                </select>
+                <span id="kahootLevelCount" style="font-size:0.75rem;color:var(--muted);">(0 words)</span>
+              </div>
+              <button class="btn-primary" onclick="startKahoot()" style="width:100%;">🎯 Start Kahoot</button>
+            </div>
+            <!-- Game -->
+            <div id="kahootGame" style="display:none;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.8rem;">
+                <span id="kahootProgress" style="color:var(--muted);">Q 1 / 10</span>
+                <span id="kahootScore" style="color:var(--accent2);font-weight:600;">Score: 0</span>
+                <span id="kahootStreak" style="color:var(--orange);">🔥 Streak: 0</span>
+              </div>
+              <div style="background:var(--surface);border-radius:4px;height:8px;overflow:hidden;margin-bottom:16px;">
+                <div id="kahootTimerBar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:100%;transition:width 50ms linear;"></div>
+              </div>
+              <div class="learn10-card" style="background:var(--surface);border-radius:12px;padding:28px;text-align:center;margin-bottom:16px;">
+                <div class="cn" id="kahootHanzi" style="font-size:3rem;font-weight:700;color:var(--accent);margin-bottom:6px;">—</div>
+                <div id="kahootPinyin" style="font-size:1rem;color:var(--accent2);">—</div>
+              </div>
+              <div id="kahootFeedback" style="text-align:center;font-size:0.85rem;color:var(--muted);min-height:18px;margin-bottom:10px;"></div>
+              <div id="kahootAnswers" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+            </div>
+            <!-- Complete -->
+            <div id="kahootComplete" style="display:none;text-align:center;">
+              <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+              <div style="font-size:1.4rem;font-weight:700;margin-bottom:8px;">Game Over!</div>
+              <div id="kahootFinalScore" style="font-size:1.1rem;color:var(--accent2);margin-bottom:6px;">Score: 0</div>
+              <div id="kahootFinalStats" style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">0 / 0 correct · longest streak 0</div>
+              <button class="btn-primary" onclick="resetKahoot()" style="width:100%;">🔄 Play Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

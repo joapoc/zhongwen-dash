@@ -25,7 +25,7 @@ server/index.ts         (boots, loads dotenv, listens on PORT)
 server/app.ts           (Express app, JSON body parsing, static files)
   │
   ├── GET /                       → server/routes/web.ts      → sends views/index.html
-  ├── GET|PUT /api/health|/words  → server/routes/api.ts      → server/services/file-cache.ts
+  ├── GET|PUT /api/health|/words|/challenges → server/routes/api.ts → server/services/storage.ts (MongoDB)
   ├── /api/language/*             → modules/language/language.routes.ts
   │        │
   │        └── controller → service → data (local files) + external APIs
@@ -69,7 +69,7 @@ Active modules:
 3. `/api/language` → `languageRoutes`
 4. `/` → `webRoutes`
 
-Static middleware (`express.static(publicDir)`) runs before any of the above, so files under [public/](../public/) short-circuit routing. `ensureCacheFile()` is fired on startup but its result is intentionally ignored — the server still serves the UI even if the cache file can't be created; the failure surfaces later via `/api/words`.
+Static middleware (`express.static(publicDir)`) runs before any of the above, so files under [public/](../public/) short-circuit routing. [server/index.ts](../server/index.ts) awaits `connectMongo()` and runs the one-time `cache.json` → MongoDB migration before `app.listen` — if the Mongo connection fails, the process exits rather than starting in a broken state.
 
 ## Separation of concerns
 

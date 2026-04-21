@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-20T23:51:59.195Z",
+  "updatedAt": "2026-04-21T00:23:50.443Z",
   "feeds": {
     "bbc-zh": {
       "feedId": "bbc-zh",
@@ -1719,15 +1719,24 @@
     },
     "gn-cyber": {
       "feedId": "gn-cyber",
-      "fetchedAt": "2026-04-20T23:49:17.495Z",
+      "fetchedAt": "2026-04-21T00:07:09.127Z",
       "items": [
         {
           "feedId": "gn-cyber",
           "feedName": "Google News · 网络安全",
           "title": "“硅基员工”引爆智能体攻防：从被动响应到自主防御，“AI原生”成必选项 - 新浪财经",
-          "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOTU93dlludnNyU0xZRXhxdlEzUHVQRmFRNnBraFc2NGhlN3ZHRVZmdTVuRjQ4S09vSXh3UkJrektRUzVPLU9kVzROMXVGb3BYY1ZLRWQ0Mk92cTkzbFJROTVxSlhpTlY1YmJ6RDFuRmVHNHVqZWRLS0FmRWpSMzhCcDBFaDNjYTVSOUs0TWdGTVFwcWNZUWZveFNkVzNGeEVfc0hqLW9tZlFNcHNjcVRPMHNR?oc=5",
+          "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQajVXVjZzOU8wV3BlWW1ScnhsXzQ4MVo3MnFDWURkc3dYSkZrN0NEd2EwcnRvakJaMWhER1hrUmtNS3l5WmRDYWR1MDg0cU5BZno5VFMwQlY5eF9LbUdOU3ctVHV6bE1DUUFDMzdjSlVrT3lrODc3MDJwbmFQamJSNEVrWmhzV0NkNVhVT0F0VmUwcktOUG9oTW1aR3QzTnp4YXN0R3dDUQ?oc=5",
           "snippet": "“硅基员工”引爆智能体攻防：从被动响应到自主防御，“AI原生”成必选项  新浪财经",
-          "publishedAt": "2026-04-20T23:22:38.000Z",
+          "publishedAt": "2026-04-20T23:48:45.000Z",
+          "author": ""
+        },
+        {
+          "feedId": "gn-cyber",
+          "feedName": "Google News · 网络安全",
+          "title": "SGA Solutions加码N2SF落地，发力公共机构新一代安全体系建设 - 디지털투데이",
+          "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQNFMtNkxrOE1GVDNTRFRkS2xOSVZLamRyZ05haGV6UDZSbW5Fb2JiOHE5cEtCY2F2b2NGQ3lzT0wxT21GcTB0em5TSldoM1FWWFlmZU1qUkRjVW5oQVJ4VXFzczU5SU1MOUtVZjJqYXp3eVE0T2NuLVdBLWRiTEVGck8yN1pncU1waE1ucmdQR0JJNjBHWW83azl5SDBDTWp2U0x2QXJCZnV5UXpQVFJNVmtiQy0wVjJlc2FuTm4ybUE?oc=5",
+          "snippet": "SGA Solutions加码N2SF落地，发力公共机构新一代安全体系建设  디지털투데이",
+          "publishedAt": "2026-04-20T23:43:56.000Z",
           "author": ""
         },
         {
@@ -1773,15 +1782,6 @@
           "link": "https://news.google.com/rss/articles/CBMidEFVX3lxTFBFbTVrNXEwWkxlbmc4OFNIdUxuM2J3SnVEa1N4OEU1YXdXYzNXYWRGOWlCLUk2N3llWFRGRklIVXJ2TTlEUW1rYnV4TmVPSUVxS0p4TWhmeWN4WWkydkVBZDYzQlJVd0hJNGVpUVE2WEpGRkFF?oc=5",
           "snippet": "中方对欧盟《网络安全法》修订草案表达严正关切  新浪网",
           "publishedAt": "2026-04-20T17:23:30.000Z",
-          "author": ""
-        },
-        {
-          "feedId": "gn-cyber",
-          "feedName": "Google News · 网络安全",
-          "title": "中方对欧盟《网络安全法》修订草案表达严正关切 - 新浪网",
-          "link": "https://news.google.com/rss/articles/CBMi_gFBVV95cUxOWC0yY090UUR6YnZmc29MV2NqZGpGT1ZWUURPUWdYY0phMkUwZE9kSTVDZmZNdW1mRTM0V2JZLTlqM3hqOGQxUklxQk4zVXVMeUJpRDdhYlNueFg5RmIteGUyWFgzQktmVFR1OS1vREtyR2FWUFB4LXJ0NG1ETkEyanlWTUNlTHotQzdrd2dZc3ZDd3VlaFZ0Q0F6VGZscWdjYjNHd2hGcnlacF9UVjFTalpORVp6dllTYzFLaXBWd1YyeE1mRmFMc2RRenF1aFJnMjY1LUFPU1dKaVNzWTNoU3BhbkFKdHBTbWUydk1pOHZ3N0FnZHZma3REcVg0Zw?oc=5",
-          "snippet": "中方对欧盟《网络安全法》修订草案表达严正关切  新浪网",
-          "publishedAt": "2026-04-20T17:17:20.000Z",
           "author": ""
         },
         {
@@ -1836,15 +1836,6 @@
           "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBjRDBFdHJlWDdWSDlFajRaMjF2WHRRZjR0Q0pHN1VrQ04tQVhmZ09FWWZxS3lwMGh4UmE4Q25uZkV3MmVJX0lGdDE4aEJZWVRFZjk4RlZjNFRQcmM?oc=5",
           "snippet": "你觉得360的漏洞挖掘技术，能引领中国网络安全产业实现全面突围吗？  风闻",
           "publishedAt": "2026-04-20T11:45:14.000Z",
-          "author": ""
-        },
-        {
-          "feedId": "gn-cyber",
-          "feedName": "Google News · 网络安全",
-          "title": "谷雨润万物 网安护民生 - 新浪财经",
-          "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBmbldxQTFsbkNrTnZSczBVQWljWm5XYmNpVnA2QVhKS3Zock5OZ2VZN1A2Wm8zU1RNMHU3QXEySVA1LWY4WkFNU2g3OTVpVkZrMUNfQWtEVUU1dUVVdzdidEhJeVVCX3ZXRWxSSWppYWhmTlBKdWc?oc=5",
-          "snippet": "谷雨润万物 网安护民生  新浪财经",
-          "publishedAt": "2026-04-20T11:03:00.000Z",
           "author": ""
         },
         {
@@ -2070,15 +2061,6 @@
           "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNTDdkbEI0Nk1qZVJiRXYzZS1lb2JISmk1RUpLVUFmR2psSlRjRjJ5WmRFNnY4NlRaX2UzN0dGbWNuUjZJT3Z4WUkteWxxTnI5NGY5Yl9XazRnS0tJT3N2MkxsM1VtbG5xNmNyTkFoUDJCS3JkZFc5ZVNRbE41anJMT0N1MzF0dkh2RnlLMzl0Yy1xd3RmRDNlLTlZeFlWNEJ6V05LN0lCNlRYTURIZFVNeXRB?oc=5",
           "snippet": "国内网络安全领域“大咖”齐聚，第八届C3安全大会在蓉举行  新浪财经",
           "publishedAt": "2026-04-19T06:49:54.000Z",
-          "author": ""
-        },
-        {
-          "feedId": "gn-cyber",
-          "feedName": "Google News · 网络安全",
-          "title": "攻防技术同源！在 C3 安全大会上，亚信要用AI 去对抗AI|OpenClaw|网络安全|图片来源|科技|时代_手机新浪网 - 新浪财经",
-          "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQUllfYXk5MWRKcVlFcGE4T1NKMEdrV1VBSEZBZVlVUm5lOVdtZzdKcDIyU2xBQ1VFU1BlQU5JVEFacTNkS3huZFloQVg2SXh1M1ZkOUhoZklWUXl0Smdna18xdzlmTEVTZFpvazBnTFY0WWx1Zm1vX0E4dVBJOGRTeGViR21mTkFCZlUwck1weXl0Y01fdVRrUjB6M2MxMFZ2akY0R3FzUQ?oc=5",
-          "snippet": "攻防技术同源！在 C3 安全大会上，亚信要用AI 去对抗AI|OpenClaw|网络安全|图片来源|科技|时代_手机新浪网  新浪财经",
-          "publishedAt": "2026-04-18T15:05:27.000Z",
           "author": ""
         },
         {
@@ -2619,6 +2601,24 @@
           "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE5MRXk3dWY5WW9iQS0ybHBFRG5mMkQzYmFETVlVN1hkb19laHVwRS1hcTBXcmFRVmNTc1lLdTViVFJzTDI4anZYMHFEV3cyUQ?oc=5",
           "snippet": "疏法胜于密心：《网络安全法》近十年迎大修之全面解读  安全内参",
           "publishedAt": "2025-11-13T08:00:00.000Z",
+          "author": ""
+        },
+        {
+          "feedId": "gn-cyber",
+          "feedName": "Google News · 网络安全",
+          "title": "新《网络安全法》：强化处罚体系和境外追责| 中国 - Law.asia",
+          "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9MNlJQNC14RGVSVnFmU2E4aTBRTjN1aEpncGV4VlJwWjdpSFF4T3lleDVCLTBPYnhyWWgxN0owVTdJWDM4T1Y5Wk94UHNzTUpUQ3ZCX2htZllOdTB5LXN5empZQmZ3ZWdV?oc=5",
+          "snippet": "新《网络安全法》：强化处罚体系和境外追责| 中国  Law.asia",
+          "publishedAt": "2025-11-03T08:00:00.000Z",
+          "author": ""
+        },
+        {
+          "feedId": "gn-cyber",
+          "feedName": "Google News · 网络安全",
+          "title": "每日一词 | 网络安全法 Cybersecurity Law - 中国日报网",
+          "link": "https://news.google.com/rss/articles/CBMifEFVX3lxTE13R1ViR3VOSGZqYV85cHduVGgyMkdPd3dHOGF3RnBCYmhFM2NUZTJ2ZUpic1F6U1NSY2NubjBhcmFReDRhdVJPSnhJYkwtOHhkN2RuQjJzT0ZwV2dic0ZuamptUC0wSzg3c3JkS2FBdjNpZnMyQkxBWlF1QUc?oc=5",
+          "snippet": "每日一词 | 网络安全法 Cybersecurity Law  中国日报网",
+          "publishedAt": "2025-10-30T07:00:00.000Z",
           "author": ""
         }
       ]
@@ -3531,7 +3531,7 @@
     },
     "gn-food": {
       "feedId": "gn-food",
-      "fetchedAt": "2026-04-20T23:49:30.120Z",
+      "fetchedAt": "2026-04-21T00:23:50.442Z",
       "items": [
         {
           "feedId": "gn-food",

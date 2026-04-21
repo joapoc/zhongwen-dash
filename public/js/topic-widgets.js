@@ -1,7 +1,97 @@
 (function(){
 var TOPIC_WIDGET_DATA={};
 TOPIC_WIDGET_DATA.cyber={
-terms:[{cn:'网络安全',py:'wǎngluò ānquán',en:'cybersecurity',cat:'core'},{cn:'漏洞',py:'lòudòng',en:'vulnerability',cat:'vuln'},{cn:'零日',py:'líng rì',en:'zero-day',cat:'vuln'},{cn:'供应链攻击',py:'gōngyìng liàn gōngjī',en:'supply chain attack',cat:'threat'},{cn:'APT',py:'APT',en:'Advanced Persistent Threat',cat:'threat'},{cn:'木马',py:'mùmǎ',en:'trojan',cat:'malware'},{cn:'勒索软件',py:'lèsuǒ ruǎnjiàn',en:'ransomware',cat:'malware'},{cn:'钓鱼',py:'diàoyú',en:'phishing',cat:'social'},{cn:'数据泄露',py:'shùjù xièlòu',en:'data breach',cat:'incident'},{cn:'暗网',py:'àn wǎng',en:'dark web',cat:'core'},{cn:'威胁情报',py:'wēixié qíngbào',en:'threat intelligence',cat:'core'},{cn:'黑产',py:'hēi chǎn',en:'cybercrime ecosystem',cat:'fraud'},{cn:'水军',py:'shuǐ jūn',en:'paid commenters/bots',cat:'disinfo'},{cn:'舆情监测',py:'yúqíng jiāncè',en:'public opinion monitoring',cat:'disinfo'},{cn:'带节奏',py:'dài jiézòu',en:'push a narrative',cat:'disinfo'},{cn:'社工库',py:'shègōng kù',en:'social engineering DB',cat:'fraud'},{cn:'红队',py:'hóng duì',en:'red team',cat:'core'},{cn:'网信办',py:'wǎng xìn bàn',en:'Cyberspace Admin (CAC)',cat:'policy'},{cn:'等保2.0',py:'děng bǎo',en:'classified protection scheme',cat:'policy'},{cn:'电诈',py:'diàn zhà',en:'telecom fraud',cat:'fraud'}],
+terms:[
+// core concepts
+{cn:'网络安全',py:'wǎngluò ānquán',en:'cybersecurity',cat:'core'},
+{cn:'信息安全',py:'xìnxī ānquán',en:'information security',cat:'core'},
+{cn:'暗网',py:'àn wǎng',en:'dark web',cat:'core'},
+{cn:'威胁情报',py:'wēixié qíngbào',en:'threat intelligence',cat:'core'},
+{cn:'红队',py:'hóng duì',en:'red team',cat:'core'},
+{cn:'蓝队',py:'lán duì',en:'blue team',cat:'core'},
+{cn:'紫队',py:'zǐ duì',en:'purple team',cat:'core'},
+{cn:'攻防',py:'gōngfáng',en:'offense & defense',cat:'core'},
+{cn:'内网',py:'nèiwǎng',en:'internal network / intranet',cat:'core'},
+{cn:'靶场',py:'bǎchǎng',en:'cyber range / test env',cat:'core'},
+// vulnerabilities
+{cn:'漏洞',py:'lòudòng',en:'vulnerability',cat:'vuln'},
+{cn:'零日',py:'líng rì',en:'zero-day',cat:'vuln'},
+{cn:'高危漏洞',py:'gāowēi lòudòng',en:'high-severity vulnerability',cat:'vuln'},
+{cn:'漏洞披露',py:'lòudòng pīlù',en:'vulnerability disclosure',cat:'vuln'},
+{cn:'补丁',py:'bǔdīng',en:'patch',cat:'vuln'},
+{cn:'CVE',py:'CVE',en:'CVE (vulnerability ID)',cat:'vuln'},
+{cn:'提权',py:'tíquán',en:'privilege escalation',cat:'vuln'},
+// threats / attack types
+{cn:'供应链攻击',py:'gōngyìng liàn gōngjī',en:'supply chain attack',cat:'threat'},
+{cn:'APT',py:'APT',en:'Advanced Persistent Threat',cat:'threat'},
+{cn:'DDoS',py:'DDoS',en:'distributed denial of service',cat:'threat'},
+{cn:'中间人攻击',py:'zhōngjiān rén gōngjī',en:'man-in-the-middle attack',cat:'threat'},
+{cn:'注入攻击',py:'zhùrù gōngjī',en:'injection attack (SQLi etc.)',cat:'threat'},
+{cn:'暴力破解',py:'bàolì pòjiě',en:'brute-force attack',cat:'threat'},
+{cn:'水坑攻击',py:'shuǐkēng gōngjī',en:'watering-hole attack',cat:'threat'},
+{cn:'勒索攻击',py:'lèsuǒ gōngjī',en:'ransomware attack',cat:'threat'},
+// malware
+{cn:'木马',py:'mùmǎ',en:'trojan',cat:'malware'},
+{cn:'勒索软件',py:'lèsuǒ ruǎnjiàn',en:'ransomware',cat:'malware'},
+{cn:'蠕虫',py:'rúchóng',en:'worm',cat:'malware'},
+{cn:'病毒',py:'bìngdú',en:'virus',cat:'malware'},
+{cn:'后门',py:'hòumén',en:'backdoor',cat:'malware'},
+{cn:'僵尸网络',py:'jiāngshī wǎngluò',en:'botnet',cat:'malware'},
+{cn:'挖矿木马',py:'wākuàng mùmǎ',en:'crypto-mining trojan',cat:'malware'},
+{cn:'间谍软件',py:'jiàndié ruǎnjiàn',en:'spyware',cat:'malware'},
+// social engineering
+{cn:'钓鱼',py:'diàoyú',en:'phishing',cat:'social'},
+{cn:'鱼叉式钓鱼',py:'yúchā shì diàoyú',en:'spear-phishing',cat:'social'},
+{cn:'社会工程',py:'shèhuì gōngchéng',en:'social engineering',cat:'social'},
+{cn:'短信诈骗',py:'duǎnxìn zhàpiàn',en:'SMS fraud / smishing',cat:'social'},
+{cn:'冒充',py:'màochōng',en:'impersonation',cat:'social'},
+// incident / IR
+{cn:'数据泄露',py:'shùjù xièlòu',en:'data breach',cat:'incident'},
+{cn:'应急响应',py:'yìngjí xiǎngyìng',en:'incident response',cat:'incident'},
+{cn:'入侵',py:'rùqīn',en:'intrusion',cat:'incident'},
+{cn:'溯源',py:'sùyuán',en:'attack attribution / tracing',cat:'incident'},
+{cn:'取证',py:'qǔzhèng',en:'digital forensics',cat:'incident'},
+// fraud / black-market
+{cn:'黑产',py:'hēi chǎn',en:'cybercrime ecosystem',cat:'fraud'},
+{cn:'社工库',py:'shègōng kù',en:'leaked-identity database',cat:'fraud'},
+{cn:'电诈',py:'diàn zhà',en:'telecom / phone fraud',cat:'fraud'},
+{cn:'杀猪盘',py:'shāzhūpán',en:'pig-butchering scam',cat:'fraud'},
+{cn:'刷单',py:'shuādān',en:'fake-transaction fraud',cat:'fraud'},
+{cn:'洗钱',py:'xǐqián',en:'money laundering',cat:'fraud'},
+// disinformation / influence ops
+{cn:'水军',py:'shuǐ jūn',en:'paid commenters / bot army',cat:'disinfo'},
+{cn:'舆情监测',py:'yúqíng jiāncè',en:'public-opinion monitoring',cat:'disinfo'},
+{cn:'带节奏',py:'dài jiézòu',en:'steer / push a narrative',cat:'disinfo'},
+{cn:'造谣',py:'zàoyáo',en:'fabricate / spread rumors',cat:'disinfo'},
+{cn:'辟谣',py:'pìyáo',en:'debunk / refute rumors',cat:'disinfo'},
+{cn:'网络谣言',py:'wǎngluò yáoyán',en:'online rumor',cat:'disinfo'},
+// policy / regulatory
+{cn:'网信办',py:'wǎng xìn bàn',en:'Cyberspace Admin (CAC)',cat:'policy'},
+{cn:'等保2.0',py:'děng bǎo',en:'classified protection scheme',cat:'policy'},
+{cn:'数据安全法',py:'shùjù ānquán fǎ',en:'Data Security Law',cat:'policy'},
+{cn:'个人信息保护法',py:'gèrén xìnxī bǎohù fǎ',en:'PIPL (privacy law)',cat:'policy'},
+{cn:'关基',py:'guān jī',en:'critical information infrastructure',cat:'policy'},
+{cn:'清朗行动',py:'qīnglǎng xíngdòng',en:'"Clean Internet" campaign',cat:'policy'},
+{cn:'实名制',py:'shímíngzhì',en:'real-name registration system',cat:'policy'},
+// cryptography
+{cn:'加密',py:'jiāmì',en:'encryption',cat:'crypto'},
+{cn:'解密',py:'jiěmì',en:'decryption',cat:'crypto'},
+{cn:'密钥',py:'mìyào',en:'cryptographic key',cat:'crypto'},
+{cn:'非对称加密',py:'fēiduìchèn jiāmì',en:'asymmetric encryption',cat:'crypto'},
+{cn:'数字签名',py:'shùzì qiānmíng',en:'digital signature',cat:'crypto'},
+{cn:'哈希',py:'hāxī',en:'hash',cat:'crypto'},
+// defense / tooling
+{cn:'防火墙',py:'fánghuǒqiáng',en:'firewall',cat:'defense'},
+{cn:'杀毒软件',py:'shādú ruǎnjiàn',en:'antivirus software',cat:'defense'},
+{cn:'入侵检测',py:'rùqīn jiǎncè',en:'intrusion detection (IDS)',cat:'defense'},
+{cn:'双因素认证',py:'shuāng yīnsù rènzhèng',en:'two-factor authentication',cat:'defense'},
+{cn:'零信任',py:'líng xìnrèn',en:'zero-trust architecture',cat:'defense'},
+// network / circumvention
+{cn:'VPN',py:'VPN',en:'VPN',cat:'network'},
+{cn:'翻墙',py:'fānqiáng',en:'bypass the Great Firewall',cat:'network'},
+{cn:'代理',py:'dàilǐ',en:'proxy',cat:'network'},
+{cn:'防火长城',py:'fánghuǒ chángchéng',en:'Great Firewall (GFW)',cat:'network'}
+],
 queryPlatforms:['Baidu','Bilibili','Zhihu','GitHub','XHS'],
 queryKeywords:['漏洞 披露','APT 溯源','电诈 新套路','威胁情报 盘点','数据泄露 事件','黑灰产 调查','舆情 监测 报告'],
 querySites:['baidu.com','bilibili.com','zhihu.com','github.com','xiaohongshu.com'],
@@ -227,6 +317,95 @@ spiceLevels:[{cn:'不要辣',py:'bú yào là',en:'No spice',emoji:'😊',bg:'#1
 orderPhrases:[{cn:'有什么推荐？',py:'yǒu shénme tuījiàn?',en:'What do you recommend?'},{cn:'少辣，可以吗？',py:'shǎo là, kěyǐ ma?',en:'Less spicy, OK?'},{cn:'可以打包吗？',py:'kěyǐ dǎbāo ma?',en:'Can we box leftovers?'},{cn:'买单',py:'mǎi dān',en:'Bill please'},{cn:'扫码点餐',py:'sǎomǎ diǎncān',en:'Scan QR to order'},{cn:'米饭要三碗',py:'mǐfàn yào sān wǎn',en:'Three bowls of rice'},{cn:'服务员',py:'fúwùyuán',en:'Waiter! (call over)'},{cn:'加点水',py:'jiā diǎn shuǐ',en:'More water please'},{cn:'这个是什么？',py:'zhège shì shénme?',en:'What is this?'},{cn:'麻烦给个菜单',py:'máfan gěi gè càidān',en:'Menu please',note:'Polite start'},{cn:'要一份',py:'yào yí fèn',en:'I\'ll have one order',note:'Add the dish name after'},{cn:'不要香菜',py:'bú yào xiāngcài',en:'No cilantro',note:'Many dishes include it'},{cn:'不要葱',py:'bú yào cōng',en:'No scallions',note:'Common substitution'},{cn:'微辣就好',py:'wēi là jiù hǎo',en:'Mild is fine',note:'Softer than 不要辣'},{cn:'不辣',py:'bú là',en:'Not spicy',note:'Direct version'},{cn:'还要等多久？',py:'hái yào děng duō jiǔ?',en:'How long more?',note:'When dishes are slow'},{cn:'这个不是我点的',py:'zhège bú shì wǒ diǎn de',en:'I didn\'t order this',note:'Wrong dish'},{cn:'再来一份',py:'zài lái yí fèn',en:'One more order',note:'Repeat a dish'},{cn:'分开结账',py:'fēnkāi jiézhàng',en:'Split the bill',note:'AA制 is common with friends'},{cn:'能开发票吗？',py:'néng kāi fāpiào ma?',en:'Can I get a receipt (fapiao)?',note:'Essential for business travel'},{cn:'给现金可以吗？',py:'gěi xiànjīn kěyǐ ma?',en:'Can I pay cash?',note:'Smaller spots may decline'},{cn:'我吃素',py:'wǒ chī sù',en:'I\'m vegetarian',note:'Confirm — 素 can include egg'},{cn:'要热的',py:'yào rè de',en:'I want it hot',note:'vs iced (冰的)'},{cn:'要常温',py:'yào chángwēn',en:'Room temperature',note:'Common drink request'},{cn:'加蛋',py:'jiā dàn',en:'Add an egg',note:'Noodle shops'},{cn:'少油少盐',py:'shǎo yóu shǎo yán',en:'Less oil, less salt',note:'Health-conscious ask'},{cn:'有什么忌口吗？',py:'yǒu shénme jìkǒu ma?',en:'Any dietary restrictions?',note:'Server may ask you this'}],
 cookingVerbs:[{cn:'炒',py:'chǎo',en:'stir-fry'},{cn:'煎',py:'jiān',en:'pan-fry'},{cn:'炸',py:'zhá',en:'deep-fry'},{cn:'蒸',py:'zhēng',en:'steam'},{cn:'煮',py:'zhǔ',en:'boil'},{cn:'焖',py:'mèn',en:'braise'},{cn:'烤',py:'kǎo',en:'roast/bake'},{cn:'凉拌',py:'liángbàn',en:'cold-mixed'},{cn:'红烧',py:'hóngshāo',en:'red-braised'},{cn:'水煮',py:'shuǐzhǔ',en:'water-boiled (Sichuan)'}],
 flavorWords:[{cn:'麻',py:'má',en:'numbing'},{cn:'辣',py:'là',en:'spicy'},{cn:'酸',py:'suān',en:'sour'},{cn:'甜',py:'tián',en:'sweet'},{cn:'咸',py:'xián',en:'salty'},{cn:'鲜',py:'xiān',en:'umami/fresh'},{cn:'香',py:'xiāng',en:'fragrant'},{cn:'苦',py:'kǔ',en:'bitter'}],
+terms:[
+{cn:'猪肉',py:'zhūròu',en:'pork',cat:'ingredient'},
+{cn:'牛肉',py:'niúròu',en:'beef',cat:'ingredient'},
+{cn:'鸡肉',py:'jīròu',en:'chicken',cat:'ingredient'},
+{cn:'羊肉',py:'yángròu',en:'lamb / mutton',cat:'ingredient'},
+{cn:'鱼',py:'yú',en:'fish',cat:'ingredient'},
+{cn:'虾',py:'xiā',en:'shrimp',cat:'ingredient'},
+{cn:'鸡蛋',py:'jīdàn',en:'egg',cat:'ingredient'},
+{cn:'豆腐',py:'dòufu',en:'tofu',cat:'ingredient'},
+{cn:'青菜',py:'qīngcài',en:'leafy greens',cat:'ingredient'},
+{cn:'白菜',py:'báicài',en:'napa cabbage',cat:'ingredient'},
+{cn:'土豆',py:'tǔdòu',en:'potato',cat:'ingredient'},
+{cn:'番茄',py:'fānqié',en:'tomato',cat:'ingredient'},
+{cn:'木耳',py:'mùěr',en:'wood-ear fungus',cat:'ingredient'},
+{cn:'香菇',py:'xiānggū',en:'shiitake mushroom',cat:'ingredient'},
+{cn:'豆芽',py:'dòuyá',en:'bean sprouts',cat:'ingredient'},
+{cn:'花椒',py:'huājiāo',en:'Sichuan peppercorn',cat:'ingredient'},
+{cn:'辣椒',py:'làjiāo',en:'chili pepper',cat:'ingredient'},
+{cn:'大蒜',py:'dàsuàn',en:'garlic',cat:'ingredient'},
+{cn:'生姜',py:'shēngjiāng',en:'ginger',cat:'ingredient'},
+{cn:'葱',py:'cōng',en:'scallion',cat:'ingredient'},
+{cn:'酱油',py:'jiàngyóu',en:'soy sauce',cat:'sauce'},
+{cn:'醋',py:'cù',en:'vinegar',cat:'sauce'},
+{cn:'芝麻酱',py:'zhīmájiàng',en:'sesame paste',cat:'sauce'},
+{cn:'辣椒油',py:'làjiāoyóu',en:'chili oil',cat:'sauce'},
+{cn:'老干妈',py:'lǎogānmā',en:'Lao Gan Ma chili crisp',cat:'sauce'},
+{cn:'蚝油',py:'háoyóu',en:'oyster sauce',cat:'sauce'},
+{cn:'料酒',py:'liàojiǔ',en:'cooking wine',cat:'sauce'},
+{cn:'味精',py:'wèijīng',en:'MSG',cat:'sauce'},
+{cn:'宫保鸡丁',py:'gōngbǎo jīdīng',en:'Kung Pao chicken',cat:'dish'},
+{cn:'麻婆豆腐',py:'mápó dòufu',en:'Mapo tofu',cat:'dish'},
+{cn:'鱼香肉丝',py:'yúxiāng ròusī',en:'fish-fragrant pork slivers',cat:'dish'},
+{cn:'回锅肉',py:'huíguōròu',en:'twice-cooked pork',cat:'dish'},
+{cn:'水煮鱼',py:'shuǐzhǔ yú',en:'water-boiled fish (chili-oil fish)',cat:'dish'},
+{cn:'口水鸡',py:'kǒushuǐjī',en:'mouthwatering chicken',cat:'dish'},
+{cn:'红烧肉',py:'hóngshāoròu',en:'red-braised pork belly',cat:'dish'},
+{cn:'糖醋里脊',py:'tángcù lǐjǐ',en:'sweet & sour pork',cat:'dish'},
+{cn:'北京烤鸭',py:'běijīng kǎoyā',en:'Peking duck',cat:'dish'},
+{cn:'饺子',py:'jiǎozi',en:'dumplings',cat:'dish'},
+{cn:'小笼包',py:'xiǎolóngbāo',en:'soup dumplings',cat:'dish'},
+{cn:'炒饭',py:'chǎofàn',en:'fried rice',cat:'dish'},
+{cn:'炒面',py:'chǎomiàn',en:'fried noodles',cat:'dish'},
+{cn:'兰州拉面',py:'lánzhōu lāmiàn',en:'Lanzhou hand-pulled noodles',cat:'dish'},
+{cn:'肉夹馍',py:'ròujiāmó',en:'rou jia mo (Chinese burger)',cat:'dish'},
+{cn:'煎饼果子',py:'jiānbing guǒzi',en:'crepe wrap',cat:'dish'},
+{cn:'奶茶',py:'nǎichá',en:'milk tea',cat:'drink'},
+{cn:'珍珠奶茶',py:'zhēnzhū nǎichá',en:'bubble tea',cat:'drink'},
+{cn:'豆浆',py:'dòujiāng',en:'soy milk',cat:'drink'},
+{cn:'可乐',py:'kělè',en:'cola',cat:'drink'},
+{cn:'啤酒',py:'píjiǔ',en:'beer',cat:'drink'},
+{cn:'白酒',py:'báijiǔ',en:'baijiu (Chinese liquor)',cat:'drink'},
+{cn:'绿茶',py:'lǜchá',en:'green tea',cat:'drink'},
+{cn:'乌龙茶',py:'wūlóngchá',en:'oolong tea',cat:'drink'},
+{cn:'柠檬水',py:'níngméngshuǐ',en:'lemon water',cat:'drink'},
+{cn:'月饼',py:'yuèbǐng',en:'mooncake',cat:'dessert'},
+{cn:'汤圆',py:'tāngyuán',en:'sweet glutinous rice balls',cat:'dessert'},
+{cn:'糖葫芦',py:'tánghúlu',en:'candied hawthorn on a stick',cat:'dessert'},
+{cn:'冰淇淋',py:'bīngqílín',en:'ice cream',cat:'dessert'},
+{cn:'蛋糕',py:'dàngāo',en:'cake',cat:'dessert'},
+{cn:'夜市',py:'yèshì',en:'night market',cat:'snack'},
+{cn:'烧烤',py:'shāokǎo',en:'BBQ / grilled skewers',cat:'snack'},
+{cn:'串',py:'chuàn',en:'skewer',cat:'snack'},
+{cn:'包子',py:'bāozi',en:'steamed stuffed bun',cat:'snack'},
+{cn:'馒头',py:'mántou',en:'plain steamed bun',cat:'snack'},
+{cn:'油条',py:'yóutiáo',en:'fried dough stick',cat:'snack'},
+{cn:'茶叶蛋',py:'cháyèdàn',en:'tea-soaked egg',cat:'snack'},
+{cn:'臭豆腐',py:'chòudòufu',en:'stinky tofu',cat:'snack'},
+{cn:'螺蛳粉',py:'luósīfěn',en:'luosifen (snail rice noodles)',cat:'snack'},
+{cn:'菜单',py:'càidān',en:'menu',cat:'ordering'},
+{cn:'推荐',py:'tuījiàn',en:'recommendation',cat:'ordering'},
+{cn:'招牌菜',py:'zhāopáicài',en:'signature dish',cat:'ordering'},
+{cn:'套餐',py:'tàocān',en:'set meal / combo',cat:'ordering'},
+{cn:'分量',py:'fènliàng',en:'portion size',cat:'ordering'},
+{cn:'外卖',py:'wàimài',en:'takeout / delivery',cat:'ordering'},
+{cn:'堂食',py:'tángshí',en:'dine-in',cat:'ordering'},
+{cn:'打包',py:'dǎbāo',en:'doggy bag / to-go',cat:'ordering'},
+{cn:'结账',py:'jiézhàng',en:'settle the bill',cat:'ordering'},
+{cn:'Q弹',py:'Q-tán',en:'springy / chewy',cat:'texture'},
+{cn:'酥脆',py:'sūcuì',en:'crispy & flaky',cat:'texture'},
+{cn:'嫩',py:'nèn',en:'tender',cat:'texture'},
+{cn:'筋道',py:'jīndao',en:'chewy (noodles)',cat:'texture'},
+{cn:'滑嫩',py:'huánèn',en:'smooth and tender',cat:'texture'},
+{cn:'爽口',py:'shuǎngkǒu',en:'refreshing on the palate',cat:'texture'},
+{cn:'微辣',py:'wēi là',en:'mildly spicy',cat:'spice'},
+{cn:'中辣',py:'zhōng là',en:'medium spicy',cat:'spice'},
+{cn:'重辣',py:'zhòng là',en:'very spicy',cat:'spice'},
+{cn:'变态辣',py:'biàntài là',en:'insanely spicy',cat:'spice'},
+{cn:'不辣',py:'bú là',en:'not spicy',cat:'spice'}
+],
 youtubeChannels:[
 {id:'xiaoyingfood',label:'XiaoYing',name:'XiaoYing Food',handle:'@XiaoYingFood',url:'https://www.youtube.com/@XiaoYingFood',videosUrl:'https://www.youtube.com/@XiaoYingFood/videos',videoId:'',focus:'Chinese home-style dishes, practical recipes, and ingredient vocabulary.'},
 {id:'chefwang',label:'Chef Wang',name:'Chef Wang',handle:'@chefwang',url:'https://www.youtube.com/@chefwang',videosUrl:'https://www.youtube.com/@chefwang/videos',videoId:'',focus:'Professional Chinese cooking technique, wok skills, and restaurant-style dishes.'}
@@ -891,6 +1070,10 @@ function renderFoodWidgets(){
   h+='</div>';
   h+=topicWidgetClose();
 
+  h+=topicWidgetOpen('📖','Food Glossary',d.terms.length+' terms',null,'span-2');
+  h+=topicBuildTermList(d.terms,'topic-foodTerms','food');
+  h+=topicWidgetClose();
+
   // Menu decoder — how dish names are built. Useful for reading any menu.
   h+=topicWidgetOpen('📜','Menu Decoder','How dish names are built',null,'span-2');
   h+='<div style=\"font-size:.7rem;color:var(--muted);margin-bottom:10px;\">Most dishes follow <strong style=\"color:var(--tab-accent);\">method + ingredient</strong> (e.g. <span class=\"cn\">红烧肉</span> = red-braised pork). Learn these and you can read almost any menu.</div>';
@@ -1050,15 +1233,18 @@ function topicReadingRenderItems(){
 function topicRenderReadingItemCard(item){
   var urlEsc=topicReadingEscape(item.link).replace(/'/g,'&#39;');
   var onclickUrl=(item.link||'').replace(/'/g,"\\'");
-  return '<div class=\"reading-item\" data-url=\"'+urlEsc+'\" onclick=\"topicReadingOpenArticle(\''+onclickUrl+'\')\">'+
+  var isExternal=topicReadingIsGoogleNewsUrl(item.link);
+  var externalBadge=isExternal?'<span class=\"reading-item-ext\" title=\"Slower to load — resolved via headless browser\">🐢 headless</span>':'';
+  return '<div class=\"reading-item'+(isExternal?' reading-item-external':'')+'\" data-url=\"'+urlEsc+'\" onclick=\"topicReadingOpenArticle(\''+onclickUrl+'\')\">'+
     '<div class=\"reading-item-head\">'+
     '<span class=\"reading-item-source\">'+topicReadingEscape(item.feedName||'')+'</span>'+
-    '<span class=\"reading-item-time\">'+topicReadingEscape(topicReadingFmtDate(item.publishedAt))+'</span>'+
+    '<span class=\"reading-item-time\">'+topicReadingEscape(topicReadingFmtDate(item.publishedAt))+externalBadge+'</span>'+
     '</div>'+
     '<div class=\"reading-item-title cn\">'+topicReadingEscape(item.title||'')+'</div>'+
     (item.snippet?'<div class=\"reading-item-snippet cn\">'+topicReadingEscape(item.snippet)+'</div>':'')+
     '</div>';
 }
+function topicReadingIsGoogleNewsUrl(url){return /^https?:\/\/news\.google\.com\//i.test(url||'');}
 function topicReadingOpenArticle(url,refresh){
   if(!url)return;
   TOPIC_READING_STATE.currentUrl=url;
@@ -1066,7 +1252,8 @@ function topicReadingOpenArticle(url,refresh){
     el.classList.toggle('active',el.getAttribute('data-url')===url);
   });
   var reader=document.getElementById('topic-reading-reader');
-  if(reader)reader.innerHTML='<div class=\"reading-empty\">Extracting article…</div>';
+  var isSlow=topicReadingIsGoogleNewsUrl(url);
+  if(reader)reader.innerHTML='<div class=\"reading-empty\">'+(isSlow?'Resolving Google News redirect in a headless browser… (can take 5–10s on first run)':'Extracting article…')+'</div>';
   var fetchUrl='/api/reading/article?url='+encodeURIComponent(url)+(refresh?'&refresh=1':'');
   fetch(fetchUrl).then(function(r){return r.json();}).then(function(data){
     if(!data||!data.ok){throw new Error((data&&data.message)||'Could not extract article');}

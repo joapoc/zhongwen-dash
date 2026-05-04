@@ -446,7 +446,7 @@ function topicMigrateFoundWordsToSavedWords(){
       items.forEach(function(item){
         if(!item||!item.word)return;
         if(typeof window.isWordSaved==='function'&&window.isWordSaved(item.word))return;
-        window.addWord({cn:item.word,py:'',en:'',note:item.note||'',source:'browsing',sourceArticle:tabId});
+        window.addWord({cn:item.word,py:'',en:'',note:item.note||'',source:'browsing',sourceArticle:tabId,topic:tabId});
         migrated++;
       });
     });
@@ -957,7 +957,7 @@ function topicInitQuiz(tabId,terms){topicQuizStates[tabId]={score:0,total:0,term
 function topicNextQuiz(tabId){var s=topicQuizStates[tabId];if(!s)return;var q=s.terms[Math.floor(Math.random()*s.terms.length)],wrong=s.terms.filter(function(t){return t.cn!==q.cn;}).sort(function(){return Math.random()-.5;}).slice(0,3),opts=[{text:q.en,correct:true}].concat(wrong.map(function(w){return{text:w.en,correct:false};})).sort(function(){return Math.random()-.5;}),qEl=document.getElementById('topic-qq-'+tabId),c=document.getElementById('topic-qo-'+tabId),sEl=document.getElementById('topic-qs-'+tabId);if(!qEl||!c||!sEl)return;qEl.textContent='What does \"'+q.cn+'\" mean?';c.innerHTML='';var answered=false;opts.forEach(function(o){var d=document.createElement('div');d.className='quiz-opt';d.textContent=o.text;d.onclick=function(){if(answered)return;answered=true;s.total++;if(o.correct){d.classList.add('correct');s.score++;}else{d.classList.add('wrong');Array.prototype.forEach.call(c.querySelectorAll('.quiz-opt'),function(el){if(el.textContent===q.en)el.classList.add('correct');});}sEl.textContent='Score: '+s.score+'/'+s.total;};c.appendChild(d);});}
 function topicCopyText(text,el){if(navigator.clipboard)navigator.clipboard.writeText(text);if(el){el.classList.add('copied');setTimeout(function(){el.classList.remove('copied');},800);}}
 function topicCopyElText(id){var el=document.getElementById(id);if(el&&navigator.clipboard)navigator.clipboard.writeText(el.textContent.replace('📋 Copy','').trim());}
-function topicAddFoundWord(tabId){var wordEl=document.getElementById('topic-found-word-'+tabId),noteEl=document.getElementById('topic-found-note-'+tabId);if(!wordEl)return;var word=(wordEl.value||'').trim(),note=noteEl?(noteEl.value||'').trim():'';if(!word)return;if(typeof window.addWord!=='function'){alert('Word list not ready yet — try again in a moment.');return;}if(typeof window.isWordSaved==='function'&&window.isWordSaved(word)){wordEl.value='';if(noteEl)noteEl.value='';topicRefreshFoundWords(tabId);return;}var added=window.addWord({cn:word,py:'',en:'',note:note,source:'browsing',sourceArticle:tabId});if(added&&typeof window.addSavedWordToFlashcards==='function')window.addSavedWordToFlashcards({cn:word,py:'',en:note||word});if(added&&typeof window.showToast==='function')window.showToast(word,'',note||'saved to word list',false);wordEl.value='';if(noteEl)noteEl.value='';topicRefreshFoundWords(tabId);if(typeof window.renderWordlistContent==='function')window.renderWordlistContent();}
+function topicAddFoundWord(tabId){var wordEl=document.getElementById('topic-found-word-'+tabId),noteEl=document.getElementById('topic-found-note-'+tabId);if(!wordEl)return;var word=(wordEl.value||'').trim(),note=noteEl?(noteEl.value||'').trim():'';if(!word)return;if(typeof window.addWord!=='function'){alert('Word list not ready yet — try again in a moment.');return;}if(typeof window.isWordSaved==='function'&&window.isWordSaved(word)){wordEl.value='';if(noteEl)noteEl.value='';topicRefreshFoundWords(tabId);return;}var added=window.addWord({cn:word,py:'',en:'',note:note,source:'browsing',sourceArticle:tabId,topic:tabId});if(added&&typeof window.addSavedWordToFlashcards==='function')window.addSavedWordToFlashcards({cn:word,py:'',en:note||word});if(added&&typeof window.showToast==='function')window.showToast(word,'',note||'saved to word list',false);wordEl.value='';if(noteEl)noteEl.value='';topicRefreshFoundWords(tabId);if(typeof window.renderWordlistContent==='function')window.renderWordlistContent();}
 function topicDeleteFoundWord(tabId,cn){if(!cn||typeof window.removeWord!=='function')return;window.removeWord(cn);topicRefreshFoundWords(tabId);if(typeof window.renderWordlistContent==='function')window.renderWordlistContent();}
 function topicRefreshFoundWords(tabId){var list=document.getElementById('topic-found-list-'+tabId);if(!list)return;var items=topicGetSavedBrowsingWords(tabId);list.innerHTML=items.length?items.map(function(item){return topicRenderFoundWordItem(tabId,item);}).join(''):'<div class=\"found-empty\">No saved words in this section yet.</div>';}
 function topicRefreshAllFoundWords(){['cyber','political','genz','academia','tourist','gossip','makeup','food','dropship','reading'].forEach(function(tabId){topicRefreshFoundWords(tabId);});}
@@ -1289,7 +1289,353 @@ function topicReadingCloseArticle(){
   var reader=document.getElementById('topic-reading-reader');
   if(reader)reader.innerHTML='<div class=\"reading-reader-empty\">Pick an article to read it here.</div>';
 }
+// ===== Per-tab RSS reader (immerse-style, scoped to one topic tag) =====
+// One state object per topic tab. Lazily populated on first activation.
+var TOPIC_TAB_RSS_STATE={};
+function topicTabRssEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return c==='&'?'&amp;':c==='<'?'&lt;':c==='>'?'&gt;':c==='"'?'&quot;':'&#39;';});}
+function topicTabRssFmtDate(iso){if(!iso)return'';try{var d=new Date(iso);if(isNaN(d.getTime()))return'';var diff=(Date.now()-d.getTime())/1000;if(diff<60)return'Just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';if(diff<604800)return Math.floor(diff/86400)+'d ago';return d.toLocaleDateString();}catch(_e){return'';}}
+function topicTabRssIsGoogleNewsUrl(url){return /^https?:\/\/news\.google\.com\//i.test(url||'');}
+function topicTabRssHashColor(s){var h=0;s=String(s||'');for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))&0xffffffff;}var hue=Math.abs(h)%360;return 'hsl('+hue+',55%,55%)';}
+
+function topicTabRssActivate(tabId){
+  var mount=document.querySelector('.topic-rss-mount[data-topic-rss-tab="'+tabId+'"]');
+  if(!mount)return;
+  var tag=mount.getAttribute('data-topic-rss-tag');
+  if(!tag)return;
+  // Register a per-tab handler that highlightVocabInText can call from
+  // inline onclicks in the rendered article body. Bakes the tabId in so
+  // we don't have to thread it through highlightVocabInText.
+  if(!window['topicTabRssAddWordH_'+tabId]){
+    window['topicTabRssAddWordH_'+tabId]=(function(captured){
+      return function(cn,py,en,title){topicTabRssAddWord(captured,cn,py,en,title);};
+    })(tabId);
+  }
+  var state=TOPIC_TAB_RSS_STATE[tabId];
+  if(state&&state.loaded)return; // already initialized
+  if(state&&state.loading)return; // in flight
+  TOPIC_TAB_RSS_STATE[tabId]={
+    tabId:tabId,tag:tag,
+    icon:mount.getAttribute('data-topic-rss-icon')||'📡',
+    title:mount.getAttribute('data-topic-rss-title')||'Topic News',
+    feeds:[],items:[],activeFeedId:'all',activeArticleUrl:'',
+    fetchedAt:'',loading:true,loaded:false,
+    articleCache:{}
+  };
+  topicTabRssRenderShell(tabId);
+  topicTabRssLoadFeeds(tabId,false);
+}
+
+function topicTabRssRenderShell(tabId){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  var mount=document.querySelector('.topic-rss-mount[data-topic-rss-tab="'+tabId+'"]');
+  if(!mount)return;
+  mount.innerHTML=
+    '<div class="rss-section topic-rss-section">'+
+      '<div class="rss-container">'+
+        '<div class="rss-header">'+
+          '<div class="rss-header-left">'+
+            '<div class="rss-icon">'+topicTabRssEsc(s.icon)+'</div>'+
+            '<div>'+
+              '<h3>'+topicTabRssEsc(s.title)+' · RSS Reader</h3>'+
+              '<div class="rss-sub">Topic-filtered Chinese news · click ➕ on a vocab chip to save</div>'+
+            '</div>'+
+          '</div>'+
+          '<button type="button" class="btn-secondary btn-small" onclick="topicTabRssRefresh(\''+tabId+'\')" title="Re-fetch all feeds">↻ Refresh</button>'+
+        '</div>'+
+        '<div class="reading-filter-row">'+
+          '<div class="reading-filter-group">'+
+            '<div class="rss-controls" id="topicTabRssBtns-'+tabId+'"></div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="rss-body">'+
+          '<div class="rss-list" id="topicTabRssList-'+tabId+'"><div class="rss-loading"><span class="spinner"></span> Loading topic feeds…</div></div>'+
+          '<div class="rss-detail" id="topicTabRssDetail-'+tabId+'"><div class="rss-detail-empty"><div class="rde-icon">📰</div><div class="rde-text">Select an article to read<br><span style="font-size:0.7rem;color:#444;">Click any headline on the left</span></div></div></div>'+
+        '</div>'+
+        '<div class="rss-status-bar"><span><span class="rss-live-dot"></span> <span id="topicTabRssStatus-'+tabId+'">Loading…</span></span><span id="topicTabRssCount-'+tabId+'">— articles</span></div>'+
+      '</div>'+
+    '</div>';
+}
+
+function topicTabRssLoadFeeds(tabId,refresh){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  s.loading=true;
+  var statusEl=document.getElementById('topicTabRssStatus-'+tabId);
+  if(statusEl)statusEl.textContent=refresh?'Refreshing…':'Loading…';
+  var list=document.getElementById('topicTabRssList-'+tabId);
+  if(list&&!s.items.length)list.innerHTML='<div class="rss-loading"><span class="spinner"></span> Loading topic feeds…</div>';
+  var url='/api/reading/feed/by-tag/'+encodeURIComponent(s.tag)+(refresh?'?refresh=1':'');
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    if(!data||!data.ok)throw new Error((data&&data.message)||'Feed fetch failed');
+    s.feeds=data.feeds||[];
+    s.items=data.items||[];
+    s.fetchedAt=data.fetchedAt||'';
+    s.loading=false;s.loaded=true;
+    if(s.activeFeedId!=='all'&&!s.feeds.some(function(f){return f.id===s.activeFeedId;}))s.activeFeedId='all';
+    topicTabRssRenderFeedBtns(tabId);
+    topicTabRssRenderList(tabId);
+    if(statusEl){
+      var bits=['Updated '+topicTabRssFmtDate(s.fetchedAt)];
+      if(data.failed&&data.failed.length)bits.push(data.failed.length+' feed(s) failed');
+      statusEl.textContent=bits.join(' · ');
+    }
+  }).catch(function(err){
+    s.loading=false;
+    var msg=err&&err.message?err.message:'Could not load feeds.';
+    if(list)list.innerHTML='<div class="rss-loading">⚠️ '+topicTabRssEsc(msg)+'</div>';
+    if(statusEl)statusEl.textContent='Error: '+msg;
+  });
+}
+
+function topicTabRssRenderFeedBtns(tabId){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  var c=document.getElementById('topicTabRssBtns-'+tabId);if(!c)return;
+  var html='<button type="button" class="rss-feed-btn'+(s.activeFeedId==='all'?' active':'')+'" onclick="topicTabRssSelectFeed(\''+tabId+'\',\'all\')"><span class="feed-dot" style="background:var(--cyan);"></span>All <span style="opacity:.6;font-weight:400;">('+s.items.length+')</span></button>';
+  s.feeds.forEach(function(f){
+    var color=topicTabRssHashColor(f.id);
+    var count=s.items.filter(function(it){return it.feedId===f.id;}).length;
+    var safeId=f.id.replace(/'/g,"\\'");
+    html+='<button type="button" class="rss-feed-btn'+(s.activeFeedId===f.id?' active':'')+'" onclick="topicTabRssSelectFeed(\''+tabId+'\',\''+safeId+'\')"><span class="feed-dot" style="background:'+color+';"></span>'+topicTabRssEsc(f.name)+' <span style="opacity:.6;font-weight:400;">('+count+')</span></button>';
+  });
+  c.innerHTML=html;
+}
+
+function topicTabRssSelectFeed(tabId,feedId){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  s.activeFeedId=feedId;
+  topicTabRssRenderFeedBtns(tabId);
+  topicTabRssRenderList(tabId);
+}
+
+function topicTabRssRenderList(tabId){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  var list=document.getElementById('topicTabRssList-'+tabId);if(!list)return;
+  var items=s.activeFeedId==='all'?s.items:s.items.filter(function(it){return it.feedId===s.activeFeedId;});
+  var countEl=document.getElementById('topicTabRssCount-'+tabId);
+  if(countEl)countEl.textContent=items.length+' articles';
+  if(!items.length){list.innerHTML='<div class="rss-loading">No articles in this filter.</div>';return;}
+  var html='';
+  items.forEach(function(it){
+    var color=topicTabRssHashColor(it.feedId);
+    var urlSafe=(it.link||'').replace(/'/g,"\\'");
+    var isExternal=topicTabRssIsGoogleNewsUrl(it.link);
+    var liveTag=isExternal?'<span class="rit" style="background:rgba(251,191,36,0.1);color:var(--accent2);">🐢 GOOGLE</span>':'<span class="rit" style="background:rgba(52,211,153,0.1);color:var(--green);">LIVE</span>';
+    var activeCls=(s.activeArticleUrl===it.link)?' active':'';
+    html+='<div class="rss-item'+activeCls+'" data-url="'+topicTabRssEsc(it.link)+'" onclick="topicTabRssOpenArticle(\''+tabId+'\',\''+urlSafe+'\')">'+
+      '<div class="rss-item-source"><span class="src-dot" style="background:'+color+';"></span><span class="src-name">'+topicTabRssEsc(it.feedName||'')+'</span><span class="src-time">'+topicTabRssEsc(topicTabRssFmtDate(it.publishedAt))+'</span></div>'+
+      '<div class="rss-item-title">'+topicTabRssEsc(it.title||'')+'</div>'+
+      (it.snippet?'<div class="rss-item-snippet">'+topicTabRssEsc(it.snippet)+'</div>':'')+
+      '<div class="rss-item-tags">'+liveTag+'</div>'+
+      '</div>';
+  });
+  list.innerHTML=html;
+}
+
+function topicTabRssRefresh(tabId){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s||s.loading)return;
+  topicTabRssLoadFeeds(tabId,true);
+}
+
+function topicTabRssOpenArticle(tabId,url){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s||!url)return;
+  s.activeArticleUrl=url;
+  // toggle visual active state on list items
+  var list=document.getElementById('topicTabRssList-'+tabId);
+  if(list){
+    Array.prototype.forEach.call(list.querySelectorAll('.rss-item'),function(el){
+      el.classList.toggle('active',el.getAttribute('data-url')===url);
+    });
+  }
+  var detail=document.getElementById('topicTabRssDetail-'+tabId);
+  if(!detail)return;
+  var isSlow=topicTabRssIsGoogleNewsUrl(url);
+  detail.innerHTML='<div class="rss-detail-empty"><div class="rde-icon">⏳</div><div class="rde-text">'+(isSlow?'Resolving Google News redirect via headless browser…<br><span style="font-size:0.65rem;color:#444;">First load can take 5–10s</span>':'Extracting article…')+'</div></div>';
+  if(s.articleCache[url]){
+    topicTabRssRenderArticle(tabId,s.articleCache[url]);
+    return;
+  }
+  fetch('/api/reading/article?url='+encodeURIComponent(url)).then(function(r){return r.json();}).then(function(data){
+    if(!data||!data.ok)throw new Error((data&&data.message)||'Could not extract article.');
+    s.articleCache[url]=data;
+    if(s.activeArticleUrl===url)topicTabRssRenderArticle(tabId,data);
+  }).catch(function(err){
+    if(s.activeArticleUrl!==url)return;
+    var msg=err&&err.message?err.message:'Could not extract article.';
+    var safeUrl=url.replace(/'/g,"\\'");
+    detail.innerHTML='<div class="rss-detail-empty"><div class="rde-icon">⚠️</div><div class="rde-text">'+topicTabRssEsc(msg)+'<br><br><a href="'+topicTabRssEsc(url)+'" target="_blank" rel="noopener noreferrer" class="rss-detail-link">🔗 Open original ↗</a></div></div>';
+  });
+}
+
+// Strip article HTML to plain paragraphs so we can run vocab annotation on
+// it. We keep a paragraph break wherever a block-level element was so the
+// rendered reader still reads naturally.
+function topicTabRssArticleToParagraphs(contentHtml){
+  if(!contentHtml)return [];
+  var tmp=document.createElement('div');
+  tmp.innerHTML=contentHtml;
+  var blockSel='p, h1, h2, h3, h4, h5, h6, li, blockquote, figcaption';
+  var blocks=tmp.querySelectorAll(blockSel);
+  var paras=[];
+  if(!blocks.length){
+    var text=(tmp.textContent||'').replace(/\s+/g,' ').trim();
+    if(text)paras.push(text);
+    return paras;
+  }
+  Array.prototype.forEach.call(blocks,function(b){
+    var txt=(b.textContent||'').replace(/\s+/g,' ').trim();
+    if(txt)paras.push(txt);
+  });
+  return paras;
+}
+
+function topicTabRssRenderArticle(tabId,article){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  var detail=document.getElementById('topicTabRssDetail-'+tabId);if(!detail)return;
+  var paras=topicTabRssArticleToParagraphs(article.contentHtml);
+  // store on the article so addAll can grab it later
+  article._tabId=tabId;
+  article._paras=paras;
+  article._vocab=article._vocab||[];
+  article._vocabLoaded=!!article._vocabLoaded;
+  article._vocabLoading=!!article._vocabLoading;
+
+  var meta=[];
+  if(article.siteName)meta.push(topicTabRssEsc(article.siteName));
+  if(article.byline)meta.push(topicTabRssEsc(article.byline));
+  if(article.publishedAt)meta.push(topicTabRssEsc(topicTabRssFmtDate(article.publishedAt)));
+  if(article.wordCount)meta.push(article.wordCount+' chars');
+  var metaLine=meta.length?'<div class="rss-detail-source"><span class="rds-time">'+meta.join(' · ')+(article.cached?' · cached':'')+'</span></div>':'';
+
+  var title=topicTabRssEsc(article.title||'');
+  var vocab=Array.isArray(article._vocab)?article._vocab:[];
+  var hl=(typeof window.highlightVocabInText==='function')?window.highlightVocabInText:null;
+  var hlHandler='topicTabRssAddWordH_'+tabId;
+  var titleHtml=hl?hl(article.title||'',vocab,article.title||'',hlHandler):title;
+  var bodyHtml=paras.map(function(p){
+    return '<p>'+(hl?hl(p,vocab,article.title||'',hlHandler):topicTabRssEsc(p))+'</p>';
+  }).join('');
+
+  // Vocab section (mirrors immerse layout)
+  var vocabSection;
+  var esc=(typeof window.escapeHtml==='function')?window.escapeHtml:topicTabRssEsc;
+  var isSaved=(typeof window.isWordSaved==='function')?window.isWordSaved:function(){return false;};
+  if(article._vocabLoading&&!vocab.length){
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary</div><div class="trending-detail-loading"><span class="spinner"></span> Segmenting and looking up vocab…</div></div>';
+  }else if(article._vocabError&&!vocab.length){
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary</div><div class="trending-detail-empty">Could not dissect this article.</div></div>';
+  }else if(!vocab.length){
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary</div><div class="trending-detail-empty">No dictionary-matching vocab found in this article.</div></div>';
+  }else{
+    var vocabHtml=vocab.map(function(v){
+      var saved=isSaved(v.cn);
+      var eCn=(v.cn||'').replace(/'/g,"\\'");
+      var ePy=(v.py||'').replace(/'/g,"\\'");
+      var eEn=(v.en||'').replace(/'/g,"\\'");
+      var eTitle=(article.title||'').replace(/'/g,"\\'");
+      var hskTag=v.hsk?'<span class="vc-hsk" style="font-size:0.55rem;color:var(--muted);margin-left:4px;">HSK '+v.hsk+'</span>':'';
+      return '<span class="rss-vocab-chip'+(saved?' added':'')+'" onclick="topicTabRssAddWord(\''+tabId+'\',\''+eCn+'\',\''+ePy+'\',\''+eEn+'\',\''+eTitle+'\')" title="'+(saved?'Click to remove':'Click to add')+'"><span class="vc-cn">'+esc(v.cn)+'</span><span class="vc-py">'+esc(v.py||'—')+'</span><span class="vc-en">'+esc(v.en||'')+'</span>'+hskTag+'<span class="vc-add">'+(saved?'✓':'+')+'</span></span>';
+    }).join('');
+    var allSaved=vocab.every(function(v){return isSaved(v.cn);});
+    var addAllBtn=vocab.length>1&&!allSaved?'<button class="add-all-btn" onclick="topicTabRssAddAll(\''+tabId+'\')">➕ Add All Words to List</button>':'';
+    var allSavedMsg=allSaved?'<div style="font-size:0.65rem;color:var(--green);margin-top:8px;">✅ All words from this article saved!</div>':'';
+    vocabSection='<div class="rss-vocab"><div class="rss-vocab-title">📝 Key Vocabulary · <span style="font-weight:400;color:var(--muted);">'+vocab.length+' words · Click ➕ to save</span></div><div class="rss-vocab-list">'+vocabHtml+'</div>'+addAllBtn+allSavedMsg+'</div>';
+  }
+
+  var safeUrl=(article.url||'').replace(/'/g,"\\'");
+  detail.innerHTML='<div class="rss-detail-header">'+metaLine+'<div class="rss-detail-title">'+titleHtml+'</div></div>'+
+    (vocab.length?'<div class="vocab-highlight-legend"><div class="vhl-item"><div class="vhl-swatch" style="background:var(--accent2);"></div><span>Vocab word (hover for details)</span></div><div class="vhl-item"><div class="vhl-swatch" style="background:var(--green);"></div><span>Already saved ✓</span></div></div>':'')+
+    '<div class="rss-detail-body">'+bodyHtml+'</div>'+
+    vocabSection+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+
+      '<a class="rss-detail-link" href="'+topicTabRssEsc(article.url||'')+'" target="_blank" rel="noopener noreferrer">🔗 Open original ↗</a>'+
+      '<button type="button" class="btn-secondary btn-small" onclick="topicTabRssOpenArticle(\''+tabId+'\',\''+safeUrl+'\')">↻ Re-extract</button>'+
+    '</div>';
+
+  if(!article._vocabLoaded&&!article._vocabLoading)topicTabRssLoadVocab(tabId,article);
+}
+
+function topicTabRssLoadVocab(tabId,article){
+  if(!article||article._vocabLoaded||article._vocabLoading)return;
+  article._vocabLoading=true;
+  var paras=article._paras||[];
+  var payload=(article.title||'')+'\n'+paras.join('\n');
+  fetch('/api/language/annotate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:payload})
+  }).then(function(r){return r.json();}).then(function(data){
+    var words=(data&&Array.isArray(data.words))?data.words:[];
+    article._vocab=words.map(function(w){
+      var py=w.py||'';
+      try{if(py&&typeof window.convertNumberedPinyinText==='function')py=window.convertNumberedPinyinText(py);}catch(_e){}
+      return {cn:w.cn,py:py,en:w.en||'',hsk:w.hsk||null};
+    });
+    article._vocabLoaded=true;
+    article._vocabLoading=false;
+    var s=TOPIC_TAB_RSS_STATE[tabId];
+    if(s&&s.activeArticleUrl===article.url)topicTabRssRenderArticle(tabId,article);
+  }).catch(function(){
+    article._vocabLoading=false;
+    article._vocabError=true;
+    var s=TOPIC_TAB_RSS_STATE[tabId];
+    if(s&&s.activeArticleUrl===article.url)topicTabRssRenderArticle(tabId,article);
+  });
+}
+
+// Map page-tab id (cybersec, dropshipping) to canonical topic id (cyber,
+// dropship). Mirror of TAB_TO_TOPIC in dashboard.ts so a word saved here
+// shares topic with a word saved via "Found While Browsing".
+var TOPIC_TAB_RSS_TOPIC_MAP={cybersec:'cyber',political:'political',genz:'genz',academia:'academia',tourist:'tourist',gossip:'gossip',makeup:'makeup',food:'food',dropshipping:'dropship'};
+
+function topicTabRssTopicFor(tabId){return TOPIC_TAB_RSS_TOPIC_MAP[tabId]||tabId;}
+
+function topicTabRssAddWord(tabId,cn,py,en,sourceArticle){
+  var topic=topicTabRssTopicFor(tabId);
+  // Toggle: if already saved, remove (mirroring addWordFromVocab's UX).
+  if(typeof window.isWordSaved==='function'&&window.isWordSaved(cn)){
+    if(typeof window.removeWord==='function')window.removeWord(cn);
+    if(typeof window.showToast==='function')window.showToast(cn,py||'',en||'',true);
+  }else{
+    if(typeof window.addWord==='function'){
+      var added=window.addWord({cn:cn,py:py||'',en:en||'',source:'rss',sourceArticle:sourceArticle||'',topic:topic});
+      if(added&&typeof window.addSavedWordToFlashcards==='function')window.addSavedWordToFlashcards({cn:cn,py:py||'',en:en||''});
+      if(added&&typeof window.showToast==='function')window.showToast(cn,py||'',en||'',false);
+    }
+  }
+  if(typeof window.renderWordlistContent==='function')window.renderWordlistContent();
+  if(typeof window.renderCard==='function')window.renderCard();
+  // re-render so the chip flips to ✓
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  var article=s.articleCache[s.activeArticleUrl];
+  if(article)topicTabRssRenderArticle(tabId,article);
+}
+
+function topicTabRssAddAll(tabId){
+  var s=TOPIC_TAB_RSS_STATE[tabId];if(!s)return;
+  var article=s.articleCache[s.activeArticleUrl];if(!article)return;
+  var vocab=article._vocab||[];
+  var topic=topicTabRssTopicFor(tabId);
+  var count=0;
+  var isSaved=(typeof window.isWordSaved==='function')?window.isWordSaved:function(){return false;};
+  vocab.forEach(function(v){
+    if(!v||!v.cn||isSaved(v.cn))return;
+    if(typeof window.addWord==='function'){
+      window.addWord({cn:v.cn,py:v.py||'',en:v.en||'',source:'rss',sourceArticle:article.title||'',topic:topic});
+    }
+    if(typeof window.addSavedWordToFlashcards==='function'){
+      window.addSavedWordToFlashcards({cn:v.cn,py:v.py||'',en:v.en||''});
+    }
+    count++;
+  });
+  if(count>0){
+    if(typeof window.showToast==='function')window.showToast(count+' words','','added to word list & flashcards',false);
+    if(typeof window.renderCard==='function')window.renderCard();
+    if(typeof window.renderWordlistContent==='function')window.renderWordlistContent();
+  }
+  topicTabRssRenderArticle(tabId,article);
+}
+
 function initTopicWidgets(){var renderers={cyber:renderCyberWidgets,political:renderPoliticalWidgets,genz:renderGenZWidgets,academia:renderAcademiaWidgets,tourist:renderTouristWidgets,gossip:renderGossipWidgets,makeup:renderMakeupWidgets,food:renderFoodWidgets,dropship:renderDropshipWidgets,reading:renderReadingWidgets};Object.keys(renderers).forEach(function(tabId){var container=document.querySelector('[data-topic-widgets=\"'+tabId+'\"]');if(container)container.innerHTML=renderers[tabId]()+topicBuildFoundWordsWidget(tabId,'Per section');});['cyber','political','genz','academia','gossip','makeup','dropship'].forEach(function(tabId){var d=TOPIC_WIDGET_DATA[tabId];if(d&&d.terms)topicInitQuiz(tabId,d.terms);});setTimeout(function(){topicRenderMakeupYoutubeWidget();topicRenderFoodYoutubeWidget();topicRenderMakeupLatestFeed();topicRenderFoodLatestFeed();topicInitCyberTerminal();topicInitSkinQuiz();topicConvertGPA();topicConvertCurrency();topicCalcProfit();topicRenderHPOrder();topicMigrateFoundWordsToSavedWords();topicRefreshAllFoundWords();topicInitReading();},50);}
 window.topicFlipFC=topicFlipFC;window.topicNavFC=topicNavFC;window.topicBuildCyberQuery=topicBuildCyberQuery;window.topicSetVibe=topicSetVibe;window.topicSetTea=topicSetTea;window.topicSetEmailTpl=topicSetEmailTpl;window.topicConvertGPA=topicConvertGPA;window.topicConvertCurrency=topicConvertCurrency;window.topicToggleHP=topicToggleHP;window.topicCalcProfit=topicCalcProfit;window.topicNextQuiz=topicNextQuiz;window.topicInitSkinQuiz=topicInitSkinQuiz;window.topicCopyText=topicCopyText;window.topicCopyElText=topicCopyElText;window.topicAddFoundWord=topicAddFoundWord;window.topicDeleteFoundWord=topicDeleteFoundWord;window.topicRefreshFoundWords=topicRefreshFoundWords;window.topicRefreshAllFoundWords=topicRefreshAllFoundWords;window.topicMigrateFoundWordsToSavedWords=topicMigrateFoundWordsToSavedWords;window.topicSetMakeupYoutubeChannel=topicSetMakeupYoutubeChannel;window.topicSetFoodYoutubeChannel=topicSetFoodYoutubeChannel;window.topicOpenBaiduSearch=topicOpenBaiduSearch;window.topicBaiduKeydown=topicBaiduKeydown;window.topicBaiduSearchFromInput=topicBaiduSearchFromInput;window.topicBaiduQuickSearch=topicBaiduQuickSearch;window.topicTermListSetCat=topicTermListSetCat;window.topicTermListSetSort=topicTermListSetSort;window.topicAddTermToBaiduQuery=topicAddTermToBaiduQuery;window.topicRemoveTermFromBaiduQuery=topicRemoveTermFromBaiduQuery;window.topicClearBaiduQuery=topicClearBaiduQuery;window.topicRefreshBaiduPreview=topicRefreshBaiduPreview;window.topicPagerGoTo=topicPagerGoTo;window.topicReadingSelectFeed=topicReadingSelectFeed;window.topicReadingOpenArticle=topicReadingOpenArticle;window.topicReadingCloseArticle=topicReadingCloseArticle;window.topicReadingSetTag=topicReadingSetTag;
+window.topicTabRssActivate=topicTabRssActivate;window.topicTabRssSelectFeed=topicTabRssSelectFeed;window.topicTabRssOpenArticle=topicTabRssOpenArticle;window.topicTabRssRefresh=topicTabRssRefresh;window.topicTabRssAddWord=topicTabRssAddWord;window.topicTabRssAddAll=topicTabRssAddAll;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initTopicWidgets);else initTopicWidgets();
 })();

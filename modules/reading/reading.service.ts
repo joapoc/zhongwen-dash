@@ -6,7 +6,7 @@ import path from "node:path";
 import Parser from "rss-parser";
 
 import { fetchViaBrowser } from "./reading.browser";
-import { READING_FEEDS, findFeedById } from "./reading.data";
+import { READING_FEEDS, findFeedById, findFeedsByTag } from "./reading.data";
 import type {
   ReadingArticle,
   ReadingFeedCache,
@@ -180,6 +180,52 @@ export async function getFeedItems(
     }
     throw err;
   }
+}
+
+// Fetches every feed with the given tag in parallel and returns merged
+// items sorted newest-first. Per-feed errors are swallowed so a single
+// dead feed doesn't kill the topic stream — we just include whatever
+// loaded successfully and surface a message naming the failed feeds.
+export async function getFeedItemsByTag(
+  tag: string,
+  refresh: boolean,
+): Promise<{
+  tag: string;
+  feeds: { id: string; name: string; description: string; tag: string; url: string; homepage?: string }[];
+  fetchedAt: string;
+  total: number;
+  failed: { feedId: string; message: string }[];
+  items: ReadingFeedItem[];
+}> {
+  const feeds = findFeedsByTag(tag);
+  if (!feeds.length) {
+    return { tag, feeds: [], fetchedAt: new Date().toISOString(), total: 0, failed: [], items: [] };
+  }
+  const results = await Promise.allSettled(
+    feeds.map((f) => getFeedItems(f.id, refresh)),
+  );
+  const merged: ReadingFeedItem[] = [];
+  const failed: { feedId: string; message: string }[] = [];
+  results.forEach((r, idx) => {
+    const feed = feeds[idx];
+    if (r.status === "fulfilled") {
+      for (const it of r.value.items) merged.push(it);
+    } else {
+      failed.push({
+        feedId: feed.id,
+        message: r.reason instanceof Error ? r.reason.message : String(r.reason),
+      });
+    }
+  });
+  merged.sort((a, b) => (b.publishedAt || "").localeCompare(a.publishedAt || ""));
+  return {
+    tag,
+    feeds,
+    fetchedAt: new Date().toISOString(),
+    total: merged.length,
+    failed,
+    items: merged,
+  };
 }
 
 function normalizeUrl(url: string): string {

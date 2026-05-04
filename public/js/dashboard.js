@@ -3,6 +3,25 @@
 var charDB = { '我': { py: 'wǒ', en: 'I, me', rad: '戈', str: 7, hsk: 1 }, '你': { py: 'nǐ', en: 'you', rad: '亻', str: 7, hsk: 1 }, '他': { py: 'tā', en: 'he', rad: '亻', str: 5, hsk: 1 }, '她': { py: 'tā', en: 'she', rad: '女', str: 6, hsk: 1 }, '是': { py: 'shì', en: 'to be', rad: '日', str: 9, hsk: 1 }, '的': { py: 'de', en: 'possessive', rad: '白', str: 8, hsk: 1 }, '了': { py: 'le', en: 'completion', rad: '乛', str: 2, hsk: 1 }, '不': { py: 'bù', en: 'not', rad: '一', str: 4, hsk: 1 }, '在': { py: 'zài', en: 'at, in', rad: '土', str: 6, hsk: 1 }, '有': { py: 'yǒu', en: 'to have', rad: '月', str: 6, hsk: 1 }, '人': { py: 'rén', en: 'person', rad: '人', str: 2, hsk: 1 }, '大': { py: 'dà', en: 'big', rad: '大', str: 3, hsk: 1 }, '小': { py: 'xiǎo', en: 'small', rad: '小', str: 3, hsk: 1 }, '中': { py: 'zhōng', en: 'middle', rad: '丨', str: 4, hsk: 1 }, '学': { py: 'xué', en: 'to study', rad: '子', str: 8, hsk: 1 }, '吃': { py: 'chī', en: 'to eat', rad: '口', str: 6, hsk: 1 }, '喝': { py: 'hē', en: 'to drink', rad: '口', str: 12, hsk: 1 }, '看': { py: 'kàn', en: 'to look', rad: '目', str: 9, hsk: 1 }, '说': { py: 'shuō', en: 'to speak', rad: '讠', str: 9, hsk: 1 }, '听': { py: 'tīng', en: 'to listen', rad: '口', str: 7, hsk: 1 }, '写': { py: 'xiě', en: 'to write', rad: '冖', str: 5, hsk: 1 }, '去': { py: 'qù', en: 'to go', rad: '厶', str: 5, hsk: 1 }, '来': { py: 'lái', en: 'to come', rad: '木', str: 7, hsk: 1 }, '好': { py: 'hǎo', en: 'good', rad: '女', str: 6, hsk: 1 }, '爱': { py: 'ài', en: 'to love', rad: '爫', str: 10, hsk: 1 }, '想': { py: 'xiǎng', en: 'to think', rad: '心', str: 13, hsk: 2 }, '明': { py: 'míng', en: 'bright', rad: '日', str: 8, hsk: 2 }, '谢': { py: 'xiè', en: 'to thank', rad: '讠', str: 12, hsk: 1 }, '语': { py: 'yǔ', en: 'language', rad: '讠', str: 9, hsk: 2 }, '休': { py: 'xiū', en: 'to rest', rad: '亻', str: 6, hsk: 2 }, '天': { py: 'tiān', en: 'day, sky', rad: '大', str: 4, hsk: 1 }, '日': { py: 'rì', en: 'sun', rad: '日', str: 4, hsk: 2 }, '月': { py: 'yuè', en: 'moon', rad: '月', str: 4, hsk: 1 }, '水': { py: 'shuǐ', en: 'water', rad: '水', str: 4, hsk: 1 }, '火': { py: 'huǒ', en: 'fire', rad: '火', str: 4, hsk: 2 }, '山': { py: 'shān', en: 'mountain', rad: '山', str: 3, hsk: 2 }, '口': { py: 'kǒu', en: 'mouth', rad: '口', str: 3, hsk: 2 }, '心': { py: 'xīn', en: 'heart', rad: '心', str: 4, hsk: 2 }, '手': { py: 'shǒu', en: 'hand', rad: '手', str: 4, hsk: 2 }, '木': { py: 'mù', en: 'wood', rad: '木', str: 4, hsk: 3 }, '女': { py: 'nǚ', en: 'woman', rad: '女', str: 3, hsk: 1 }, '子': { py: 'zǐ', en: 'child', rad: '子', str: 3, hsk: 2 }, '饭': { py: 'fàn', en: 'meal', rad: '饣', str: 7, hsk: 1 }, '茶': { py: 'chá', en: 'tea', rad: '艹', str: 9, hsk: 2 }, '花': { py: 'huā', en: 'flower', rad: '艹', str: 7, hsk: 2 }, '妈': { py: 'mā', en: 'mother', rad: '女', str: 6, hsk: 1 } };
 var charKeys = Object.keys(charDB);
 var wordsPersistTimer = null;
+// Page tab ids → canonical topic ids (the topic-widgets system already uses
+// these short keys; keeping them canonical means a word saved from cybersec
+// RSS and one saved from the cybersec topic-tab "Found While Browsing"
+// widget end up with the same topic value.)
+var TAB_TO_TOPIC = { cybersec: 'cyber', political: 'political', genz: 'genz', academia: 'academia', tourist: 'tourist', gossip: 'gossip', makeup: 'makeup', food: 'food', dropshipping: 'dropship', immerse: 'immerse' };
+function deriveTopicFromWord(word) {
+    if (!word)
+        return '';
+    if (word.topic)
+        return word.topic;
+    // Topic-tab "Found While Browsing" already encodes tabId in sourceArticle.
+    if (word.source === 'browsing' && word.sourceArticle)
+        return word.sourceArticle;
+    // Pre-existing RSS/trending saves all came from Immerse (topic-tab RSS
+    // didn't exist before). Tag them so the Library can group them.
+    if (word.source === 'rss' || word.source === 'trending')
+        return 'immerse';
+    return '';
+}
 function normalizeSavedWord(word) {
     return {
         cn: word.cn,
@@ -11,6 +30,7 @@ function normalizeSavedWord(word) {
         note: word.note || '',
         source: word.source || 'manual',
         sourceArticle: word.sourceArticle || '',
+        topic: word.topic || deriveTopicFromWord(word),
         addedAt: word.addedAt || new Date().toISOString(),
         inFlashcards: word.inFlashcards !== false
     };
@@ -74,7 +94,7 @@ function csvEscape(v) {
     return s;
 }
 function buildSavedWordsCsv(words) {
-    var cols = ['cn', 'py', 'en', 'note', 'source', 'sourceArticle', 'addedAt', 'inFlashcards'];
+    var cols = ['cn', 'py', 'en', 'note', 'source', 'sourceArticle', 'topic', 'addedAt', 'inFlashcards'];
     var out = [cols.join(',')];
     (words || []).forEach(function (w) {
         out.push(cols.map(function (c) { return csvEscape(w[c]); }).join(','));
@@ -201,7 +221,7 @@ function applyImportedCsv(text) {
     }
     var header = rows[0].map(function (h) { return (h || '').trim().toLowerCase(); });
     var idx = {};
-    ['cn', 'py', 'en', 'note', 'source', 'sourcearticle', 'addedat', 'inflashcards'].forEach(function (k) {
+    ['cn', 'py', 'en', 'note', 'source', 'sourcearticle', 'topic', 'addedat', 'inflashcards'].forEach(function (k) {
         idx[k] = header.indexOf(k);
     });
     if (idx.cn < 0) {
@@ -228,6 +248,7 @@ function applyImportedCsv(text) {
             note: idx.note >= 0 ? (row[idx.note] || '') : '',
             source: idx.source >= 0 ? ((row[idx.source] || '').trim() || 'manual') : 'manual',
             sourceArticle: idx.sourcearticle >= 0 ? (row[idx.sourcearticle] || '') : '',
+            topic: idx.topic >= 0 ? ((row[idx.topic] || '').trim()) : '',
             addedAt: idx.addedat >= 0 ? (row[idx.addedat] || new Date().toISOString()) : new Date().toISOString(),
             inFlashcards: inFlag === 'true' || inFlag === '1'
         };
@@ -282,13 +303,15 @@ function isWordSaved(cn) { return savedWords.some(function (w) { return w.cn ===
 function addWord(word) {
     if (isWordSaved(word.cn))
         return false;
-    savedWords.push(normalizeSavedWord({ cn: word.cn, py: word.py, en: word.en, note: word.note, source: word.source, sourceArticle: word.sourceArticle, inFlashcards: false }));
+    savedWords.push(normalizeSavedWord({ cn: word.cn, py: word.py, en: word.en, note: word.note, source: word.source, sourceArticle: word.sourceArticle, topic: word.topic, inFlashcards: false }));
     queuePersistSavedWords();
     updateWordCountDisplays();
     if (typeof topicRefreshFoundWords === 'function' && word.source === 'browsing' && word.sourceArticle)
         topicRefreshFoundWords(word.sourceArticle);
     if (typeof recordActivity === 'function')
         recordActivity(1);
+    if (typeof renderLibraryTab === 'function' && document.getElementById('tab-library') && document.getElementById('tab-library').classList.contains('active'))
+        renderLibraryTab();
     return true;
 }
 function removeWord(cn) {
@@ -299,6 +322,8 @@ function removeWord(cn) {
     updateWordCountDisplays();
     if (typeof topicRefreshFoundWords === 'function' && removed && removed.source === 'browsing' && removed.sourceArticle)
         topicRefreshFoundWords(removed.sourceArticle);
+    if (typeof renderLibraryTab === 'function' && document.getElementById('tab-library') && document.getElementById('tab-library').classList.contains('active'))
+        renderLibraryTab();
 }
 function updateWordCountDisplays() {
     var n = savedWords.length;
@@ -339,7 +364,9 @@ function addWordFromVocab(cn, py, en, sourceArticle) {
         renderWordlistContent();
         return;
     }
-    var added = addWord({ cn: cn, py: py, en: en, source: 'rss', sourceArticle: sourceArticle || '' });
+    // Default topic for words saved via the Immerse RSS reader. Topic-tab RSS
+    // readers route through topicTabRssAddWord and pass their own tabId.
+    var added = addWord({ cn: cn, py: py, en: en, source: 'rss', sourceArticle: sourceArticle || '', topic: 'immerse' });
     if (added) {
         addSavedWordToFlashcards({ cn: cn, py: py, en: en });
         showToast(cn, py, en, false);
@@ -541,7 +568,438 @@ function switchTab(tab, btn) { document.querySelectorAll('.tab-content').forEach
 } if (tab === 'words')
     initWordsZone(); if (tab === 'kahoot')
     initKahootZone(); if (tab === 'grammar')
-    initGrammarZone(); }
+    initGrammarZone(); if (typeof window.topicTabRssActivate === 'function' && ['cybersec', 'political', 'genz', 'academia', 'tourist', 'gossip', 'makeup', 'food', 'dropshipping'].indexOf(tab) > -1)
+    window.topicTabRssActivate(tab); if (tab === 'library')
+    renderLibraryTab(); }
+// ===== LIBRARY TAB =====
+var TOPIC_LABELS = { cyber: '🛡️ Cybersec', political: '🏛️ Political', genz: '📱 Gen Z', academia: '🎓 Academia', tourist: '🧭 Tourist', gossip: '🗣️ Gossip', makeup: '💄 Makeup', food: '🍜 Food', dropship: '📦 Dropshipping', immerse: '🌏 Immerse', reading: '📖 Reading' };
+var SOURCE_LABELS = { rss: '📡 RSS', trending: '🔥 Trending', browsing: '✍️ Browsing', manual: '✏️ Manual' };
+var libraryFilters = { sources: {}, topics: {}, fc: '', py: '', date: '', collection: '' };
+var librarySelected = {};
+var LIBRARY_COLLECTIONS_KEY = 'zhongwen-dash:wordCollections';
+function loadLibraryCollections() {
+    try {
+        var raw = localStorage.getItem(LIBRARY_COLLECTIONS_KEY);
+        if (!raw)
+            return [];
+        var parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed))
+            return [];
+        return parsed.filter(function (c) { return c && typeof c.name === 'string' && Array.isArray(c.cns); });
+    }
+    catch (_e) {
+        return [];
+    }
+}
+function saveLibraryCollections(list) {
+    try {
+        localStorage.setItem(LIBRARY_COLLECTIONS_KEY, JSON.stringify(list || []));
+    }
+    catch (_e) { }
+}
+function libraryTopicLabel(t) { return t ? (TOPIC_LABELS[t] || ('🏷️ ' + t)) : '(none)'; }
+function librarySourceLabel(s) { return s ? (SOURCE_LABELS[s] || ('· ' + s)) : '(none)'; }
+function libraryDateBucket(iso) {
+    if (!iso)
+        return 'unknown';
+    var ms = Date.now() - new Date(iso).getTime();
+    if (isNaN(ms))
+        return 'unknown';
+    var day = 86400000;
+    if (ms < day)
+        return 'today';
+    if (ms < 7 * day)
+        return 'week';
+    if (ms < 30 * day)
+        return 'month';
+    if (ms < 365 * day)
+        return 'year';
+    return 'older';
+}
+var DATE_BUCKETS = [
+    { id: '', label: 'Any time' },
+    { id: 'today', label: 'Today' },
+    { id: 'week', label: 'Past 7 days' },
+    { id: 'month', label: 'Past 30 days' },
+    { id: 'year', label: 'Past year' },
+    { id: 'older', label: 'Older' }
+];
+function libraryFilteredWords() {
+    var q = (document.getElementById('libSearch') || {}).value || '';
+    q = q.toLowerCase().trim();
+    var sortKey = ((document.getElementById('libSort') || {}).value) || 'addedAt-desc';
+    var f = libraryFilters;
+    var collections = loadLibraryCollections();
+    var coll = f.collection ? collections.find(function (c) { return c.name === f.collection; }) : null;
+    var collSet = coll ? new Set(coll.cns) : null;
+    var anySource = Object.keys(f.sources).some(function (k) { return f.sources[k]; });
+    var anyTopic = Object.keys(f.topics).some(function (k) { return f.topics[k]; });
+    var out = savedWords.filter(function (w) {
+        if (collSet && !collSet.has(w.cn))
+            return false;
+        if (anySource && !f.sources[w.source || 'manual'])
+            return false;
+        var topic = w.topic || '';
+        if (anyTopic) {
+            // "(none)" sentinel matches words without topic
+            if (topic) {
+                if (!f.topics[topic])
+                    return false;
+            }
+            else {
+                if (!f.topics['__none__'])
+                    return false;
+            }
+        }
+        if (f.fc === 'in' && !w.inFlashcards)
+            return false;
+        if (f.fc === 'out' && w.inFlashcards)
+            return false;
+        if (f.py === 'yes' && !w.py)
+            return false;
+        if (f.py === 'no' && w.py)
+            return false;
+        if (f.date && libraryDateBucket(w.addedAt) !== f.date)
+            return false;
+        if (q) {
+            var hay = (w.cn + ' ' + (w.py || '') + ' ' + (w.en || '') + ' ' + (w.note || '') + ' ' + (w.sourceArticle || '') + ' ' + (w.topic || '') + ' ' + (w.source || '')).toLowerCase();
+            if (hay.indexOf(q) === -1)
+                return false;
+        }
+        return true;
+    });
+    var parts = sortKey.split('-');
+    var col = parts[0], dir = parts[1] === 'desc' ? -1 : 1;
+    out.sort(function (a, b) {
+        var av = a[col] || '';
+        var bv = b[col] || '';
+        if (col === 'addedAt') {
+            av = new Date(av).getTime() || 0;
+            bv = new Date(bv).getTime() || 0;
+        }
+        else {
+            av = String(av).toLowerCase();
+            bv = String(bv).toLowerCase();
+        }
+        if (av < bv)
+            return -1 * dir;
+        if (av > bv)
+            return 1 * dir;
+        return 0;
+    });
+    return out;
+}
+function renderLibraryStats() {
+    var el = document.getElementById('libStats');
+    if (!el)
+        return;
+    var byTopic = {}, bySource = {};
+    savedWords.forEach(function (w) {
+        var t = w.topic || '';
+        bySource[w.source || 'manual'] = (bySource[w.source || 'manual'] || 0) + 1;
+        if (t)
+            byTopic[t] = (byTopic[t] || 0) + 1;
+    });
+    var topicCount = Object.keys(byTopic).length;
+    var fcCount = savedWords.filter(function (w) { return w.inFlashcards; }).length;
+    el.innerHTML =
+        '<div class="library-stat"><div class="library-stat-val">' + savedWords.length + '</div><div class="library-stat-lbl">Total</div></div>' +
+            '<div class="library-stat"><div class="library-stat-val">' + topicCount + '</div><div class="library-stat-lbl">Topics</div></div>' +
+            '<div class="library-stat"><div class="library-stat-val">' + fcCount + '</div><div class="library-stat-lbl">In flashcards</div></div>' +
+            '<div class="library-stat"><div class="library-stat-val">' + (bySource.rss || 0) + '</div><div class="library-stat-lbl">From RSS</div></div>' +
+            '<div class="library-stat"><div class="library-stat-val">' + (bySource.browsing || 0) + '</div><div class="library-stat-lbl">Browsing</div></div>';
+}
+function libraryFilterButton(label, count, active, onclick) {
+    return '<button type="button" class="library-filter-btn' + (active ? ' active' : '') + '" onclick="' + onclick + '"><span>' + label + '</span><span class="lib-fcount">' + count + '</span></button>';
+}
+function renderLibraryFilters() {
+    // Build counts from the *current* savedWords (filters apply against the full list).
+    var sourceCounts = {}, topicCounts = {};
+    var noTopic = 0;
+    savedWords.forEach(function (w) {
+        sourceCounts[w.source || 'manual'] = (sourceCounts[w.source || 'manual'] || 0) + 1;
+        if (w.topic)
+            topicCounts[w.topic] = (topicCounts[w.topic] || 0) + 1;
+        else
+            noTopic++;
+    });
+    var sf = document.getElementById('libFilterSources');
+    if (sf) {
+        var s = ['rss', 'trending', 'browsing', 'manual'];
+        sf.innerHTML = s.map(function (id) {
+            return libraryFilterButton(SOURCE_LABELS[id] || id, sourceCounts[id] || 0, !!libraryFilters.sources[id], "toggleLibraryFilter('sources','" + id + "')");
+        }).join('');
+    }
+    var tf = document.getElementById('libFilterTopics');
+    if (tf) {
+        var topics = Object.keys(topicCounts).sort(function (a, b) { return topicCounts[b] - topicCounts[a]; });
+        var html = topics.map(function (t) {
+            return libraryFilterButton(libraryTopicLabel(t), topicCounts[t], !!libraryFilters.topics[t], "toggleLibraryFilter('topics','" + t + "')");
+        }).join('');
+        if (noTopic) {
+            html += libraryFilterButton('(no topic)', noTopic, !!libraryFilters.topics['__none__'], "toggleLibraryFilter('topics','__none__')");
+        }
+        tf.innerHTML = html || '<div style="font-size:0.66rem;color:var(--muted);padding:4px;">No topics yet — save words from a topic tab.</div>';
+    }
+    var fc = document.getElementById('libFilterFc');
+    if (fc) {
+        var inFc = savedWords.filter(function (w) { return w.inFlashcards; }).length;
+        fc.innerHTML =
+            libraryFilterButton('All', savedWords.length, libraryFilters.fc === '', "setLibraryFilter('fc','')") +
+                libraryFilterButton('In flashcards', inFc, libraryFilters.fc === 'in', "setLibraryFilter('fc','in')") +
+                libraryFilterButton('Not in flashcards', savedWords.length - inFc, libraryFilters.fc === 'out', "setLibraryFilter('fc','out')");
+    }
+    var pyEl = document.getElementById('libFilterPy');
+    if (pyEl) {
+        var withPy = savedWords.filter(function (w) { return !!w.py; }).length;
+        pyEl.innerHTML =
+            libraryFilterButton('All', savedWords.length, libraryFilters.py === '', "setLibraryFilter('py','')") +
+                libraryFilterButton('With pinyin', withPy, libraryFilters.py === 'yes', "setLibraryFilter('py','yes')") +
+                libraryFilterButton('Missing pinyin', savedWords.length - withPy, libraryFilters.py === 'no', "setLibraryFilter('py','no')");
+    }
+    var dateEl = document.getElementById('libFilterDate');
+    if (dateEl) {
+        var counts = {};
+        savedWords.forEach(function (w) { var b = libraryDateBucket(w.addedAt); counts[b] = (counts[b] || 0) + 1; });
+        dateEl.innerHTML = DATE_BUCKETS.map(function (b) {
+            var c = b.id ? (counts[b.id] || 0) : savedWords.length;
+            return libraryFilterButton(b.label, c, libraryFilters.date === b.id, "setLibraryFilter('date','" + b.id + "')");
+        }).join('');
+    }
+    renderLibraryCollections();
+}
+function renderLibraryCollections() {
+    var el = document.getElementById('libCollections');
+    if (!el)
+        return;
+    var collections = loadLibraryCollections();
+    if (!collections.length) {
+        el.innerHTML = '<div style="font-size:0.66rem;color:var(--muted);padding:4px;">No collections yet. Create one below to group words across topics.</div>';
+        return;
+    }
+    el.innerHTML = collections.map(function (c) {
+        var nameEsc = c.name.replace(/'/g, "\\'");
+        var active = libraryFilters.collection === c.name;
+        return '<div class="library-collection' + (active ? ' active' : '') + '" onclick="setLibraryCollection(\'' + nameEsc + '\')">' +
+            '<span class="library-collection-name">' + escapeHtml(c.name) + '</span>' +
+            '<span class="library-collection-count">' + c.cns.length + '</span>' +
+            '<button type="button" class="library-collection-del" title="Delete collection" onclick="event.stopPropagation();deleteLibraryCollection(\'' + nameEsc + '\')">✕</button>' +
+            '</div>';
+    }).join('');
+}
+function renderLibraryTable() {
+    var body = document.getElementById('libTableBody');
+    var empty = document.getElementById('libEmpty');
+    if (!body)
+        return;
+    var words = libraryFilteredWords();
+    if (!words.length) {
+        body.innerHTML = '';
+        if (empty) {
+            empty.hidden = false;
+            empty.textContent = savedWords.length ? 'No words match your filters.' : 'You haven\'t saved any words yet — head to the Immerse or any topic tab and click ➕ on a vocab chip.';
+        }
+        updateLibraryBulkBar();
+        return;
+    }
+    if (empty)
+        empty.hidden = true;
+    body.innerHTML = words.map(function (w) {
+        var topic = w.topic || '';
+        var source = w.source || 'manual';
+        var topicPill = '<span class="library-pill ' + (topic ? 'library-pill-topic' : 'library-pill-empty') + '">' + escapeHtml(libraryTopicLabel(topic)) + '</span>';
+        var sourcePill = '<span class="library-pill library-pill-source-' + source + '">' + escapeHtml(librarySourceLabel(source)) + '</span>';
+        var meaning = w.en || w.note || '';
+        var when = w.addedAt ? new Date(w.addedAt).toLocaleDateString() : '—';
+        var checked = librarySelected[w.cn] ? ' checked' : '';
+        var rowCls = librarySelected[w.cn] ? ' class="selected"' : '';
+        var fcIcon = w.inFlashcards ? '✓' : '🃏';
+        var fcCls = w.inFlashcards ? ' fc-added' : '';
+        var cnEsc = w.cn.replace(/'/g, "\\'");
+        var srcArticle = w.sourceArticle ? '<div class="library-meta">' + escapeHtml((w.sourceArticle || '').slice(0, 60)) + (w.sourceArticle.length > 60 ? '…' : '') + '</div>' : '';
+        return '<tr' + rowCls + ' data-cn="' + escapeHtml(w.cn) + '">' +
+            '<td><input type="checkbox" ' + checked + ' onchange="toggleLibraryRow(\'' + cnEsc + '\',this.checked)"></td>' +
+            '<td><div class="library-cn cn">' + escapeHtml(w.cn) + '</div></td>' +
+            '<td><div class="library-py">' + escapeHtml(w.py || '—') + '</div></td>' +
+            '<td><div class="library-en">' + escapeHtml(meaning || '—') + '</div>' + (w.note && w.en ? '<div class="library-note">📝 ' + escapeHtml(w.note) + '</div>' : '') + '</td>' +
+            '<td class="library-cell-topic">' + topicPill + '</td>' +
+            '<td class="library-cell-source">' + sourcePill + srcArticle + '</td>' +
+            '<td><div style="font-size:0.7rem;color:var(--muted);">' + when + '</div></td>' +
+            '<td><div class="library-cell-actions">' +
+            '<button class="library-action-btn' + fcCls + '" onclick="addSavedWordToFlashcards({cn:\'' + cnEsc + '\',py:\'' + (w.py || '').replace(/\'/g, "\\\'") + '\',en:\'' + (meaning || '').replace(/\'/g, "\\\'") + '\'});renderLibraryTab();" title="Toggle flashcards">' + fcIcon + '</button>' +
+            '<button class="library-action-btn delete-btn" onclick="if(confirm(\'Remove ' + cnEsc + '?\')){removeWord(\'' + cnEsc + '\');renderLibraryTab();}" title="Delete word">✕</button>' +
+            '</div></td>' +
+            '</tr>';
+    }).join('');
+    updateLibraryBulkBar();
+}
+function renderLibraryTab() {
+    if (!document.getElementById('tab-library'))
+        return;
+    renderLibraryStats();
+    renderLibraryFilters();
+    renderLibraryTable();
+}
+function toggleLibraryFilter(group, id) {
+    if (!libraryFilters[group])
+        libraryFilters[group] = {};
+    libraryFilters[group][id] = !libraryFilters[group][id];
+    renderLibraryTab();
+}
+function setLibraryFilter(key, val) { libraryFilters[key] = val; renderLibraryTab(); }
+function setLibraryCollection(name) {
+    libraryFilters.collection = libraryFilters.collection === name ? '' : name;
+    renderLibraryTab();
+}
+function resetLibraryFilters() {
+    libraryFilters = { sources: {}, topics: {}, fc: '', py: '', date: '', collection: '' };
+    var s = document.getElementById('libSearch');
+    if (s)
+        s.value = '';
+    librarySelected = {};
+    renderLibraryTab();
+}
+function createLibraryCollection() {
+    var inp = document.getElementById('libCollectionNew');
+    var name = inp ? (inp.value || '').trim() : '';
+    if (!name)
+        return;
+    var collections = loadLibraryCollections();
+    if (collections.some(function (c) { return c.name === name; })) {
+        alert('A collection with that name already exists.');
+        return;
+    }
+    collections.push({ name: name, cns: [], createdAt: new Date().toISOString() });
+    saveLibraryCollections(collections);
+    if (inp)
+        inp.value = '';
+    renderLibraryCollections();
+}
+function deleteLibraryCollection(name) {
+    if (!confirm('Delete collection "' + name + '"? Words in it will not be deleted.'))
+        return;
+    var collections = loadLibraryCollections().filter(function (c) { return c.name !== name; });
+    saveLibraryCollections(collections);
+    if (libraryFilters.collection === name)
+        libraryFilters.collection = '';
+    renderLibraryTab();
+}
+function toggleLibraryRow(cn, checked) {
+    if (checked)
+        librarySelected[cn] = true;
+    else
+        delete librarySelected[cn];
+    // update row class without full re-render
+    var row = document.querySelector('.library-table tr[data-cn="' + cn.replace(/"/g, '\\"') + '"]');
+    if (row)
+        row.classList.toggle('selected', !!librarySelected[cn]);
+    updateLibraryBulkBar();
+}
+function toggleLibrarySelectAll(checked) {
+    var visible = libraryFilteredWords();
+    if (checked)
+        visible.forEach(function (w) { librarySelected[w.cn] = true; });
+    else
+        librarySelected = {};
+    renderLibraryTable();
+}
+function clearLibrarySelection() { librarySelected = {}; renderLibraryTable(); }
+function updateLibraryBulkBar() {
+    var bar = document.getElementById('libBulkBar');
+    if (!bar)
+        return;
+    var keys = Object.keys(librarySelected);
+    bar.hidden = keys.length === 0;
+    var c = document.getElementById('libBulkCount');
+    if (c)
+        c.textContent = keys.length + ' selected';
+    var sa = document.getElementById('libSelectAll');
+    if (sa) {
+        var visible = libraryFilteredWords();
+        sa.checked = visible.length > 0 && visible.every(function (w) { return !!librarySelected[w.cn]; });
+    }
+}
+function bulkAddToCollection() {
+    var keys = Object.keys(librarySelected);
+    if (!keys.length)
+        return;
+    var collections = loadLibraryCollections();
+    var names = collections.map(function (c) { return c.name; });
+    var promptText = 'Add ' + keys.length + ' word(s) to which collection?\n\nExisting:\n' + (names.length ? '  - ' + names.join('\n  - ') : '(none yet)') + '\n\nType a name (existing or new):';
+    var name = prompt(promptText);
+    if (!name)
+        return;
+    name = name.trim();
+    if (!name)
+        return;
+    var coll = collections.find(function (c) { return c.name === name; });
+    if (!coll) {
+        coll = { name: name, cns: [], createdAt: new Date().toISOString() };
+        collections.push(coll);
+    }
+    var existing = new Set(coll.cns);
+    var added = 0;
+    keys.forEach(function (cn) { if (!existing.has(cn)) {
+        coll.cns.push(cn);
+        added++;
+    } });
+    saveLibraryCollections(collections);
+    showToast('📦', '', added + ' added to ' + name, false);
+    renderLibraryTab();
+}
+function bulkRemoveFromCollection() {
+    if (!libraryFilters.collection) {
+        alert('Select a collection in the sidebar first.');
+        return;
+    }
+    var keys = Object.keys(librarySelected);
+    if (!keys.length)
+        return;
+    var collections = loadLibraryCollections();
+    var coll = collections.find(function (c) { return c.name === libraryFilters.collection; });
+    if (!coll)
+        return;
+    var keep = coll.cns.filter(function (cn) { return !librarySelected[cn]; });
+    var removed = coll.cns.length - keep.length;
+    coll.cns = keep;
+    saveLibraryCollections(collections);
+    showToast('📦', '', removed + ' removed from ' + coll.name, true);
+    renderLibraryTab();
+}
+function bulkSyncToFlashcards() {
+    var keys = Object.keys(librarySelected);
+    if (!keys.length)
+        return;
+    var added = 0;
+    keys.forEach(function (cn) {
+        var w = savedWords.find(function (s) { return s.cn === cn; });
+        if (!w)
+            return;
+        var exists = flashcards.some(function (fc) { return fc.source === 'saved' && fc.srcCn === cn; });
+        if (exists)
+            return;
+        flashcards.push({ f: w.cn, b: (w.py || '') + ' — ' + (w.en || w.note || ''), source: 'saved', srcCn: w.cn });
+        w.inFlashcards = true;
+        added++;
+    });
+    if (added) {
+        queuePersistSavedWords();
+        showToast(added + ' words', '', 'synced to flashcards', false);
+        renderCard();
+    }
+    renderLibraryTab();
+}
+function bulkDelete() {
+    var keys = Object.keys(librarySelected);
+    if (!keys.length)
+        return;
+    if (!confirm('Delete ' + keys.length + ' word(s) from your saved list?\n\nA local backup will remain — you can use ♻️ Restore.'))
+        return;
+    keys.forEach(function (cn) { removeWord(cn); });
+    librarySelected = {};
+    showToast('🗑', '', keys.length + ' words removed', true);
+    renderLibraryTab();
+}
 function filterWidgets(q) { q = q.toLowerCase(); document.querySelectorAll('.widget,.resource-card').forEach(function (w) { var kw = (w.getAttribute('data-keywords') || '') + ' ' + w.textContent.toLowerCase(); w.style.display = q === '' || kw.includes(q) ? '' : 'none'; }); }
 function toggleNotifs() { document.getElementById('notifModal').classList.toggle('show'); }
 (function () { var h = new Date().getHours(); var g = h < 6 ? '夜好' : h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'; var greetingText = document.getElementById('greetingText'); if (greetingText)
@@ -1657,7 +2115,7 @@ function addAllVocabFromArticle() {
     vocab.forEach(function (v) {
         if (!v || !v.cn || isWordSaved(v.cn))
             return;
-        addWord({ cn: v.cn, py: v.py || '', en: v.en || '', source: 'rss', sourceArticle: currentDisplayedArticle.title });
+        addWord({ cn: v.cn, py: v.py || '', en: v.en || '', source: 'rss', sourceArticle: currentDisplayedArticle.title, topic: 'immerse' });
         addSavedWordToFlashcards({ cn: v.cn, py: v.py || '', en: v.en || '' });
         count++;
     });
@@ -4072,7 +4530,7 @@ function addWordFromTrending(cn, py, en, sourceTitle) {
         renderWordlistContent();
         return;
     }
-    var added = addWord({ cn: cn, py: py, en: en, source: 'trending', sourceArticle: sourceTitle || '' });
+    var added = addWord({ cn: cn, py: py, en: en, source: 'trending', sourceArticle: sourceTitle || '', topic: 'immerse' });
     if (added) {
         addSavedWordToFlashcards({ cn: cn, py: py, en: en });
         showToast(cn, py, en, false);
@@ -4088,7 +4546,7 @@ function addAllTrendingVocab(key, title) {
     diss.words.forEach(function (v) {
         if (!v.cn || isWordSaved(v.cn))
             return;
-        addWord({ cn: v.cn, py: v.py || '', en: v.en || '', source: 'trending', sourceArticle: title || '' });
+        addWord({ cn: v.cn, py: v.py || '', en: v.en || '', source: 'trending', sourceArticle: title || '', topic: 'immerse' });
         addSavedWordToFlashcards({ cn: v.cn, py: v.py || '', en: v.en || '' });
         count++;
     });

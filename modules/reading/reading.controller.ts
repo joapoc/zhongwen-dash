@@ -4,6 +4,7 @@ import {
   clearCaches,
   getArticle,
   getFeedItems,
+  getFeedItemsByTag,
   listFeeds,
 } from "./reading.service";
 
@@ -34,6 +35,32 @@ export async function getFeedItemsController(req: Request, res: Response) {
       ok: false,
       feedId,
       message: err instanceof Error ? err.message : "Could not load feed.",
+    });
+  }
+}
+
+export async function getFeedItemsByTagController(req: Request, res: Response) {
+  const tag = typeof req.params.tag === "string" ? req.params.tag : "";
+  const refresh = req.query.refresh === "1" || req.query.refresh === "true";
+  if (!tag) {
+    return res.status(400).json({ ok: false, message: "tag is required." });
+  }
+  try {
+    const result = await getFeedItemsByTag(tag, refresh);
+    return res.status(200).json({
+      ok: true,
+      tag: result.tag,
+      feeds: result.feeds,
+      fetchedAt: result.fetchedAt,
+      total: result.total,
+      failed: result.failed,
+      items: result.items,
+    });
+  } catch (err) {
+    return res.status(502).json({
+      ok: false,
+      tag,
+      message: err instanceof Error ? err.message : "Could not load feeds.",
     });
   }
 }

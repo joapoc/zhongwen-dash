@@ -166,8 +166,90 @@ export const READING_FEEDS: ReadingFeedDef[] = [
     url: "https://news.google.com/rss/search?q=%E9%A4%90%E9%A5%AE&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
     homepage: "https://news.google.com",
   },
+
+  // --- Gen Z / Youth slang ---
+  {
+    id: "gn-genz-slang",
+    name: "Google News · 网络流行语",
+    description: "Internet buzzwords, viral phrases, online youth speak.",
+    tag: "genz",
+    url: "https://news.google.com/rss/search?q=%E7%BD%91%E7%BB%9C%E6%B5%81%E8%A1%8C%E8%AF%AD&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+  {
+    id: "gn-genz-life",
+    name: "Google News · 内卷躺平",
+    description: "Burnout, lying-flat, post-95/00 lifestyle and pressure.",
+    tag: "genz",
+    url: "https://news.google.com/rss/search?q=%E5%86%85%E5%8D%B7+%E8%BA%BA%E5%B9%B3&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+  {
+    id: "gn-genz-cohort",
+    name: "Google News · Z世代",
+    description: "Gen Z trends, consumption habits, youth culture coverage.",
+    tag: "genz",
+    url: "https://news.google.com/rss/search?q=Z%E4%B8%96%E4%BB%A3&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+
+  // --- University / Academia ---
+  {
+    id: "gn-study-abroad",
+    name: "Google News · 留学",
+    description: "Study abroad news, visa updates, scholarships.",
+    tag: "academia",
+    url: "https://news.google.com/rss/search?q=%E7%95%99%E5%AD%A6&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+  {
+    id: "gn-kaoyan",
+    name: "Google News · 考研",
+    description: "Postgraduate entrance exam, prep, results, policy.",
+    tag: "academia",
+    url: "https://news.google.com/rss/search?q=%E8%80%83%E7%A0%94&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+  {
+    id: "gn-uni",
+    name: "Google News · 高校",
+    description: "University news, admissions, campus life, research.",
+    tag: "academia",
+    url: "https://news.google.com/rss/search?q=%E9%AB%98%E6%A0%A1+%E5%A4%A7%E5%AD%A6%E7%94%9F&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+
+  // --- Dropshipping / Cross-border e-commerce ---
+  {
+    id: "gn-dropship-cbe",
+    name: "Google News · 跨境电商",
+    description: "Cross-border e-commerce industry news and policy.",
+    tag: "dropship",
+    url: "https://news.google.com/rss/search?q=%E8%B7%A8%E5%A2%83%E7%94%B5%E5%95%86&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+  {
+    id: "gn-dropship-d2c",
+    name: "Google News · 独立站",
+    description: "Independent-site / D2C operations and Shopify-style stores.",
+    tag: "dropship",
+    url: "https://news.google.com/rss/search?q=%E7%8B%AC%E7%AB%8B%E7%AB%99+%E8%B7%A8%E5%A2%83&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
+  {
+    id: "gn-dropship-platforms",
+    name: "Google News · Temu/Shein",
+    description: "Platform news for Temu, Shein, AliExpress, TikTok Shop.",
+    tag: "dropship",
+    url: "https://news.google.com/rss/search?q=Temu+Shein+%E9%80%9F%E5%8D%96%E9%80%9A&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+    homepage: "https://news.google.com",
+  },
 ];
 
 export function findFeedById(id: string): ReadingFeedDef | undefined {
   return READING_FEEDS.find((f) => f.id === id);
+}
+
+export function findFeedsByTag(tag: string): ReadingFeedDef[] {
+  return READING_FEEDS.filter((f) => f.tag === tag);
 }

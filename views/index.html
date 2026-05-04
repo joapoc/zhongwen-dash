@@ -70,6 +70,7 @@
   <button class="tab-btn" onclick="switchTab('food',this)">🍜 Food</button>
   <button class="tab-btn" onclick="switchTab('dropshipping',this)">📦 Dropshipping</button>
   <button class="tab-btn" onclick="switchTab('reading',this)">📖 Reading</button>
+  <button class="tab-btn" onclick="switchTab('library',this)">🗂️ Library</button>
 </div>
 
 <div class="search-bar"><input class="search-input" type="text" placeholder="🔍  Search characters, pinyin, grammar, radicals..." id="globalSearch" oninput="filterWidgets(this.value)"></div>
@@ -549,6 +550,7 @@
         <h2>🛡️ Cybersecurity Professional Vocabulary</h2>
         <p>Network security, threat intel, fraud, disinfo, and monitoring language for real-world Chinese cyber content.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="cybersec" data-topic-rss-tag="cyber" data-topic-rss-icon="🛡️" data-topic-rss-title="Cybersecurity News"></div>
       <div class="grid" data-topic-widgets="cyber"></div>
     </div>
   </div>
@@ -560,6 +562,7 @@
         <h2>🏛️ Political</h2>
         <p>Political vocabulary, public-opinion language, foreign-policy phrases, and internet-era political slang.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="political" data-topic-rss-tag="politics" data-topic-rss-icon="🏛️" data-topic-rss-title="Political News"></div>
       <div class="grid" data-topic-widgets="political"></div>
     </div>
   </div>
@@ -571,6 +574,7 @@
         <h2>📱 Gen Z</h2>
         <p>Slang, burnout vocabulary, social media reactions, and youth discourse around work, pressure, money, and coping.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="genz" data-topic-rss-tag="genz" data-topic-rss-icon="📱" data-topic-rss-title="Gen Z News"></div>
       <div class="grid" data-topic-widgets="genz"></div>
     </div>
   </div>
@@ -582,6 +586,7 @@
         <h2>🎓 University Academia</h2>
         <p>University exchange, scholarships, applications, research communication, and campus survival vocabulary.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="academia" data-topic-rss-tag="academia" data-topic-rss-icon="🎓" data-topic-rss-title="Academia News"></div>
       <div class="grid" data-topic-widgets="academia"></div>
     </div>
   </div>
@@ -593,6 +598,7 @@
         <h2>🧭 Tourist Survival</h2>
         <p>Travel survival phrases, emergency numbers, app setup, and practical on-the-ground Chinese for getting around China.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="tourist" data-topic-rss-tag="travel" data-topic-rss-icon="🧭" data-topic-rss-title="Travel News"></div>
       <div class="grid" data-topic-widgets="tourist"></div>
     </div>
   </div>
@@ -604,6 +610,7 @@
         <h2>🗣️ Gossip</h2>
         <p>Internet drama vocabulary, reaction phrases, rumor language, and the words people use when the tea starts spilling.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="gossip" data-topic-rss-tag="gossip" data-topic-rss-icon="🗣️" data-topic-rss-title="Gossip News"></div>
       <div class="grid" data-topic-widgets="gossip"></div>
     </div>
   </div>
@@ -615,6 +622,7 @@
         <h2>💄 Makeup</h2>
         <p>Beauty and skincare vocabulary for shopping, reviews, ingredient talk, routines, and Chinese beauty content.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="makeup" data-topic-rss-tag="beauty" data-topic-rss-icon="💄" data-topic-rss-title="Beauty News"></div>
       <div class="grid" data-topic-widgets="makeup"></div>
     </div>
   </div>
@@ -626,6 +634,7 @@
         <h2>🍜 Food</h2>
         <p>Ordering phrases, hot pot vocabulary, cuisine families, spice calibration, and dining survival language.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="food" data-topic-rss-tag="food" data-topic-rss-icon="🍜" data-topic-rss-title="Food News"></div>
       <div class="grid" data-topic-widgets="food"></div>
     </div>
   </div>
@@ -637,7 +646,106 @@
         <h2>📦 Dropshipping</h2>
         <p>E-commerce sourcing vocabulary, supplier negotiation phrases, legal-risk awareness, and cross-border operations language.</p>
       </div>
+      <div class="topic-rss-mount" data-topic-rss-tab="dropshipping" data-topic-rss-tag="dropship" data-topic-rss-icon="📦" data-topic-rss-title="Dropshipping News"></div>
       <div class="grid" data-topic-widgets="dropship"></div>
+    </div>
+  </div>
+
+  <!-- LIBRARY (saved-words manager) -->
+  <div class="tab-content" id="tab-library">
+    <div class="library-shell">
+      <div class="library-hero">
+        <div>
+          <h2>🗂️ Word Library</h2>
+          <p>Sort, filter, group, and export every word you've saved.</p>
+        </div>
+        <div class="library-stats" id="libStats"></div>
+      </div>
+      <div class="library-toolbar">
+        <input type="search" class="library-search" id="libSearch" placeholder="🔍  Search cn, pinyin, English, note, source…" oninput="renderLibraryTab()">
+        <div class="library-toolbar-right">
+          <label class="library-sort-label">Sort:
+            <select id="libSort" onchange="renderLibraryTab()">
+              <option value="addedAt-desc">Newest first</option>
+              <option value="addedAt-asc">Oldest first</option>
+              <option value="cn-asc">CN A→Z</option>
+              <option value="cn-desc">CN Z→A</option>
+              <option value="py-asc">Pinyin A→Z</option>
+              <option value="topic-asc">Topic A→Z</option>
+              <option value="source-asc">Source A→Z</option>
+            </select>
+          </label>
+          <button class="btn-secondary btn-small" onclick="downloadWordsCsv()" title="Export all as CSV">⬇️ CSV</button>
+          <button class="btn-secondary btn-small" onclick="downloadWordsJson()" title="Export full snapshot as JSON">📄 JSON</button>
+          <button class="btn-secondary btn-small" onclick="exportWordlist()" title="Copy TSV to clipboard">📋 TSV</button>
+          <button class="btn-secondary btn-small" onclick="importWordsCsv()" title="Import from CSV">📥 Import</button>
+          <button class="btn-secondary btn-small" onclick="restoreWordsFromLocalBackup()" title="Restore from local backup">♻️ Restore</button>
+          <button class="btn-secondary btn-small" onclick="addAllToFlashcards()" title="Sync filtered words to flashcards">🃏 Sync</button>
+        </div>
+      </div>
+      <div class="library-body">
+        <aside class="library-sidebar">
+          <div class="library-filter-group">
+            <div class="library-filter-title">Source</div>
+            <div class="library-filter-list" id="libFilterSources"></div>
+          </div>
+          <div class="library-filter-group">
+            <div class="library-filter-title">Topic</div>
+            <div class="library-filter-list" id="libFilterTopics"></div>
+          </div>
+          <div class="library-filter-group">
+            <div class="library-filter-title">Flashcards</div>
+            <div class="library-filter-list" id="libFilterFc"></div>
+          </div>
+          <div class="library-filter-group">
+            <div class="library-filter-title">Has pinyin</div>
+            <div class="library-filter-list" id="libFilterPy"></div>
+          </div>
+          <div class="library-filter-group">
+            <div class="library-filter-title">Added</div>
+            <div class="library-filter-list" id="libFilterDate"></div>
+          </div>
+          <div class="library-filter-group">
+            <button type="button" class="btn-secondary btn-small" style="width:100%;" onclick="resetLibraryFilters()">Reset filters</button>
+          </div>
+          <div class="library-filter-group">
+            <div class="library-filter-title">📦 Collections</div>
+            <div id="libCollections"></div>
+            <div class="library-collection-form">
+              <input type="text" id="libCollectionNew" placeholder="New collection name…" maxlength="60">
+              <button type="button" class="btn-secondary btn-small" onclick="createLibraryCollection()">＋ Create</button>
+            </div>
+          </div>
+        </aside>
+        <main class="library-main">
+          <div class="library-bulk-bar" id="libBulkBar" hidden>
+            <span id="libBulkCount">0 selected</span>
+            <button type="button" class="btn-secondary btn-small" onclick="bulkAddToCollection()">Add to collection…</button>
+            <button type="button" class="btn-secondary btn-small" onclick="bulkRemoveFromCollection()">Remove from current collection</button>
+            <button type="button" class="btn-secondary btn-small" onclick="bulkSyncToFlashcards()">🃏 Add to flashcards</button>
+            <button type="button" class="btn-secondary btn-small delete-btn" onclick="bulkDelete()">🗑 Delete</button>
+            <button type="button" class="btn-secondary btn-small" onclick="clearLibrarySelection()" style="margin-left:auto;">Clear selection</button>
+          </div>
+          <div class="library-table-wrap">
+            <table class="library-table">
+              <thead>
+                <tr>
+                  <th style="width:32px;"><input type="checkbox" id="libSelectAll" onchange="toggleLibrarySelectAll(this.checked)"></th>
+                  <th>Word</th>
+                  <th>Pinyin</th>
+                  <th>Meaning / note</th>
+                  <th>Topic</th>
+                  <th>Source</th>
+                  <th>Added</th>
+                  <th style="width:80px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="libTableBody"></tbody>
+            </table>
+            <div id="libEmpty" class="library-empty" hidden></div>
+          </div>
+        </main>
+      </div>
     </div>
   </div>
 

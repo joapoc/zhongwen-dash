@@ -52,7 +52,20 @@
       "Bash(curl -s --max-time 60 \"http://localhost:3998/api/reading/article?url=https%3A%2F%2Fnews.google.com%2Frss%2Farticles%2FCBMipwFBVV95cUxQajVXVjZzOU8wV3BlWW1ScnhsXzQ4MVo3MnFDWURkc3dYSkZrN0NEd2EwcnRvakJaMWhER1hrUmtNS3l5WmRDYWR1MDg0cU5BZno5VFMwQlY5eF9LbUdOU3ctVHV6bE1DUUFDMzdjSlVrT3lrODc3MDJwbmFQamJSNEVrWmhzV0NkNVhVT0F0VmUwcktOUG9oTW1aR3QzTnp4YXN0R3dDUQ%3Foc%3D5&refresh=1\" -o C:/temp/article2.json)",
       "Bash(PYTHONIOENCODING=utf-8 python -c \"import json,sys; sys.stdout.reconfigure\\(encoding='utf-8'\\); d=json.load\\(open\\(r'C:\\\\\\\\temp\\\\\\\\article2.json', encoding='utf-8'\\)\\); print\\('ok:', d.get\\('ok'\\)\\); print\\('title:', d.get\\('title',''\\)[:100]\\); print\\('siteName:', d.get\\('siteName',''\\)\\); print\\('url:', d.get\\('url',''\\)[:120]\\); print\\('wordCount:', d.get\\('wordCount',0\\)\\); print\\('message:', d.get\\('message',''\\)[:200]\\); print\\('---content preview:'\\); print\\(\\(d.get\\('textContent',''\\) or ''\\)[:300]\\)\")",
       "Bash(curl -s --max-time 30 \"http://localhost:3998/api/reading/article?url=https%3A%2F%2Fwww.bbc.com%2Fzhongwen%2Farticles%2Fc4g638jp6n6o%2Ftrad\" -o C:/temp/bbc.json)",
-      "Bash(PYTHONIOENCODING=utf-8 python -c \"import json,sys; sys.stdout.reconfigure\\(encoding='utf-8'\\); d=json.load\\(open\\(r'C:\\\\\\\\temp\\\\\\\\bbc.json', encoding='utf-8'\\)\\); print\\('ok:', d.get\\('ok'\\), '| title:', d.get\\('title',''\\)[:80], '| words:', d.get\\('wordCount',0\\)\\)\")"
+      "Bash(PYTHONIOENCODING=utf-8 python -c \"import json,sys; sys.stdout.reconfigure\\(encoding='utf-8'\\); d=json.load\\(open\\(r'C:\\\\\\\\temp\\\\\\\\bbc.json', encoding='utf-8'\\)\\); print\\('ok:', d.get\\('ok'\\), '| title:', d.get\\('title',''\\)[:80], '| words:', d.get\\('wordCount',0\\)\\)\")",
+      "Bash(PORT=3056 node dist/server/index.js)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3056/api/health)",
+      "Bash(curl -sS \"http://localhost:3056/api/reading/feed/by-tag/beauty\")",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('ok',d.get\\('ok'\\),'tag',d.get\\('tag'\\),'feeds',len\\(d.get\\('feeds',[]\\)\\),'total',d.get\\('total'\\),'failed',len\\(d.get\\('failed',[]\\)\\)\\);[print\\(' -',f['id'],f['name']\\) for f in d.get\\('feeds',[]\\)];print\\('first item:',\\(d.get\\('items'\\) or [{}]\\)[0].get\\('title','\\(none\\)'\\)[:80]\\)\")",
+      "Bash(curl -sS http://localhost:3056/api/reading/feed/by-tag/__TRACKED_VAR__)",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('ok',d.get\\('ok'\\),'feeds',len\\(d.get\\('feeds',[]\\)\\),'total',d.get\\('total'\\),'failed',len\\(d.get\\('failed',[]\\)\\)\\)\")",
+      "Bash(curl -sS http://localhost:3056/)",
+      "Bash(curl -sS http://localhost:3056/js/topic-widgets.js)",
+      "Bash(curl -sS -o /tmp/index.html http://localhost:3056/)",
+      "Bash(curl -sS http://localhost:3057/ -o /tmp/index.html)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3057/)",
+      "Bash(powershell.exe -Command 'Get-NetTCPConnection -LocalPort 3057 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }; Get-NetTCPConnection -LocalPort 3056 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }; '\\\\''done'\\\\''')",
+      "Bash(PORT=3058 npx tsx server/index.ts)"
     ],
     "additionalDirectories": [
       "C:\\temp"
